@@ -1,0 +1,5 @@
+*.dll
+*.suo
+*.csproj.user
+*/Bin
+*/obj
