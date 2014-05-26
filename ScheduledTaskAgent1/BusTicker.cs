@@ -11,6 +11,7 @@ using System.IO.IsolatedStorage;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using HtmlAgilityPack;
+using Log = ScheduledTaskAgent1.Logger;
 
 
 namespace ScheduledTaskAgent1
@@ -21,30 +22,33 @@ namespace ScheduledTaskAgent1
 
         public static Task<string> GetBusDueTime(BusStatDir bsd)
         {
-            return GetBusDueTime(bsd.bus, bsd.station, bsd.dir, 0);
+            return GetBusDueTime(bsd.bus, bsd.station, bsd.dir);
         }
 
-        public static async Task<string> GetBusDueTime(string busName, string stationName, BusDir busDir = BusDir.go, int timeOut = 0)
+        public static async Task<string> GetBusDueTime(string busName, string stationName, BusDir busDir = BusDir.go)
         {
-            string url = route_url + Uri.EscapeUriString(busName);
+            string url = String.Format(@"http://pda.5284.com.tw/MQS/businfo3.jsp?Mode=1&Dir={1}&Route={0}&Stop={2}", Uri.EscapeUriString(busName), 
+                busDir==BusDir.go?1:0, Uri.EscapeUriString(stationName));
+
             var client = new HttpClient();
-            string strResult = await client.GetStringAsync(url, timeOut);
+            Log.Debug(String.Format("client.GetStringAsync({0}, {1}) begin", busName, stationName));
+            string strResult = await client.GetStringAsync(new Uri(url));
+            Log.Debug(String.Format("client.GetStringAsync({0}, {1}) end", busName, stationName));
             var doc = new HtmlDocument();
             doc.LoadHtml(strResult);
 
             HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes(
-                "/html/body/center/table/tr[5]/td/table/tr[2]/td["+  
-                (busDir==BusDir.go?"1":"2") + "]/table/tr");
-
-            HtmlNode node = nodes.FirstOrDefault(n => n.ChildNodes[0].InnerText.Equals(stationName));
-            return node.ChildNodes[1].InnerText;
+                "/html/body/center/table/tr[6]/td");
+            if (nodes.Count == 0)
+                return "";
+            return nodes[0].InnerText;
         }
     }
     public enum BusDir
     {
         go, back,
     };
-    public struct BusStatDir
+    public class BusStatDir
     {
         public string bus;
         public string station;

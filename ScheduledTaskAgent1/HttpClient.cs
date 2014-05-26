@@ -31,41 +31,23 @@ namespace ScheduledTaskAgent1
         {
         }
 
-        /// <summary>
-        /// Get the string by URI string.
-        /// </summary>
-        /// <param name="strUri">The Uri the request is sent to.</param>
-        /// <param name="timeOut">time Out in milliseconds</param>
-        /// <returns>string</returns>
-        public async Task<string> GetStringAsync(string strUri, int timeOut = 0)
-        {
-            CancellationTokenSource cancelTok = new CancellationTokenSource();
-            if (timeOut != 0)
-                cancelTok.CancelAfter(timeOut);
+        //public async Task<string> GetStringAsync3(string strUri, int timeOut = 0)
+        //{
+        //    CancellationTokenSource cancelTok = new CancellationTokenSource();
+        //    if (timeOut != 0)
+        //        cancelTok.CancelAfter(timeOut);
             
-            Uri uri = new Uri(strUri);
-            Task<string> task = Task.Run( () => this.GetStringAsync(uri), cancelTok.Token);
-            string result = await task;
-            return result;
-        }
+        //    Uri uri = new Uri(strUri);
+        //    Task<string> task = Task.Run( () => this.GetStringAsync(uri), cancelTok.Token);
+        //    string result = await task;
+        //    return result;
+        //}
 
-        public string GetStringBlocked(string strUri)
+        public string GetStringSync(Uri requestUri)
         {
-            Uri uri = new Uri(strUri);
-            base.DownloadStringCompleted += HttpClient_DownloadStringCompleted;
-            base.DownloadStringAsync(uri);
-            Debug.WriteLine("{0} this._downloadCompletedEvent.Wait() start", DateTime.Now.ToString("HH:mm:ss.fff"));
-            this._downloadCompletedEvent.Wait(-1);
-            Debug.WriteLine("{0} this._downloadCompletedEvent.Wait() end", DateTime.Now.ToString("HH:mm:ss.fff"));
-            return this._ResultString;
-        }
-
-        ManualResetEventSlim _downloadCompletedEvent = new ManualResetEventSlim(false);
-        String _ResultString;
-        void HttpClient_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
-        {
-            this._ResultString = e.Result;
-            _downloadCompletedEvent.Set();
+            Task<string> task = GetStringAsync(requestUri);
+            task.Wait();
+            return task.Result;
         }
 
         /// <summary>

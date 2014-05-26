@@ -161,20 +161,31 @@ namespace ScheduledTaskAgent1
             new BusStatDir{bus="橘2", station="秀山國小", dir=BusDir.go},
         };
 
+        public static bool WifiConnected()
+        {
+            var profile = Windows.Networking.Connectivity.NetworkInformation.GetInternetConnectionProfile();
+            var interfaceType = profile.NetworkAdapter.IanaInterfaceType;
+            // 71 is WiFi & 6 is Ethernet(LAN)
+            return (interfaceType == 71 || interfaceType == 6);
+        }
+
         protected override void OnInvoke(ScheduledTask task)
         {
             try
             {
-                Log.Create(false);
-                m_busStatDirs.ToList();
+                //Log.Create(false);
                 Log.Debug("enter OnInvoke");
-                
-                var tasks = m_busStatDirs.Select(bsd => BusTicker.GetBusDueTime(bsd)).ToArray();
+
+                Task<string>[] tasks = m_busStatDirs.Select(bsd => BusTicker.GetBusDueTime(bsd)).ToArray();
+                Log.Debug("WaitAll begin");
                 Task.WaitAll(tasks);
-                var zip = Enumerable.Zip(m_busStatDirs, tasks, (bsd, t) => new { bsd.bus, bsd.station, bsd.dir, t.Result });
+                Log.Debug("WaitAll end");
+
+                var zip = Enumerable.Zip(m_busStatDirs, tasks, (bsd, t) => new { bsd.bus, bsd.station, bsd.dir, result = t.Result });
+               
                 foreach (var z in zip)
                 {
-                    Log.Debug(String.Format("{0} {1} {2} {3}", z.bus, z.station, z.dir, z.Result));
+                    Log.Debug(String.Format("{0} {1} {2} {3}", z.bus, z.station, z.dir, z.result));
                 };
 
                 Deployment.Current.Dispatcher.BeginInvoke(() =>
@@ -182,7 +193,7 @@ namespace ScheduledTaskAgent1
                     Log.Debug("Deployment.Current.Dispatcher.BeginInvoke enter");
                     try
                     {   
-                        ScheduledAgent.SaveTileJpg("上班\n" + String.Join("\n", zip.Select(z => z.bus + " "+ z.Result)));
+                        ScheduledAgent.SaveTileJpg("上班\n" + String.Join("\n", zip.Select(z => z.bus + " "+ z.result)));
                         Log.Debug("SaveTileJpg()");
                         ScheduledAgent.UpdateTileImage(DateTime.Now.ToString("HH:mm:ss"));
                         Log.Debug("UpdateTileImage()");
@@ -195,9 +206,8 @@ namespace ScheduledTaskAgent1
                     }
                     finally
                     {
-                        Log.Debug("NotifyComplete()");
                         this.NotifyComplete();
-                        Log.Close();
+                        //Log.Close();
                     }
                 });
             }

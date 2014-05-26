@@ -51,23 +51,37 @@ namespace LiveBusTile
         //    Debug.WriteLine(" Column Number: {0}", sf.GetFileColumnNumber());
         //}
 
+        //async void Test1()
+        //{
+        //    BusStatDir[] m_busStatDirs = new BusStatDir[]
+        //    {
+        //        new BusStatDir{bus="275", station="秀景里", dir=BusDir.go},
+        //        new BusStatDir{bus="敦化幹線", station="秀景里", dir=BusDir.back},
+        //        new BusStatDir{bus="橘2", station="秀山國小", dir=BusDir.go},
+        //    };
+
+        //    foreach (var bsd in m_busStatDirs)
+        //    {
+            
+        //    }
+        //}
+
+
+
         const string m_tileImgPath = @"Shared\ShellContent\Tile.jpg";
         void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            //Debug.WriteLine("{0} Test2() start", DateTime.Now.ToString("HH:mm:ss.fff"));
-            //Test2();
-            //Debug.WriteLine("{0} Test2() end", DateTime.Now.ToString("HH:mm:ss.fff"));
+            //Test1();
             var rtbus = new RunTimeBusCatVM();
-            rtbus.UpdateFromWebAsync(this);
+            //rtbus.UpdateFromWebAsync(this);
 
-            var vm = new BusCatViewModel();
-            this.DataContext = vm;
+            //var vm = new BusCatViewModel();
+            //this.DataContext = vm;
             ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
 
             if (tile == null)
             {
-                ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), 
-                    new StandardTileData { Title = DateTime.Now.ToString("HH:mm:ss") });
+                ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), new StandardTileData { Title = DateTime.Now.ToString("HH:mm:ss") });
             }
 
             StartPeriodicAgent(refreshBusTileTaskName);
@@ -172,6 +186,11 @@ namespace LiveBusTile
             {
                 Log.Error(e.ToString());
             }
+        }
+
+        private void ApplicationBarIconButton_Click(object sender, EventArgs e)
+        {
+            NavigationService.Navigate(new Uri("/InputStation.xaml", UriKind.Relative));
         }
 
 

@@ -75,7 +75,7 @@ namespace LiveBusTile
                 // and consume battery power when the user is not using the phone.
                 PhoneApplicationService.Current.UserIdleDetectionMode = IdleDetectionMode.Disabled;
             }
-            Log.Create(true);
+            //Log.Create(true);
         }
 
         // Code to execute when the application is launching (eg, from Start)
@@ -99,7 +99,7 @@ namespace LiveBusTile
         // This code will not execute when the application is closing
         private void Application_Deactivated(object sender, DeactivatedEventArgs e)
         {
-            Log.Flush();
+            //Log.Flush();
         }
 
         // Code to execute when the application is closing (eg, user hit Back)
@@ -107,7 +107,7 @@ namespace LiveBusTile
         private void Application_Closing(object sender, ClosingEventArgs e)
         {
             // Ensure that required application state is persisted here.
-            Log.Close();
+            //Log.Close();
         }
 
         // Code to execute if a navigation fails
@@ -123,7 +123,7 @@ namespace LiveBusTile
         // Code to execute on Unhandled Exceptions
         private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
-            Log.Error("Application_UnhandledException() \n{0}", e.ToString());
+            Log.Error("Application_UnhandledException() \n" + e);
             if (Debugger.IsAttached)
             {
                 // An unhandled exception has occurred; break into the debugger
