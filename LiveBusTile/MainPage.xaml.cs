@@ -45,7 +45,8 @@ namespace LiveBusTile
         // Load data for the ViewModel Items
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (NavigationContext.QueryString.Count==0)
+            if (NavigationContext.QueryString.Count==0
+                || (NavigationContext.QueryString.ContainsKey("DefaultTitle") && NavigationContext.QueryString["DefaultTitle"] == "FromTile" ))
             {
                 this.DataContext = new KeyedBusTagVM();
                 ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
@@ -72,10 +73,6 @@ namespace LiveBusTile
             }
         }
         protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-        }
-
-        void timer_Tick(object sender, EventArgs e)
         {
         }
 
@@ -214,9 +211,9 @@ namespace LiveBusTile
 
         void RefreshBusTime()
         {
-            //prgbarWaiting.Visibility = Visibility.Visible;
             Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
+                prgbarWaiting.Visibility = Visibility.Visible;
                 foreach (var btn in this.ApplicationBar.Buttons)
                     (btn as ApplicationBarIconButton).IsEnabled = false;
                 this.ApplicationBar.IsMenuEnabled = false;
@@ -232,11 +229,11 @@ namespace LiveBusTile
                 for (int i = 0; i < DataService.m_list.Count; ++i)
                     DataService.m_list[i].timeToArrive = tasks[i].Result;
                 this.DataContext = new KeyedBusTagVM();
-                //prgbarWaiting.Visibility = Visibility.Collapsed;
 
                 foreach (var btn in this.ApplicationBar.Buttons)
                     (btn as ApplicationBarIconButton).IsEnabled = true;
                 this.ApplicationBar.IsMenuEnabled = true;
+                prgbarWaiting.Visibility = Visibility.Collapsed;
 
             });
             

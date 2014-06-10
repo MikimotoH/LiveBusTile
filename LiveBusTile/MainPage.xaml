@@ -95,9 +95,8 @@
             HideEmptyGroups ="True" 
             LayoutMode="List" />
 
-        <!--<ProgressBar x:Name="prgbarWaiting" Height="10" 
+        <ProgressBar x:Name="prgbarWaiting" Height="10" 
                      Margin="10,234,-10,452" IsIndeterminate="True" Foreground="LightBlue" Visibility="Collapsed"/>
-        -->
     </Grid>
     
     <phone:PhoneApplicationPage.ApplicationBar>
