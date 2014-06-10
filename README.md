@@ -4,3 +4,4 @@ LiveBusTile
 
 此LiveBusTile是以「站牌」的狀態為主，不像其他的App是以「公車」的狀態為中心。
 LiveBusTile
+<img src="screenshot.png" style="width: 200px;"/>
