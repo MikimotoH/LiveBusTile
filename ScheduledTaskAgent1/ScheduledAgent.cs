@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using Log = ScheduledTaskAgent1.Logger;
+using Newtonsoft.Json;
+
 
 namespace ScheduledTaskAgent1
 {
@@ -154,12 +156,6 @@ namespace ScheduledTaskAgent1
             }
         }
 
-        BusStatDir[] m_busStatDirs = new BusStatDir[]
-        {
-            new BusStatDir{bus="275", station="秀景里", dir=BusDir.go},
-            new BusStatDir{bus="敦化幹線", station="秀景里", dir=BusDir.back},
-            new BusStatDir{bus="橘2", station="秀山國小", dir=BusDir.go},
-        };
 
         public static bool WifiConnected()
         {
@@ -169,31 +165,54 @@ namespace ScheduledTaskAgent1
             return (interfaceType == 71 || interfaceType == 6);
         }
 
+        public static object m_busTagLock = new Object();
+        public static List<BusTag> m_busTags;
+
+        public static List<BusTag> GetBusTags()
+        {
+            lock (m_busTagLock)
+            {
+                if (m_busTags == null)
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.NullValueHandling = NullValueHandling.Ignore;
+                    var sri = Application.GetResourceStream(new Uri("my_bustags.json", UriKind.Relative));
+                    using (StreamReader sr = new StreamReader(sri.Stream))
+                    using (JsonReader reader = new JsonTextReader(sr))
+                    {
+                        m_busTags = serializer.Deserialize(reader, typeof(List<BusTag>)) as List<BusTag>;
+                    }
+                }
+                return m_busTags;
+            }
+        }
+
         protected override void OnInvoke(ScheduledTask task)
         {
             try
             {
+                var busTags = GetBusTags();
+
                 //Log.Create(false);
                 Log.Debug("enter OnInvoke");
 
-                Task<string>[] tasks = m_busStatDirs.Select(bsd => BusTicker.GetBusDueTime(bsd)).ToArray();
+                Task<string>[] tasks = busTags.Select(bsd => BusTicker.GetBusDueTime(bsd.busName, bsd.station, bsd.dir)).ToArray();
                 Log.Debug("WaitAll begin");
                 Task.WaitAll(tasks);
                 Log.Debug("WaitAll end");
 
-                var zip = Enumerable.Zip(m_busStatDirs, tasks, (bsd, t) => new { bsd.bus, bsd.station, bsd.dir, result = t.Result });
-               
-                foreach (var z in zip)
-                {
-                    Log.Debug(String.Format("{0} {1} {2} {3}", z.bus, z.station, z.dir, z.result));
-                };
+                for (int i = 0; i < tasks.Length; ++i)
+                    busTags[i].timeToArrive = tasks[i].Result;
+                
+                foreach (var bus in busTags)
+                    Log.Debug(String.Format("{0} {1} {2} {3}", bus.busName, bus.station, bus.dir, bus.timeToArrive));                
 
                 Deployment.Current.Dispatcher.BeginInvoke(() =>
                 {
                     Log.Debug("Deployment.Current.Dispatcher.BeginInvoke enter");
                     try
                     {   
-                        ScheduledAgent.SaveTileJpg("上班\n" + String.Join("\n", zip.Select(z => z.bus + " "+ z.result)));
+                        ScheduledAgent.SaveTileJpg(String.Join("\n", busTags.Select(b => b.busName + " "+ b.timeToArrive)));
                         Log.Debug("SaveTileJpg()");
                         ScheduledAgent.UpdateTileImage(DateTime.Now.ToString("HH:mm:ss"));
                         Log.Debug("UpdateTileImage()");
@@ -218,6 +237,4 @@ namespace ScheduledTaskAgent1
         }
 
     }
-
-
 }

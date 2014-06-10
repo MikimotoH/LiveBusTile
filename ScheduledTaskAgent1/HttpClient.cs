@@ -29,19 +29,12 @@ namespace ScheduledTaskAgent1
         public HttpClient()
             : base()
         {
+
+            Headers[HttpRequestHeader.IfModifiedSince] = DateTime.UtcNow.ToString();
+            Headers["Cache-Control"] = "no-cache";
+            Headers["Pragma"] = "no-cache";
         }
 
-        //public async Task<string> GetStringAsync3(string strUri, int timeOut = 0)
-        //{
-        //    CancellationTokenSource cancelTok = new CancellationTokenSource();
-        //    if (timeOut != 0)
-        //        cancelTok.CancelAfter(timeOut);
-            
-        //    Uri uri = new Uri(strUri);
-        //    Task<string> task = Task.Run( () => this.GetStringAsync(uri), cancelTok.Token);
-        //    string result = await task;
-        //    return result;
-        //}
 
         public string GetStringSync(Uri requestUri)
         {

@@ -15,24 +15,7 @@ namespace LiveBusTile
 {
     public partial class App : Application
     {
-        private static MainViewModel viewModel = null;
-
-        /// <summary>
-        /// A static ViewModel used by the views to bind against.
-        /// </summary>
-        /// <returns>The MainViewModel object.</returns>
-        public static MainViewModel ViewModel
-        {
-            get
-            {
-                // Delay creation of the view model until necessary
-                if (viewModel == null)
-                    viewModel = new MainViewModel();
-
-                return viewModel;
-            }
-        }
-
+        
         /// <summary>
         /// Provides easy access to the root frame of the Phone Application.
         /// </summary>
@@ -88,18 +71,17 @@ namespace LiveBusTile
         // This code will not execute when the application is first launched
         private void Application_Activated(object sender, ActivatedEventArgs e)
         {
+            Debug.WriteLine("Application_Deactivated");
             // Ensure that application state is restored appropriately
-            if (!App.ViewModel.IsDataLoaded)
-            {
-                App.ViewModel.LoadData();
-            }
+            MainPage.RemoveAgent();
         }
 
         // Code to execute when the application is deactivated (sent to background)
         // This code will not execute when the application is closing
         private void Application_Deactivated(object sender, DeactivatedEventArgs e)
         {
-            //Log.Flush();
+            Debug.WriteLine("Application_Deactivated");
+            MainPage.StartPeriodicAgent();
         }
 
         // Code to execute when the application is closing (eg, user hit Back)

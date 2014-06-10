@@ -17,98 +17,69 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.IO;
 using ScheduledTaskAgent1;
+using LiveBusTile.Services;
+using System.Threading;
 
 
 namespace LiveBusTile
 {
     public partial class MainPage : PhoneApplicationPage
     {
-        PeriodicTask refreshBusTileTask;
-        const string refreshBusTileTaskName = "refreshBusTileTask";
-        const string refreshBusTileTaskDesc = "Refresh Bus Due Time on Tile at Hub (HomeScreen)";
-        
+        static PeriodicTask refreshBusTileTask;
+
         // Constructor
         public MainPage()
         {
             InitializeComponent();
 
-            // Set the data context of the listbox control to the sample data
-            //DataContext = App.ViewModel;
-
-            this.Loaded += new RoutedEventHandler( MainPage_Loaded );
+            //// Set the data context of the listbox control to the sample data
+            //this.Loaded += new RoutedEventHandler( MainPage_Loaded );
+            
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
         }
 
-        //void Test2()
-        //{
-        //    StackTrace st = new StackTrace(true);
-        //    Debug.WriteLine(" Stack trace for current level: {0}", st.ToString());
-        //    StackFrame sf = st.GetFrame(0);
-        //    Debug.WriteLine(" File: {0}", sf.GetFileName());
-        //    Debug.WriteLine(" Method: {0}", sf.GetMethod().Name);
-        //    Debug.WriteLine(" Line Number: {0}", sf.GetFileLineNumber());
-        //    Debug.WriteLine(" Column Number: {0}", sf.GetFileColumnNumber());
-        //}
-
-        //async void Test1()
-        //{
-        //    BusStatDir[] m_busStatDirs = new BusStatDir[]
-        //    {
-        //        new BusStatDir{bus="275", station="秀景里", dir=BusDir.go},
-        //        new BusStatDir{bus="敦化幹線", station="秀景里", dir=BusDir.back},
-        //        new BusStatDir{bus="橘2", station="秀山國小", dir=BusDir.go},
-        //    };
-
-        //    foreach (var bsd in m_busStatDirs)
-        //    {
-            
-        //    }
-        //}
-
-
-
         const string m_tileImgPath = @"Shared\ShellContent\Tile.jpg";
-        void MainPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            //Test1();
-            var rtbus = new RunTimeBusCatVM();
-            //rtbus.UpdateFromWebAsync(this);
 
-            //var vm = new BusCatViewModel();
-            //this.DataContext = vm;
-            ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
-
-            if (tile == null)
-            {
-                ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), new StandardTileData { Title = DateTime.Now.ToString("HH:mm:ss") });
-            }
-
-            StartPeriodicAgent(refreshBusTileTaskName);
-        }
-
+        
         // Load data for the ViewModel Items
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (!App.ViewModel.IsDataLoaded)
+            if (NavigationContext.QueryString.Count==0)
             {
-                App.ViewModel.LoadData();
+                this.DataContext = new KeyedBusTagVM();
+                ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
+
+                //if (tile == null)
+                //    ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), new StandardTileData { Title = DateTime.Now.ToString("HH:mm:ss") });
+
+            }
+            else if(NavigationContext.QueryString.ContainsKey("Op"))
+            {
+                var newBusTag = new BusTag
+                {
+                    busName = NavigationContext.QueryString["busName"],
+                    station = NavigationContext.QueryString["station"],
+                    dir = (BusDir)int.Parse(NavigationContext.QueryString["dir"]),
+                    tag = NavigationContext.QueryString["tag"]
+                };
+                lock (ScheduledAgent.m_busTagLock)
+                {
+                    ScheduledAgent.m_busTags.Add(newBusTag);
+                }
+                BusCatLLS.DataContext = 
+                this.DataContext = new KeyedBusTagVM();
             }
         }
-
-        // Handle selection changed on LongListSelector
-        private void MainLongListSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            // If selected item is null (no selection) do nothing
-            if (BusCatLLS.SelectedItem == null)
-                return;
-
-            // Navigate to the new page
-            NavigationService.Navigate(new Uri("/DetailsPage.xaml?selectedItem=" + (BusCatLLS.SelectedItem as ItemViewModel).LineOne, UriKind.Relative));
-
-            // Reset selected item to null (no selection)
-            BusCatLLS.SelectedItem = null;
         }
+
+        void timer_Tick(object sender, EventArgs e)
+        {
+        }
+
+
 
         private void PinToStart_Click(object sender, RoutedEventArgs e)
         {
@@ -116,8 +87,11 @@ namespace LiveBusTile
         }
 
 
-        private void StartPeriodicAgent(string taskName)
+        const string refreshBusTileTaskName = "refreshBusTileTask";
+        const string refreshBusTileTaskDesc = "Refresh Bus Due Time on Tile at Hub (HomeScreen)";
+        public static void StartPeriodicAgent()
         {
+            string taskName = refreshBusTileTaskName;
             // Obtain a reference to the period task, if one exists
             refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
 
@@ -126,8 +100,8 @@ namespace LiveBusTile
             // the schedule.
             if (refreshBusTileTask != null)
             {
-                Log.Debug("RemoveAgent(taskName)");
-                RemoveAgent(taskName);
+                Log.Debug("RemoveAgent()");
+                RemoveAgent();
             }
             refreshBusTileTask = new PeriodicTask(taskName);
 
@@ -141,8 +115,8 @@ namespace LiveBusTile
             {
                 ScheduledActionService.Add(refreshBusTileTask);
                 // If debugging is enabled, use LaunchForTest to launch the agent in one minute.
-                ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromMilliseconds(5));
-                Log.Debug("ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromMilliseconds(5))");
+                ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromMilliseconds(1000));
+                Log.Debug("ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromMilliseconds(1000))");
             }
             catch (InvalidOperationException exception)
             {
@@ -175,23 +149,106 @@ namespace LiveBusTile
             }
         }
 
-        private void RemoveAgent(string name)
+        public static void RemoveAgent()
         {
+            string taskName = refreshBusTileTaskName;
+            //refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
+
+            // If the task already exists and background agent is enabled for the
+            // app, remove the task and then add it again to update 
+            // the schedule.
+            //if (refreshBusTileTask != null)
+            //{
+                //Log.Debug("RemoveAgent()");
+                //RemoveAgent();
+            //}
+
             try
             {
-                ScheduledActionService.Remove(name);
                 Log.Debug("ScheduledActionService.Remove(busName)");
+                ScheduledActionService.Remove(taskName);
             }
             catch (Exception e)
             {
                 Log.Error(e.ToString());
             }
         }
+        static Random random = new Random();
+        Func<string> rndMinutes = () => random.Next(60).ToString("D2")+"分";
+        Func<string> rndHours = () => random.Next(60).ToString("D2") + "小時";
+        Func<string> rndStation = () => random.Next(99).ToString("D2") + "站";
+        Func<string> rndBus = () => "公車"+random.Next(1000);
+        Func<BusDir> rndDir = () => random.Next(1) == 1 ? BusDir.go : BusDir.back;
 
         private void ApplicationBarIconButton_Click(object sender, EventArgs e)
         {
-            NavigationService.Navigate(new Uri("/InputStation.xaml", UriKind.Relative));
+            var btn = sender as ApplicationBarIconButton;
+            switch (btn.Text)
+            {
+                case "refresh":
+                    new Thread(() =>
+                    {
+                        RefreshBusTime();
+                    }).Start();
+                    
+                    break;
+                case "add bus":
+                    //NavigationService.Navigate(new Uri("/AddBus.xaml", UriKind.Relative));
+                    DataService.m_list.Add(new BusTagVM( DataService.RandomBusTag()));
+                    DataContext = new KeyedBusTagVM();
+                    break;
+                case "add station":
+                    //NavigationService.Navigate(new Uri("/AddStation.xaml", UriKind.Relative));
+                    DataService.m_list.Add(new BusTagVM( DataService.RandomBusTag()));
+                    DataContext = new KeyedBusTagVM();
+                    break;
+                default:
+                    break;
+            }
         }
+
+        static Task<string> GetBusDueTime(BusTagVM bus)
+        {
+            return BusTicker.GetBusDueTime(bus.busName, bus.station, bus.dir);
+        }
+
+        void RefreshBusTime()
+        {
+            //prgbarWaiting.Visibility = Visibility.Visible;
+            Deployment.Current.Dispatcher.BeginInvoke(() =>
+            {
+                foreach (var btn in this.ApplicationBar.Buttons)
+                    (btn as ApplicationBarIconButton).IsEnabled = false;
+                this.ApplicationBar.IsMenuEnabled = false;
+            });
+
+            Task<string>[] tasks = new Task<String>[DataService.m_list.Count];
+            for (int i = 0; i < DataService.m_list.Count; ++i)
+                tasks[i] = GetBusDueTime(DataService.m_list[i]);
+
+            Task.WaitAll(tasks);
+            Deployment.Current.Dispatcher.BeginInvoke(() =>
+            {
+                for (int i = 0; i < DataService.m_list.Count; ++i)
+                    DataService.m_list[i].timeToArrive = tasks[i].Result;
+                this.DataContext = new KeyedBusTagVM();
+                //prgbarWaiting.Visibility = Visibility.Collapsed;
+
+                foreach (var btn in this.ApplicationBar.Buttons)
+                    (btn as ApplicationBarIconButton).IsEnabled = true;
+                this.ApplicationBar.IsMenuEnabled = true;
+
+            });
+            
+            //Log.Debug("WaitAll begin");
+            //foreach (var bus in DataService.m_list)
+            //{
+            //    bus.timeToArrive = GetBusDueTime(bus);
+            //    Log.Debug(String.Format("{0} {1} {2}", bus.busName, bus.station, bus.timeToArrive));
+            //}
+            //Log.Debug("WaitAll end");            
+        }
+
 
 
         // Sample code for building a localized ApplicationBar

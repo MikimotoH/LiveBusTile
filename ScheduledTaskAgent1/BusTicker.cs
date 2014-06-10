@@ -20,27 +20,27 @@ namespace ScheduledTaskAgent1
     {
         const string route_url = @"http://pda.5284.com.tw/MQS/businfo2.jsp?routename=";
 
-        public static Task<string> GetBusDueTime(BusStatDir bsd)
-        {
-            return GetBusDueTime(bsd.bus, bsd.station, bsd.dir);
-        }
 
-        public static async Task<string> GetBusDueTime(string busName, string stationName, BusDir busDir = BusDir.go)
+
+        public static async Task<string> GetBusDueTime(string busName, string stationName, BusDir busDir)
         {
             string url = String.Format(@"http://pda.5284.com.tw/MQS/businfo3.jsp?Mode=1&Dir={1}&Route={0}&Stop={2}", Uri.EscapeUriString(busName), 
                 busDir==BusDir.go?1:0, Uri.EscapeUriString(stationName));
 
             var client = new HttpClient();
-            Log.Debug(String.Format("client.GetStringAsync({0}, {1}) begin", busName, stationName));
+            //Log.Debug(String.Format("client.GetStringAsync({0}, {1}) begin", busName, stationName));
             string strResult = await client.GetStringAsync(new Uri(url));
-            Log.Debug(String.Format("client.GetStringAsync({0}, {1}) end", busName, stationName));
+            //Log.Debug(String.Format("client.GetStringAsync({0}, {1}) end", busName, stationName));
             var doc = new HtmlDocument();
             doc.LoadHtml(strResult);
 
             HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes(
                 "/html/body/center/table/tr[6]/td");
             if (nodes.Count == 0)
-                return "";
+            {
+                Log.Debug("nodes.Count == 0");
+                return "發生錯誤";
+            }
             return nodes[0].InnerText;
         }
     }
@@ -48,13 +48,4 @@ namespace ScheduledTaskAgent1
     {
         go, back,
     };
-    public class BusStatDir
-    {
-        public string bus;
-        public string station;
-        public BusDir dir;
-    }
-
-
-
 }
