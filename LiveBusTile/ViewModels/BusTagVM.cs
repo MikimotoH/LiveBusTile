@@ -8,25 +8,25 @@ using System.Threading.Tasks;
 
 namespace LiveBusTile.ViewModels
 {
-    public class BusTagVM : INotifyPropertyChanged
+    public class BusTagVM : BusTag, INotifyPropertyChanged
     {
         public BusTagVM() { }
-        public BusTagVM(BusTag b) { self = b; }
-        BusTag self = new BusTag();
-        public string busName { get { return self.busName; } set { self.busName = value; NotifyPropertyChanged("busName"); } }
-        public string tag { get { return self.tag; } set { self.tag = value; NotifyPropertyChanged("tag"); } }
-        public BusDir dir { get { return self.dir; } set { self.dir = value; NotifyPropertyChanged("dir"); } }
-        public string station { get { return self.station; } set { self.station = value; NotifyPropertyChanged("station"); } }
-        public string timeToArrive { get { return self.timeToArrive; } set { self.timeToArrive = value; NotifyPropertyChanged("timeToArrive"); } }
+        public BusTagVM(BusTag b):base(b) { }
+        
+        public string busName { get { return base.busName; } set { if (base.busName != value) { base.busName = value; NotifyPropertyChanged("busName"); } } }
+        public string tag { get { return base.tag; } set {  if (base.tag != value) { base.tag = value; NotifyPropertyChanged("tag"); }} }
+        public BusDir dir { get { return base.dir; } set {  if (base.dir != value) { base.dir = value; NotifyPropertyChanged("dir"); }} }
+        public string station { get { return base.station; } set { if (base.station != value) { base.station = value; NotifyPropertyChanged("station"); } } }
+
+        string m_timeToArrive;
+        public string timeToArrive { get { return m_timeToArrive; } set { if (m_timeToArrive != value) { m_timeToArrive = value; NotifyPropertyChanged("timeToArrive"); } } }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(String propertyName)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
             if (null != handler)
-            {
                 handler(this, new PropertyChangedEventArgs(propertyName));
-            }
         }
     }
 }

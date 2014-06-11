@@ -22,6 +22,10 @@ namespace ScheduledTaskAgent1
 
 
 
+        public static Task<string> GetBusDueTime(BusTag b)
+        {
+            return GetBusDueTime(b.busName, b.station, b.dir);
+        }
         public static async Task<string> GetBusDueTime(string busName, string stationName, BusDir busDir)
         {
             string url = String.Format(@"http://pda.5284.com.tw/MQS/businfo3.jsp?Mode=1&Dir={1}&Route={0}&Stop={2}", Uri.EscapeUriString(busName), 

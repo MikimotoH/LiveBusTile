@@ -196,23 +196,34 @@ namespace ScheduledTaskAgent1
                 //Log.Create(false);
                 Log.Debug("enter OnInvoke");
 
-                Task<string>[] tasks = busTags.Select(bsd => BusTicker.GetBusDueTime(bsd.busName, bsd.station, bsd.dir)).ToArray();
-                Log.Debug("WaitAll begin");
-                Task.WaitAll(tasks);
-                Log.Debug("WaitAll end");
+                var timeToArrives = new string[busTags.Count];
+                var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
+                var waIdx = Enumerable.Range(0, busTags.Count).ToList();
 
-                for (int i = 0; i < tasks.Length; ++i)
-                    busTags[i].timeToArrive = tasks[i].Result;
+                while (tasks.Count > 0)
+                {
+                    Task.WaitAny(tasks.ToArray());
+                    for (int i = tasks.Count - 1; i >= 0; --i)
+                    {
+                        if (tasks.Count == 0)
+                            break;
+                        if (tasks[i].IsCompleted)
+                        {
+                            int fIdx = waIdx[i];
+                            timeToArrives[fIdx] = tasks[i].Result;
+                            waIdx.RemoveAt(i);
+                            tasks.RemoveAt(i);
+                        }
+                    }
+                }
                 
-                foreach (var bus in busTags)
-                    Log.Debug(String.Format("{0} {1} {2} {3}", bus.busName, bus.station, bus.dir, bus.timeToArrive));                
 
                 Deployment.Current.Dispatcher.BeginInvoke(() =>
                 {
                     Log.Debug("Deployment.Current.Dispatcher.BeginInvoke enter");
                     try
                     {   
-                        ScheduledAgent.SaveTileJpg(String.Join("\n", busTags.Select(b => b.busName + " "+ b.timeToArrive)));
+                        ScheduledAgent.SaveTileJpg(String.Join("\n", Enumerable.Zip(busTags, timeToArrives, (b,t)=>b.busName+" "+t)));
                         Log.Debug("SaveTileJpg()");
                         ScheduledAgent.UpdateTileImage(DateTime.Now.ToString("HH:mm:ss"));
                         Log.Debug("UpdateTileImage()");

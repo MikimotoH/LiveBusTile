@@ -39,7 +39,6 @@ namespace LiveBusTile
             //BuildLocalizedApplicationBar();
         }
 
-        const string m_tileImgPath = @"Shared\ShellContent\Tile.jpg";
 
         
         // Load data for the ViewModel Items
@@ -77,11 +76,6 @@ namespace LiveBusTile
         }
 
 
-
-        private void PinToStart_Click(object sender, RoutedEventArgs e)
-        {
-            //StartPeriodicAgent(refreshBusTileTaskName);
-        }
 
 
         const string refreshBusTileTaskName = "refreshBusTileTask";
@@ -170,23 +164,22 @@ namespace LiveBusTile
                 Log.Error(e.ToString());
             }
         }
-        static Random random = new Random();
-        Func<string> rndMinutes = () => random.Next(60).ToString("D2")+"分";
-        Func<string> rndHours = () => random.Next(60).ToString("D2") + "小時";
-        Func<string> rndStation = () => random.Next(99).ToString("D2") + "站";
-        Func<string> rndBus = () => "公車"+random.Next(1000);
-        Func<BusDir> rndDir = () => random.Next(1) == 1 ? BusDir.go : BusDir.back;
 
         private void ApplicationBarIconButton_Click(object sender, EventArgs e)
         {
             var btn = sender as ApplicationBarIconButton;
             switch (btn.Text)
             {
-                case "refresh":
-                    new Thread(() =>
+                case "pin":
                     {
-                        RefreshBusTime();
-                    }).Start();
+                        ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
+                        if (tile == null)
+                            ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), new StandardTileData { Title = DateTime.Now.ToString("HH:mm:ss") });
+                    }
+                    break;
+
+                case "refresh":
+                    RefreshBusTime();
                     
                     break;
                 case "add bus":
@@ -204,46 +197,58 @@ namespace LiveBusTile
             }
         }
 
-        static Task<string> GetBusDueTime(BusTagVM bus)
+
+
+        Action<Action> runAtUI = (a) => { Deployment.Current.Dispatcher.BeginInvoke(a); };
+
+        async void RefreshBusTime()
         {
-            return BusTicker.GetBusDueTime(bus.busName, bus.station, bus.dir);
-        }
+            prgbarWaiting.Visibility = Visibility.Visible;
+            foreach (var btn in this.ApplicationBar.Buttons)
+                (btn as ApplicationBarIconButton).IsEnabled = false;
+            this.ApplicationBar.IsMenuEnabled = false;
 
-        void RefreshBusTime()
-        {
-            Deployment.Current.Dispatcher.BeginInvoke(() =>
+            var busTags = DataService.m_list;
+            var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
+            var waIdx = Enumerable.Range(0, busTags.Count).ToList();
+            var timeToArrives = new string[busTags.Count];
+
+            while (tasks.Count>0)
             {
-                prgbarWaiting.Visibility = Visibility.Visible;
-                foreach (var btn in this.ApplicationBar.Buttons)
-                    (btn as ApplicationBarIconButton).IsEnabled = false;
-                this.ApplicationBar.IsMenuEnabled = false;
-            });
+                await Task.Run(() =>
+                {
+                    int j = Task.WaitAny(tasks.ToArray());
+                    //Debug.WriteLine("Task.WaitAny() returns "+j);
+                });
 
-            Task<string>[] tasks = new Task<String>[DataService.m_list.Count];
-            for (int i = 0; i < DataService.m_list.Count; ++i)
-                tasks[i] = GetBusDueTime(DataService.m_list[i]);
+                for (int i = tasks.Count - 1; i >= 0; --i)
+                {
+                    if (tasks.Count == 0)
+                        break;
+                    if (tasks[i].IsCompleted)
+                    {
+                        //Debug.WriteLine("i={0} IsCompleted", i);
+                        //Debug.WriteLine("waIdx[" + waIdx.Count + "]={" + String.Join(", ", waIdx.Select(x => x.ToString())) + "}");
 
-            Task.WaitAll(tasks);
-            Deployment.Current.Dispatcher.BeginInvoke(() =>
-            {
-                for (int i = 0; i < DataService.m_list.Count; ++i)
-                    DataService.m_list[i].timeToArrive = tasks[i].Result;
-                this.DataContext = new KeyedBusTagVM();
+                        int fIdx = waIdx[i];
+                        timeToArrives[fIdx] = tasks[i].Result;
+                        //Debug.WriteLine("fIdx={0}", fIdx);
+                        
+                        //Debug.WriteLine("busTags[fIdx={0}].timeToArrive = {1}", fIdx, timeToArrives[fIdx]);
+                        busTags[fIdx].timeToArrive = timeToArrives[fIdx];
+                        
+                        waIdx.RemoveAt(i);
+                        tasks.RemoveAt(i);
+                    }
+                }
+            }
 
-                foreach (var btn in this.ApplicationBar.Buttons)
-                    (btn as ApplicationBarIconButton).IsEnabled = true;
-                this.ApplicationBar.IsMenuEnabled = true;
-                prgbarWaiting.Visibility = Visibility.Collapsed;
+            //this.DataContext = new KeyedBusTagVM();
 
-            });
-            
-            //Log.Debug("WaitAll begin");
-            //foreach (var bus in DataService.m_list)
-            //{
-            //    bus.timeToArrive = GetBusDueTime(bus);
-            //    Log.Debug(String.Format("{0} {1} {2}", bus.busName, bus.station, bus.timeToArrive));
-            //}
-            //Log.Debug("WaitAll end");            
+            foreach (var btn in this.ApplicationBar.Buttons)
+                (btn as ApplicationBarIconButton).IsEnabled = true;
+            this.ApplicationBar.IsMenuEnabled = true;
+            prgbarWaiting.Visibility = Visibility.Collapsed;
         }
 
 
