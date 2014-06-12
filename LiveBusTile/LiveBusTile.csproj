@@ -36,6 +36,8 @@
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -118,9 +120,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\stations_noregion.json" />
-    <Content Include="Assets\buses_simple.json" />
-    <Content Include="Assets\my_bustags.json" />
+    <Content Include="Data\buses_simple.json" />
+    <Content Include="Data\default_bustags.json" />
+    <Content Include="Data\stations_noregion.json" />
     <None Include="packages.config" />
     <None Include="Properties\AppManifest.xml" />
     <None Include="Properties\WMAppManifest.xml">
@@ -128,7 +130,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\AlignmentGrid.png" />
     <Content Include="Assets\ApplicationIcon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -149,6 +150,7 @@
     </Content>
     <Content Include="Images\AppBar.AddBus.png" />
     <Content Include="Images\AppBar.AddStation.png" />
+    <Content Include="Images\AppBar.Pin.Png" />
     <Content Include="Images\Input.Char.png" />
     <Content Include="Images\AppBar.FindByChar.png" />
     <Content Include="Images\AppBar.FindByNumber.Png" />

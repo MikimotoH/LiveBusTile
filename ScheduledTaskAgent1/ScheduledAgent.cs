@@ -165,27 +165,30 @@ namespace ScheduledTaskAgent1
             return (interfaceType == 71 || interfaceType == 6);
         }
 
-        public static object m_busTagLock = new Object();
-        public static List<BusTag> m_busTags;
 
-        public static List<BusTag> GetBusTags()
+        public List<BusTag> GetBusTags()
         {
-            lock (m_busTagLock)
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.NullValueHandling = NullValueHandling.Ignore;
+
+            if (!IsolatedStorageFile.GetUserStoreForApplication().FileExists((@"Shared\ShellContent\saved_buses.json")))
             {
-                if (m_busTags == null)
+                using (StreamReader sr = new StreamReader(Application.GetResourceStream(new Uri("Data/default_bustags.json", UriKind.Relative)).Stream))
+                using (JsonReader reader = new JsonTextReader(sr))
                 {
-                    JsonSerializer serializer = new JsonSerializer();
-                    serializer.NullValueHandling = NullValueHandling.Ignore;
-                    var sri = Application.GetResourceStream(new Uri("my_bustags.json", UriKind.Relative));
-                    using (StreamReader sr = new StreamReader(sri.Stream))
-                    using (JsonReader reader = new JsonTextReader(sr))
-                    {
-                        m_busTags = serializer.Deserialize(reader, typeof(List<BusTag>)) as List<BusTag>;
-                    }
+                    return serializer.Deserialize(reader, typeof(List<BusTag>)) as List<BusTag>;
                 }
-                return m_busTags;
+            }
+
+            using (StreamReader sr = new StreamReader(
+                IsolatedStorageFile.GetUserStoreForApplication().OpenFile(@"Shared\ShellContent\saved_buses.json",
+                FileMode.Open, FileAccess.Read)))
+            using (JsonReader reader = new JsonTextReader(sr))
+            {
+                return serializer.Deserialize(reader, typeof(List<BusTag>)) as List<BusTag>;
             }
         }
+
 
         protected override void OnInvoke(ScheduledTask task)
         {

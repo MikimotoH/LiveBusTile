@@ -10,6 +10,10 @@ using LiveBusTile.Resources;
 using LiveBusTile.ViewModels;
 using ScheduledTaskAgent1;
 using Log = ScheduledTaskAgent1.Logger;
+using System.IO.IsolatedStorage;
+using System.IO;
+using LiveBusTile.Services;
+using System.Collections.ObjectModel;
 
 namespace LiveBusTile
 {
@@ -27,6 +31,9 @@ namespace LiveBusTile
         /// </summary>
         public App()
         {
+            Services.DataService.IsDesignTime = false;
+            IsolatedStorageFile.GetUserStoreForApplication().CreateDirectory(@"Shared\ShellContent");
+
             // Global handler for uncaught exceptions.
             UnhandledException += Application_UnhandledException;
 
@@ -72,6 +79,12 @@ namespace LiveBusTile
         private void Application_Activated(object sender, ActivatedEventArgs e)
         {
             Debug.WriteLine("Application_Deactivated");
+
+            if (e.IsApplicationInstancePreserved)
+            {
+                //ApplicationDataStatus = "application instance preserved.";
+                return;
+            }
             // Ensure that application state is restored appropriately
             MainPage.RemoveAgent();
         }
@@ -83,6 +96,7 @@ namespace LiveBusTile
             Debug.WriteLine("Application_Deactivated");
             MainPage.StartPeriodicAgent();
         }
+        
 
         // Code to execute when the application is closing (eg, user hit Back)
         // This code will not execute when the application is deactivated

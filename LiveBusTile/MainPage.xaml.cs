@@ -37,6 +37,8 @@ namespace LiveBusTile
             
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
+        
+            
         }
 
 
@@ -44,6 +46,8 @@ namespace LiveBusTile
         // Load data for the ViewModel Items
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            Services.DataService.LoadData();
+
             if (NavigationContext.QueryString.Count==0
                 || (NavigationContext.QueryString.ContainsKey("DefaultTitle") && NavigationContext.QueryString["DefaultTitle"] == "FromTile" ))
             {
@@ -56,23 +60,21 @@ namespace LiveBusTile
             }
             else if(NavigationContext.QueryString.ContainsKey("Op"))
             {
-                var newBusTag = new BusTag
+                
+                Services.DataService.AddBus(new BusTag
                 {
                     busName = NavigationContext.QueryString["busName"],
                     station = NavigationContext.QueryString["station"],
                     dir = (BusDir)int.Parse(NavigationContext.QueryString["dir"]),
                     tag = NavigationContext.QueryString["tag"]
-                };
-                lock (ScheduledAgent.m_busTagLock)
-                {
-                    ScheduledAgent.m_busTags.Add(newBusTag);
-                }
-                BusCatLLS.DataContext = 
-                this.DataContext = new KeyedBusTagVM();
+                });
             }
+
         }
+
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            Services.DataService.SaveData();
         }
 
 
@@ -184,12 +186,12 @@ namespace LiveBusTile
                     break;
                 case "add bus":
                     //NavigationService.Navigate(new Uri("/AddBus.xaml", UriKind.Relative));
-                    DataService.m_list.Add(new BusTagVM( DataService.RandomBusTag()));
+                    Services.DataService.AddBus(Services.DataService.RandomBusTag());
                     DataContext = new KeyedBusTagVM();
                     break;
                 case "add station":
                     //NavigationService.Navigate(new Uri("/AddStation.xaml", UriKind.Relative));
-                    DataService.m_list.Add(new BusTagVM( DataService.RandomBusTag()));
+                    Services.DataService.AddBus(Services.DataService.RandomBusTag());
                     DataContext = new KeyedBusTagVM();
                     break;
                 default:
@@ -208,7 +210,7 @@ namespace LiveBusTile
                 (btn as ApplicationBarIconButton).IsEnabled = false;
             this.ApplicationBar.IsMenuEnabled = false;
 
-            var busTags = DataService.m_list;
+            var busTags = LiveBusTile.Services.DataService.GetBuses();
             var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
             var waIdx = Enumerable.Range(0, busTags.Count).ToList();
             var timeToArrives = new string[busTags.Count];
@@ -234,7 +236,7 @@ namespace LiveBusTile
                         timeToArrives[fIdx] = tasks[i].Result;
                         //Debug.WriteLine("fIdx={0}", fIdx);
                         
-                        //Debug.WriteLine("busTags[fIdx={0}].timeToArrive = {1}", fIdx, timeToArrives[fIdx]);
+                        Debug.WriteLine("busTags[fIdx={0}].timeToArrive = {1}", fIdx, timeToArrives[fIdx]);
                         busTags[fIdx].timeToArrive = timeToArrives[fIdx];
                         
                         waIdx.RemoveAt(i);
@@ -243,7 +245,9 @@ namespace LiveBusTile
                 }
             }
 
-            //this.DataContext = new KeyedBusTagVM();
+            //var vm = new KeyedBusTagVM();
+            //this.DataContext = vm;
+            //BusCatLLS.ItemsSource = vm.GroupedBuses;
 
             foreach (var btn in this.ApplicationBar.Buttons)
                 (btn as ApplicationBarIconButton).IsEnabled = true;

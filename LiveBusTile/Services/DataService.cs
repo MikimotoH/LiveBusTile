@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,28 +15,95 @@ namespace LiveBusTile.Services
 {
     public static class DataService
     {
-        public static ObservableCollection<BusTagVM> m_list;
+        static ObservableCollection<BusTagVM> m_busTags;
+        public static bool IsDesignTime = true;
+        public static ObservableCollection<BusTagVM> GetBuses()
+        {
+            if (m_busTags == null)
+                LoadData();
+            return m_busTags;
+        }
 
-        //public static ObservableCollection<BusTagVM> m_list = new ObservableCollection<BusTagVM>
+        //public static List<BusTag> GetBusTags()
         //{
-        //        new BusTagVM{ tag="上班", busName="橘2", station="秀山國小", dir=BusDir.back, timeToArrive="12分"},
-        //        new BusTagVM{ tag="上班", busName="275", station="秀山村", dir=BusDir.go, timeToArrive="無資料"},
-        //        new BusTagVM{ tag="上班", busName="敦化幹線", station="秀景里", dir=BusDir.back, timeToArrive="未班車已過"},
-        //        new BusTagVM{ tag="回家", busName="信義", station="公館", dir=BusDir.go, timeToArrive="已過站"},
-        //        new BusTagVM{ tag="回家", busName="254", station="世貿", dir=BusDir.go, timeToArrive="22分"},
-        //        new BusTagVM{ tag="回家", busName="藍12", station="台北101", dir=BusDir.go, timeToArrive="90分"},
-        //};
+        //    if (m_busTags == null)
+        //        LoadData();
+        //    return m_busTags;
+        //}
+
+        public static void AddBus(BusTag bus)
+        {
+            if (m_busTags == null)
+                LoadData();
+            m_busTags.Add(new BusTagVM(bus));
+        }
+
+        public static void LoadData()
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.NullValueHandling = NullValueHandling.Ignore;
+
+            if (IsDesignTime)
+            {
+                using (StreamReader sr = new StreamReader(Application.GetResourceStream(new Uri("Data/default_bustags.json", UriKind.Relative)).Stream))
+                using (JsonReader reader = new JsonTextReader(sr))
+                {
+                    var buses = serializer.Deserialize(reader, typeof(List<BusTag>)) as List<BusTag>;
+                    m_busTags = new ObservableCollection<BusTagVM>(buses.Select(x=>new BusTagVM(x)));
+                }
+                //m_busTags = new List<BusTag> { 
+                //    new BusTag{ busName="公車", tag="上班", station="頂溪", dir=BusDir.go},
+                //    new BusTag{ busName="信義幹線", tag="下班", station="世貿", dir=BusDir.go}
+                //};
+                return;
+            }
+
+            if (!IsolatedStorageFile.GetUserStoreForApplication().FileExists((@"Shared\ShellContent\saved_buses.json")))
+            {
+                using (StreamReader sr = new StreamReader(Application.GetResourceStream(new Uri("Data/default_bustags.json", UriKind.Relative)).Stream))
+                using (JsonReader reader = new JsonTextReader(sr))
+                {
+                    var buses = serializer.Deserialize(reader, typeof(List<BusTag>)) as List<BusTag>;
+                    m_busTags = new ObservableCollection<BusTagVM>(buses.Select(x => new BusTagVM(x)));
+                }
+                return;
+            }
+
+            using (StreamReader sr = new StreamReader(
+                IsolatedStorageFile.GetUserStoreForApplication().OpenFile(@"Shared\ShellContent\saved_buses.json",
+                FileMode.Open, FileAccess.Read)))
+            using (JsonReader reader = new JsonTextReader(sr))
+            {
+                var buses = serializer.Deserialize(reader, typeof(List<BusTag>)) as List<BusTag>;
+                m_busTags = new ObservableCollection<BusTagVM>(buses.Select(x => new BusTagVM(x)));
+            }
+        }
+
+        public static void SaveData()
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.NullValueHandling = NullValueHandling.Ignore;
+
+            using (StreamWriter sw = new StreamWriter(
+                IsolatedStorageFile.GetUserStoreForApplication().OpenFile(@"Shared\ShellContent\saved_buses.json",
+                FileMode.Create, FileAccess.Write)))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                var buses = m_busTags.Select(x => new BusTag { busName = x.busName, station = x.station, dir = x.dir, tag = x.tag }).ToArray();
+                serializer.Serialize(writer, buses);
+            }
+        }
 
         static Random rnd = new Random();
         static Dictionary<string, StationPair> m_all_buses;
-        
+
         public static BusTag RandomBusTag()
         {
-            if(m_all_buses==null)
+            if (m_all_buses == null)
             {
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.NullValueHandling = NullValueHandling.Ignore;
-                var sri = Application.GetResourceStream(new Uri("Assets/buses_simple.json", UriKind.Relative));
+                var sri = Application.GetResourceStream(new Uri("Data/buses_simple.json", UriKind.Relative));
                 using (StreamReader sr = new StreamReader(sri.Stream))
                 using (JsonReader reader = new JsonTextReader(sr))
                 {
@@ -46,30 +114,10 @@ namespace LiveBusTile.Services
             StationPair st = m_all_buses[busName];
 
             int k = rnd.Next(st.stations_go.Length + st.stations_back.Length);
-            if(k < st.stations_go.Length)
-                return new BusTag{ busName = busName, dir=BusDir.go, station=st.stations_go[k], tag="亂數"};
+            if (k < st.stations_go.Length)
+                return new BusTag { busName = busName, dir = BusDir.go, station = st.stations_go[k], tag = "亂數" };
             else
                 return new BusTag { busName = busName, dir = BusDir.back, station = st.stations_back[k - st.stations_go.Length], tag = "亂數" };
-        }
-
-        public static ObservableCollection<BusTagVM> GetBuses()
-        {
-            if (m_list==null)
-            {
-                List<BusTag> busList;
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.NullValueHandling = NullValueHandling.Ignore;
-                var sri = Application.GetResourceStream(new Uri("Assets/my_bustags.json", UriKind.Relative));
-                using (StreamReader sr = new StreamReader(sri.Stream))
-                using (JsonReader reader = new JsonTextReader(sr))
-                {
-                    busList = serializer.Deserialize(reader, typeof(List<BusTag>)) as List<BusTag>;
-                }
-                m_list = new ObservableCollection<BusTagVM>();
-                foreach (var b in busList)
-                    m_list.Add(new BusTagVM(b));
-            }
-            return m_list;
         }
     }
 }
