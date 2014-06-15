@@ -31,6 +31,7 @@ namespace LiveBusTile
         /// </summary>
         public App()
         {
+            Log.Debug("App ctor() {0} {1}".Fmt(Debugger.IsAttached, Application.Current.ApplicationLifetimeObjects.Count));
             Services.DataService.IsDesignTime = false;
             IsolatedStorageFile.GetUserStoreForApplication().CreateDirectory(@"Shared\ShellContent");
 
@@ -66,25 +67,23 @@ namespace LiveBusTile
                 PhoneApplicationService.Current.UserIdleDetectionMode = IdleDetectionMode.Disabled;
             }
             //Log.Create(true);
+            MainPage.RemoveAgent();
         }
 
         // Code to execute when the application is launching (eg, from Start)
         // This code will not execute when the application is reactivated
         private void Application_Launching(object sender, LaunchingEventArgs e)
         {
+            Log.Debug("e="+e.ToString());
         }
 
         // Code to execute when the application is activated (brought to foreground)
         // This code will not execute when the application is first launched
         private void Application_Activated(object sender, ActivatedEventArgs e)
         {
-            Debug.WriteLine("Application_Deactivated");
+            Log.Debug("e.IsApplicationInstancePreserved=" + e.IsApplicationInstancePreserved);
+            DataService.LoadData();
 
-            if (e.IsApplicationInstancePreserved)
-            {
-                //ApplicationDataStatus = "application instance preserved.";
-                return;
-            }
             // Ensure that application state is restored appropriately
             MainPage.RemoveAgent();
         }
@@ -93,7 +92,8 @@ namespace LiveBusTile
         // This code will not execute when the application is closing
         private void Application_Deactivated(object sender, DeactivatedEventArgs e)
         {
-            Debug.WriteLine("Application_Deactivated");
+            Log.Debug("e.Reason="+e.Reason);
+            DataService.SaveData();
             MainPage.StartPeriodicAgent();
         }
         
@@ -102,6 +102,7 @@ namespace LiveBusTile
         // This code will not execute when the application is deactivated
         private void Application_Closing(object sender, ClosingEventArgs e)
         {
+            Log.Debug("Application_Closing, e=" + e );
             // Ensure that required application state is persisted here.
             //Log.Close();
         }
@@ -109,6 +110,7 @@ namespace LiveBusTile
         // Code to execute if a navigation fails
         private void RootFrame_NavigationFailed(object sender, NavigationFailedEventArgs e)
         {
+            Log.Debug("e={{ Exception={0}, e.Handled={1}, e.Uri={2} }}".Fmt(e.Exception, e.Handled, e.Uri));
             if (Debugger.IsAttached)
             {
                 // A navigation has failed; break into the debugger
@@ -119,7 +121,8 @@ namespace LiveBusTile
         // Code to execute on Unhandled Exceptions
         private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
-            Log.Error("Application_UnhandledException() \n" + e);
+            Log.Error(String.Format("e={{ ExceptionObject={{ Message={0},StackTrace={1} }},  Handled={2} }}", 
+                e.ExceptionObject.Message, e.ExceptionObject.StackTrace, e.Handled));
             if (Debugger.IsAttached)
             {
                 // An unhandled exception has occurred; break into the debugger
@@ -135,6 +138,7 @@ namespace LiveBusTile
         // Do not add any additional code to this method
         private void InitializePhoneApplication()
         {
+            Log.Debug("phoneApplicationInitialized=" + phoneApplicationInitialized);
             if (phoneApplicationInitialized)
                 return;
 
@@ -156,6 +160,7 @@ namespace LiveBusTile
         // Do not add any additional code to this method
         private void CompleteInitializePhoneApplication(object sender, NavigationEventArgs e)
         {
+            Log.Debug("e=" + e.DumpStr());
             // Set the root visual to allow the application to render
             if (RootVisual != RootFrame)
                 RootVisual = RootFrame;
@@ -166,6 +171,8 @@ namespace LiveBusTile
 
         private void CheckForResetNavigation(object sender, NavigationEventArgs e)
         {
+            Log.Debug("e="+e.DumpStr());
+
             // If the app has received a 'reset' navigation, then we need to check
             // on the next navigation to see if the page stack should be reset
             if (e.NavigationMode == NavigationMode.Reset)
@@ -174,6 +181,8 @@ namespace LiveBusTile
 
         private void ClearBackStackAfterReset(object sender, NavigationEventArgs e)
         {
+            Log.Debug("e=" + e.DumpStr());
+
             // Unregister the event so it doesn't get called again
             RootFrame.Navigated -= ClearBackStackAfterReset;
 
@@ -244,6 +253,11 @@ namespace LiveBusTile
 
                 throw;
             }
+        }
+
+        private void PhoneApplicationService_RunningInBackground(object sender, RunningInBackgroundEventArgs e)
+        {
+            Log.Debug("e=" + e.ToString());
         }
     }
 }

@@ -4,6 +4,7 @@ using ScheduledTaskAgent1;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
@@ -17,19 +18,24 @@ namespace LiveBusTile.Services
     {
         static ObservableCollection<BusTagVM> m_busTags;
         public static bool IsDesignTime = true;
-        public static ObservableCollection<BusTagVM> GetBuses()
-        {
-            if (m_busTags == null)
-                LoadData();
-            return m_busTags;
-        }
 
-        //public static List<BusTag> GetBusTags()
-        //{
-        //    if (m_busTags == null)
-        //        LoadData();
-        //    return m_busTags;
-        //}
+        static DataService()
+        {
+            Debug.WriteLine("DataService ctor()");
+        }
+        
+        public static ObservableCollection<BusTagVM> BusTags
+        {
+            get{
+                if (m_busTags == null)
+                    LoadData();
+                return m_busTags;
+            }
+            set
+            {
+                m_busTags = value;
+            }
+        }
 
         public static void AddBus(BusTag bus)
         {
@@ -51,10 +57,6 @@ namespace LiveBusTile.Services
                     var buses = serializer.Deserialize(reader, typeof(List<BusTag>)) as List<BusTag>;
                     m_busTags = new ObservableCollection<BusTagVM>(buses.Select(x=>new BusTagVM(x)));
                 }
-                //m_busTags = new List<BusTag> { 
-                //    new BusTag{ busName="公車", tag="上班", station="頂溪", dir=BusDir.go},
-                //    new BusTag{ busName="信義幹線", tag="下班", station="世貿", dir=BusDir.go}
-                //};
                 return;
             }
 
@@ -94,24 +96,33 @@ namespace LiveBusTile.Services
             }
         }
 
-        static Random rnd = new Random();
+        #region AllBuses
         static Dictionary<string, StationPair> m_all_buses;
+        public static Dictionary<string, StationPair> AllBuses
+        {
+            get
+            {
+                if (m_all_buses == null)
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.NullValueHandling = NullValueHandling.Ignore;
+                    var sri = Application.GetResourceStream(new Uri("Data/buses_simple.json", UriKind.Relative));
+                    using (StreamReader sr = new StreamReader(sri.Stream))
+                    using (JsonReader reader = new JsonTextReader(sr))
+                    {
+                        m_all_buses = serializer.Deserialize(reader, typeof(Dictionary<string, StationPair>)) as Dictionary<string, StationPair>;
+                    }
+                }
+                return m_all_buses;
+            }
+        }
+        #endregion //AllBuses
 
+        static Random rnd = new Random();
         public static BusTag RandomBusTag()
         {
-            if (m_all_buses == null)
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.NullValueHandling = NullValueHandling.Ignore;
-                var sri = Application.GetResourceStream(new Uri("Data/buses_simple.json", UriKind.Relative));
-                using (StreamReader sr = new StreamReader(sri.Stream))
-                using (JsonReader reader = new JsonTextReader(sr))
-                {
-                    m_all_buses = serializer.Deserialize(reader, typeof(Dictionary<string, StationPair>)) as Dictionary<string, StationPair>;
-                }
-            }
-            string busName = m_all_buses.Keys.ElementAt(rnd.Next(m_all_buses.Keys.Count));
-            StationPair st = m_all_buses[busName];
+            string busName = AllBuses.Keys.ElementAt(rnd.Next(AllBuses.Keys.Count));
+            StationPair st = AllBuses[busName];
 
             int k = rnd.Next(st.stations_go.Length + st.stations_back.Length);
             if (k < st.stations_go.Length)

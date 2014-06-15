@@ -64,11 +64,11 @@ namespace ScheduledTaskAgent1
         //    m_stm.Flush();
         //}
 
-        static string timeFmt = "yyMMdd_HH:mm:ss.fff";
+        
 
         static void Log(LogLevel logLevel, string func, string path, int line, string msg)
         {
-            string msg1 = String.Format("{0}<{1}>{2}:{3}:{4} [{5}] {6}", DateTime.Now.ToString(timeFmt),
+            string msg1 = String.Format("{0}<{1}>{2}:{3}:{4} [{5}] {6}", DateTime.Now.ToString("yyMMdd_HH:mm:ss.fff"),
                 logLevel.ToString(), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId, 
                 msg);
             System.Diagnostics.Debug.WriteLine(msg1);
@@ -84,25 +84,23 @@ namespace ScheduledTaskAgent1
 
         //public delegate void LogFunc(string msg, string func, string path, int line);
 
+        [Conditional("DEBUG")]
+        [DebuggerStepThrough]
         public static void Error(string msg, 
             [CallerMemberName] string func="",
             [CallerFilePath] string path="",
             [CallerLineNumber] int line=0)
         {
-            //System.Diagnostics.Debug.WriteLine("{0}<Error>{1}:{2}:{3} [{4}] Logger.Error() enter m_stm={5}",
-            //    DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-            //    , m_stm);
             Log(LogLevel.Error, func, path, line, msg);
         }
 
+        [Conditional("DEBUG")]
+        [DebuggerStepThrough]
         public static void Debug(string msg,
             [CallerMemberName] string func = "",
             [CallerFilePath] string path = "",
             [CallerLineNumber] int line = 0)
         {
-            //System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Debug() enter m_stm={5}",
-            //    DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-            //    , m_stm);
             Log(LogLevel.Debug, func, path, line, msg);
         }
 

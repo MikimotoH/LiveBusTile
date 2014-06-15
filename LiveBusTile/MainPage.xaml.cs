@@ -19,15 +19,13 @@ using System.IO;
 using ScheduledTaskAgent1;
 using LiveBusTile.Services;
 using System.Threading;
+using System.Collections.ObjectModel;
 
 
 namespace LiveBusTile
 {
     public partial class MainPage : PhoneApplicationPage
     {
-        static PeriodicTask refreshBusTileTask;
-
-        // Constructor
         public MainPage()
         {
             InitializeComponent();
@@ -37,8 +35,6 @@ namespace LiveBusTile
             
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
-        
-            
         }
 
 
@@ -46,61 +42,53 @@ namespace LiveBusTile
         // Load data for the ViewModel Items
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            Services.DataService.LoadData();
+            Log.Debug("e=" + e.DumpStr());
 
             if (NavigationContext.QueryString.Count==0
-                || (NavigationContext.QueryString.ContainsKey("DefaultTitle") && NavigationContext.QueryString["DefaultTitle"] == "FromTile" ))
+                || NavigationContext.QueryString.GetValue("DefaultTitle", "") == "FromTile" )
             {
                 this.DataContext = new KeyedBusTagVM();
-                ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
-
-                //if (tile == null)
-                //    ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), new StandardTileData { Title = DateTime.Now.ToString("HH:mm:ss") });
-
             }
-            else if(NavigationContext.QueryString.ContainsKey("Op"))
-            {
-                
-                Services.DataService.AddBus(new BusTag
+            else if(NavigationContext.QueryString.GetValue("Op", "") == "Add")
+            {                
+                DataService.AddBus(new BusTag
                 {
                     busName = NavigationContext.QueryString["busName"],
                     station = NavigationContext.QueryString["station"],
-                    dir = (BusDir)int.Parse(NavigationContext.QueryString["dir"]),
+                    dir = NavigationContext.QueryString["dir"]=="g"?BusDir.go:BusDir.back,
                     tag = NavigationContext.QueryString["tag"]
                 });
+                DataContext = new KeyedBusTagVM();
+                NavigationContext.QueryString.Clear();
             }
 
         }
 
+
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            Services.DataService.SaveData();
+            Log.Debug("e="+e.DumpStr());
         }
 
 
-
-
-        const string refreshBusTileTaskName = "refreshBusTileTask";
-        const string refreshBusTileTaskDesc = "Refresh Bus Due Time on Tile at Hub (HomeScreen)";
         public static void StartPeriodicAgent()
         {
-            string taskName = refreshBusTileTaskName;
+            string taskName = "refreshBusTileTask";
             // Obtain a reference to the period task, if one exists
-            refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
+            PeriodicTask refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
 
             // If the task already exists and background agent is enabled for the
             // app, remove the task and then add it again to update 
             // the schedule.
             if (refreshBusTileTask != null)
             {
-                Log.Debug("RemoveAgent()");
                 RemoveAgent();
             }
             refreshBusTileTask = new PeriodicTask(taskName);
 
             // The description is required for periodic agents. This is the string that the user
             // will see in the background services Settings page on the phone.
-            refreshBusTileTask.Description = refreshBusTileTaskDesc;
+            refreshBusTileTask.Description = "Refresh Bus Due Time on Tile at Hub (HomeScreen)";
 
             // Place the call to add a periodic agent. This call must be placed in 
             // a try block in case the user has disabled agents.
@@ -144,21 +132,18 @@ namespace LiveBusTile
 
         public static void RemoveAgent()
         {
-            string taskName = refreshBusTileTaskName;
-            //refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
-
-            // If the task already exists and background agent is enabled for the
-            // app, remove the task and then add it again to update 
-            // the schedule.
-            //if (refreshBusTileTask != null)
-            //{
-                //Log.Debug("RemoveAgent()");
-                //RemoveAgent();
-            //}
+            string taskName = "refreshBusTileTask";
+            Log.Debug("taskName="+taskName);
+            PeriodicTask refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
+            if (refreshBusTileTask == null)
+            {
+                Log.Debug("ScheduledActionService.Find("+taskName+") returns null.");
+                return;
+            }
 
             try
             {
-                Log.Debug("ScheduledActionService.Remove(busName)");
+                Log.Debug("ScheduledActionService.Remove("+taskName+")");
                 ScheduledActionService.Remove(taskName);
             }
             catch (Exception e)
@@ -170,6 +155,7 @@ namespace LiveBusTile
         private void ApplicationBarIconButton_Click(object sender, EventArgs e)
         {
             var btn = sender as ApplicationBarIconButton;
+            Log.Debug("btn.Text=" + btn.Text);
             switch (btn.Text)
             {
                 case "pin":
@@ -182,16 +168,15 @@ namespace LiveBusTile
 
                 case "refresh":
                     RefreshBusTime();
-                    
                     break;
                 case "add bus":
-                    //NavigationService.Navigate(new Uri("/AddBus.xaml", UriKind.Relative));
-                    Services.DataService.AddBus(Services.DataService.RandomBusTag());
-                    DataContext = new KeyedBusTagVM();
+                    NavigationService.Navigate(new Uri("/AddBus.xaml", UriKind.Relative));
+                    //DataService.AddBus(DataService.RandomBusTag());
+                    //DataContext = new KeyedBusTagVM();
                     break;
                 case "add station":
                     //NavigationService.Navigate(new Uri("/AddStation.xaml", UriKind.Relative));
-                    Services.DataService.AddBus(Services.DataService.RandomBusTag());
+                    DataService.AddBus(DataService.RandomBusTag());
                     DataContext = new KeyedBusTagVM();
                     break;
                 default:
@@ -210,7 +195,7 @@ namespace LiveBusTile
                 (btn as ApplicationBarIconButton).IsEnabled = false;
             this.ApplicationBar.IsMenuEnabled = false;
 
-            var busTags = LiveBusTile.Services.DataService.GetBuses();
+            var busTags = DataService.BusTags;
             var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
             var waIdx = Enumerable.Range(0, busTags.Count).ToList();
             var timeToArrives = new string[busTags.Count];
@@ -245,10 +230,6 @@ namespace LiveBusTile
                 }
             }
 
-            //var vm = new KeyedBusTagVM();
-            //this.DataContext = vm;
-            //BusCatLLS.ItemsSource = vm.GroupedBuses;
-
             foreach (var btn in this.ApplicationBar.Buttons)
                 (btn as ApplicationBarIconButton).IsEnabled = true;
             this.ApplicationBar.IsMenuEnabled = true;
@@ -272,5 +253,26 @@ namespace LiveBusTile
         //    ApplicationBarMenuItem appBarMenuItem = new ApplicationBarMenuItem(AppResources.AppBarMenuItemText);
         //    ApplicationBar.MenuItems.Add(appBarMenuItem);
         //}
+    }
+
+    public static class ExtensionMethods
+    {
+        public static string DumpStr(this NavigationEventArgs e)
+        {
+            return String.Format("{{ Uri={0}, NavigationMode={1}, IsNavigationInitiator={2}, e.Content={3} }}", 
+                e.Uri, e.NavigationMode, e.IsNavigationInitiator, e.Content);
+        }
+
+        public static TValue GetValue<TKey,TValue>(this IDictionary<TKey,TValue> dict, TKey key, TValue defaultValue)
+        {
+            if (!dict.ContainsKey(key)) 
+                return defaultValue;
+            return dict[key];
+        }
+
+        public static String Fmt(this String fmt, params object[] args)
+        {
+            return String.Format(fmt, args);
+        }
     }
 }

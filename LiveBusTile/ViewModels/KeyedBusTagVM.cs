@@ -30,7 +30,7 @@ namespace LiveBusTile.ViewModels
             get
             {
                 IEnumerable<KeyedBusTagVM> groupedBuses =
-                    from bus in DataService.GetBuses()
+                    from bus in DataService.BusTags
                     orderby bus.tag
                     group bus by bus.tag into busesByTag
                     select new KeyedBusTagVM(busesByTag);
