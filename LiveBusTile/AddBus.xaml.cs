@@ -63,12 +63,13 @@ namespace LiveBusTile
             }
         }
 
-        private void btnEnter_Tap(object sender, GestureEventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        private void btnEnter_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
             NavigationService.Navigate(new Uri("/AddBusStation.xaml?busName=" + tbBusName.Text, UriKind.Relative));
         }
 
-        private void llsBuses_Tap(object sender, GestureEventArgs e)
+        private void llsBuses_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
             Log.Debug("");
             if (llsBuses.SelectedItem == null)

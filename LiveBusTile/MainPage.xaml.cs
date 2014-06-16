@@ -37,19 +37,17 @@ namespace LiveBusTile
             //BuildLocalizedApplicationBar();
         }
 
-
         
         // Load data for the ViewModel Items
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             Log.Debug("e=" + e.DumpStr());
+            Log.Debug("NavigationContext.QueryString=" + NavigationContext.QueryString.DumpStr());
+            Log.Debug("App.RecusiveBack=" + App.RecusiveBack);
 
-            if (NavigationContext.QueryString.Count==0
-                || NavigationContext.QueryString.GetValue("DefaultTitle", "") == "FromTile" )
-            {
-                this.DataContext = new KeyedBusTagVM();
-            }
-            else if(NavigationContext.QueryString.GetValue("Op", "") == "Add")
+
+            if (NavigationContext.QueryString.GetValue("Op", "") == "Add" 
+                && App.RecusiveBack==true)
             {                
                 DataService.AddBus(new BusTag
                 {
@@ -58,16 +56,46 @@ namespace LiveBusTile
                     dir = NavigationContext.QueryString["dir"]=="g"?BusDir.go:BusDir.back,
                     tag = NavigationContext.QueryString["tag"]
                 });
-                DataContext = new KeyedBusTagVM();
-                NavigationContext.QueryString.Clear();
+                App.RecusiveBack = false;
             }
+            DataContext = new KeyedBusTagVM();
 
+            Log.Debug("exit ; NavigationContext.QueryString.Clear()");
+            NavigationContext.QueryString.Clear();
         }
 
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             Log.Debug("e="+e.DumpStr());
+            Log.Debug("NavigationContext.QueryString=" + NavigationContext.QueryString.DumpStr());
+
+            Log.Debug("exit ; NavigationContext.QueryString.Clear()");
+            NavigationContext.QueryString.Clear();
+        }
+        
+        protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)
+        {
+            Log.Debug("NavigationService.CanGoBack="+NavigationService.CanGoBack);
+            if (NavigationService.CanGoBack)
+            {
+                Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
+                    + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
+                while (NavigationService.CanGoBack)
+                {
+                    JournalEntry jo = NavigationService.RemoveBackEntry();
+                    Log.Debug("jo.Source=" + jo.Source);
+                    Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
+                        + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
+                }
+                Log.Debug("NavigationService.BackStack.Count()=" + NavigationService.BackStack.Count());
+            }
+
+            Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
+                + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
+            Log.Debug("NavigationService.CanGoBack=" + NavigationService.CanGoBack);
+
+            base.OnBackKeyPress(e);
         }
 
 
@@ -151,34 +179,55 @@ namespace LiveBusTile
                 Log.Error(e.ToString());
             }
         }
+        private void ApplicationBarMenuItem_Click(object sender, EventArgs e)
+        {
+            var mi = sender as ApplicationBarMenuItem;
+            HandleApplicationBar(mi.Text);
+        }
 
         private void ApplicationBarIconButton_Click(object sender, EventArgs e)
         {
             var btn = sender as ApplicationBarIconButton;
-            Log.Debug("btn.Text=" + btn.Text);
-            switch (btn.Text)
+            HandleApplicationBar(btn.Text);
+        }
+
+        void HandleApplicationBar(string text)
+        {
+            switch (text)
             {
-                case "pin":
+                case "釘至桌面":
                     {
+                        DataService.SaveData();
+                        BusTag[] busTags = DataService.BusTags.Select(x => x.BusTag).ToArray();
+                        ScheduledTaskAgent1.ScheduledAgent.GenerateTileJpg(
+                            "\n".Joyn(busTags.Select(x => x.busName + " " + x.timeToArrive)));
+
                         ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
+                        var tileData = new StandardTileData
+                        {
+                            Title = DateTime.Now.ToString("HH:mm:ss"),
+                            BackgroundImage = new Uri("isostore:/" + @"Shared\ShellContent\Tile.jpg", UriKind.Absolute),
+                        };
                         if (tile == null)
-                            ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), new StandardTileData { Title = DateTime.Now.ToString("HH:mm:ss") });
+                            ShellTile.Create( new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative),  tileData);
+                        else
+                            tile.Update(tileData);
                     }
                     break;
 
-                case "refresh":
+                case "刷新時間":
                     RefreshBusTime();
                     break;
-                case "add bus":
+                case "新增巴士":
                     NavigationService.Navigate(new Uri("/AddBus.xaml", UriKind.Relative));
                     //DataService.AddBus(DataService.RandomBusTag());
                     //DataContext = new KeyedBusTagVM();
                     break;
-                case "add station":
+                //case "add station":
                     //NavigationService.Navigate(new Uri("/AddStation.xaml", UriKind.Relative));
-                    DataService.AddBus(DataService.RandomBusTag());
-                    DataContext = new KeyedBusTagVM();
-                    break;
+                    //DataService.AddBus(DataService.RandomBusTag());
+                    //DataContext = new KeyedBusTagVM();
+                    //break;
                 default:
                     break;
             }
@@ -215,7 +264,7 @@ namespace LiveBusTile
                     if (tasks[i].IsCompleted)
                     {
                         //Debug.WriteLine("i={0} IsCompleted", i);
-                        //Debug.WriteLine("waIdx[" + waIdx.Count + "]={" + String.Join(", ", waIdx.Select(x => x.ToString())) + "}");
+                        //Debug.WriteLine("waIdx[" + waIdx.Count + "]={" + ",".Joyn(waIdx.Select(x => x.ToString())) + "}");
 
                         int fIdx = waIdx[i];
                         timeToArrives[fIdx] = tasks[i].Result;
@@ -236,6 +285,34 @@ namespace LiveBusTile
             prgbarWaiting.Visibility = Visibility.Collapsed;
         }
 
+        private void Item_Delete_Click(object sender, RoutedEventArgs e)
+        {
+            BusTagVM bt = (sender as MenuItem).DataContext as BusTagVM;
+            DataService.DeleteBus(bt);
+            DataContext = new KeyedBusTagVM();
+        }
+
+        private void Item_Details_Click(object sender, RoutedEventArgs e)
+        {
+            GotoDetailsPage((sender as MenuItem).DataContext as BusTagVM);
+        }
+
+        private void BusCatLLS_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            if (BusCatLLS.SelectedItem == null)
+            {
+                Log.Debug("e={{ OriginalSource={0}, Handled={1} }}".Fmt(e.OriginalSource, e.Handled));
+                return;
+            }
+            GotoDetailsPage(BusCatLLS.SelectedItem as BusTagVM);
+        }
+        void GotoDetailsPage(BusTagVM bt)
+        {
+            NavigationService.Navigate(new Uri(
+                "/BusStationDetails.xaml?busName={0}&station={1}&dir={2}&tag={3}".Fmt(bt.busName, bt.station, bt.dir, bt.tag), UriKind.Relative));
+        }
+
+
 
 
         // Sample code for building a localized ApplicationBar
@@ -255,24 +332,4 @@ namespace LiveBusTile
         //}
     }
 
-    public static class ExtensionMethods
-    {
-        public static string DumpStr(this NavigationEventArgs e)
-        {
-            return String.Format("{{ Uri={0}, NavigationMode={1}, IsNavigationInitiator={2}, e.Content={3} }}", 
-                e.Uri, e.NavigationMode, e.IsNavigationInitiator, e.Content);
-        }
-
-        public static TValue GetValue<TKey,TValue>(this IDictionary<TKey,TValue> dict, TKey key, TValue defaultValue)
-        {
-            if (!dict.ContainsKey(key)) 
-                return defaultValue;
-            return dict[key];
-        }
-
-        public static String Fmt(this String fmt, params object[] args)
-        {
-            return String.Format(fmt, args);
-        }
-    }
 }

@@ -68,7 +68,7 @@ namespace ScheduledTaskAgent1
 
         static void Log(LogLevel logLevel, string func, string path, int line, string msg)
         {
-            string msg1 = String.Format("{0}<{1}>{2}:{3}:{4} [{5}] {6}", DateTime.Now.ToString("yyMMdd_HH:mm:ss.fff"),
+            string msg1 = "{0}<{1}>{2}:{3}:{4} [{5}] {6}".Fmt( DateTime.Now.ToString("yyMMdd_HH:mm:ss.fff"),
                 logLevel.ToString(), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId, 
                 msg);
             System.Diagnostics.Debug.WriteLine(msg1);

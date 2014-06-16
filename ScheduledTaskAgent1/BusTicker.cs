@@ -28,13 +28,11 @@ namespace ScheduledTaskAgent1
         }
         public static async Task<string> GetBusDueTime(string busName, string stationName, BusDir busDir)
         {
-            string url = String.Format(@"http://pda.5284.com.tw/MQS/businfo3.jsp?Mode=1&Dir={1}&Route={0}&Stop={2}", Uri.EscapeUriString(busName), 
-                busDir==BusDir.go?1:0, Uri.EscapeUriString(stationName));
+            string url = @"http://pda.5284.com.tw/MQS/businfo3.jsp?Mode=1&Dir={1}&Route={0}&Stop={2}".Fmt(
+                Uri.EscapeUriString(busName), busDir==BusDir.go?1:0, Uri.EscapeUriString(stationName));
 
             var client = new HttpClient();
-            //Log.Debug(String.Format("client.GetStringAsync({0}, {1}) begin", busName, stationName));
             string strResult = await client.GetStringAsync(new Uri(url));
-            //Log.Debug(String.Format("client.GetStringAsync({0}, {1}) end", busName, stationName));
             var doc = new HtmlDocument();
             doc.LoadHtml(strResult);
 

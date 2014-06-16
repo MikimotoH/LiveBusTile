@@ -52,36 +52,27 @@ namespace LiveBusTile
             }
         }
 
-        bool m_prevent_TextChangeEvent=false;
-        private void tbBusName_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (m_prevent_TextChangeEvent)
-                return;
-            var stations = (btnDir.Tag as string) == "g" ? m_stationPair.stations_go : m_stationPair.stations_back;
-            llsStations.ItemsSource = (from st in stations where st.Contains(tbStation.Text) select new StringVM(st)).ToList();
-        }
-
         private void tbBusName_KeyDown(object sender, KeyEventArgs e)
         {
             if(e.Key == Key.Enter)
                 btnEnter_Tap(null, null);
         }
 
-        private void btnEnter_Tap(object sender, GestureEventArgs e)
+        private void btnEnter_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
+            App.RecusiveBack = true;
             NavigationService.Navigate(new Uri("/MainPage.xaml?Op=Add&busName={0}&station={1}&dir={2}&tag=新增".Fmt(m_busName, tbStation.Text,
                 btnDir.Tag as string), UriKind.Relative));
         }
 
-        private void llsStations_Tap(object sender, GestureEventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        private void llsStations_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
             Log.Debug("");
             if (llsStations.SelectedItem == null)
                 return;
             Log.Debug("llsStations.SelectedItem=" + (llsStations.SelectedItem as StringVM).String);
-            m_prevent_TextChangeEvent = true;
             tbStation.Text = (llsStations.SelectedItem as StringVM).String;
-            m_prevent_TextChangeEvent = false;
         }
 
 

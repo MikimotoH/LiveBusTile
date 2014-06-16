@@ -18,7 +18,7 @@ namespace LiveBusTile.ViewModels
         {
         }
 
-        public KeyedBusTagVM(IGrouping<string, BusTagVM> group) 
+        KeyedBusTagVM(IGrouping<string, BusTagVM> group) 
             :base(group)
         {
             this.m_key = group.Key;

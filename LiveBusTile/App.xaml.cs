@@ -31,7 +31,8 @@ namespace LiveBusTile
         /// </summary>
         public App()
         {
-            Log.Debug("App ctor() {0} {1}".Fmt(Debugger.IsAttached, Application.Current.ApplicationLifetimeObjects.Count));
+            Log.Debug("App ctor() m_RecusiveBack=" + m_RecusiveBack);
+            //Log.Debug("App ctor() {0} {1}".Fmt(Debugger.IsAttached, Application.Current.ApplicationLifetimeObjects.Count));
             Services.DataService.IsDesignTime = false;
             IsolatedStorageFile.GetUserStoreForApplication().CreateDirectory(@"Shared\ShellContent");
 
@@ -70,6 +71,9 @@ namespace LiveBusTile
             MainPage.RemoveAgent();
         }
 
+        static bool m_RecusiveBack = false;
+        public static bool RecusiveBack { get { return m_RecusiveBack; } set { m_RecusiveBack = value; } }
+
         // Code to execute when the application is launching (eg, from Start)
         // This code will not execute when the application is reactivated
         private void Application_Launching(object sender, LaunchingEventArgs e)
@@ -103,6 +107,8 @@ namespace LiveBusTile
         private void Application_Closing(object sender, ClosingEventArgs e)
         {
             Log.Debug("Application_Closing, e=" + e );
+            DataService.SaveData();
+            MainPage.StartPeriodicAgent();
             // Ensure that required application state is persisted here.
             //Log.Close();
         }
@@ -121,7 +127,7 @@ namespace LiveBusTile
         // Code to execute on Unhandled Exceptions
         private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
-            Log.Error(String.Format("e={{ ExceptionObject={{ Message={0},StackTrace={1} }},  Handled={2} }}", 
+            Log.Error("e={{ ExceptionObject={{ Message={0},StackTrace={1} }},  Handled={2} }}".Fmt(
                 e.ExceptionObject.Message, e.ExceptionObject.StackTrace, e.Handled));
             if (Debugger.IsAttached)
             {
@@ -182,6 +188,7 @@ namespace LiveBusTile
         private void ClearBackStackAfterReset(object sender, NavigationEventArgs e)
         {
             Log.Debug("e=" + e.DumpStr());
+            Log.Debug("App.RecusiveBack=" + App.RecusiveBack);
 
             // Unregister the event so it doesn't get called again
             RootFrame.Navigated -= ClearBackStackAfterReset;
@@ -195,6 +202,7 @@ namespace LiveBusTile
             {
                 ; // do nothing
             }
+            
         }
 
         #endregion

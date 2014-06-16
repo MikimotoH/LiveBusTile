@@ -10,12 +10,19 @@ namespace ScheduledTaskAgent1
     public class BusTag
     {
         public BusTag() { }
-        public BusTag(BusTag b) {busName=b.busName; tag=b.tag; dir=b.dir; station=b.station; }
+        public BusTag(BusTag b) { 
+            busName = b.busName; 
+            tag = b.tag; 
+            dir = b.dir; 
+            station = b.station; 
+            timeToArrive = b.timeToArrive; 
+        }
 
         public string busName ;
         public string tag ;
         public BusDir dir ;
         public string station ;
+        public string timeToArrive;
     }
 
     public class StationPair

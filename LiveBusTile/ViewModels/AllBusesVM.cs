@@ -9,12 +9,8 @@ using System.Threading.Tasks;
 
 namespace LiveBusTile.ViewModels
 {
-    public class AllBusesVM : ObservableCollection<StringVM>
+    public class AllBusesVM
     {
-        public AllBusesVM()
-        {
-        }
-
         public ObservableCollection<StringVM> AllBuses
         {
             get
@@ -30,17 +26,9 @@ namespace LiveBusTile.ViewModels
                 return new ObservableCollection<StringVM>(DataService.AllBuses["1"].stations_go.Select(x => new StringVM { String=x}));
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void NotifyPropertyChanged(String propertyName)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (null != handler)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
     }
+
+
     public class StringVM 
     {
         public StringVM() { }

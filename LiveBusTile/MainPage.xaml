@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ViewModels="clr-namespace:LiveBusTile.ViewModels"
+    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
     mc:Ignorable="d"
     
     FontFamily="{StaticResource PhoneFontFamilyNormal}"
@@ -60,6 +61,12 @@
         
         <DataTemplate x:Key="ItemTemplate">
             <Grid Height="Auto" Margin="5,5">
+                <toolkit:ContextMenuService.ContextMenu>
+                    <toolkit:ContextMenu>
+                        <toolkit:MenuItem Click="Item_Delete_Click" Header="刪除"/>
+                        <toolkit:MenuItem Click="Item_Details_Click" Header="詳情"/>
+                    </toolkit:ContextMenu>
+                </toolkit:ContextMenuService.ContextMenu>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width=".8*"/>
                     <ColumnDefinition Width="1.9*"/>
@@ -83,7 +90,17 @@
     
     <Grid x:Name="LayoutRoot" Background="Transparent"
           >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ProgressBar Grid.Row="0" x:Name="prgbarWaiting" Height="10" 
+                     IsIndeterminate="True" Foreground="LightBlue" Background="Transparent" Visibility="Collapsed"/>
+        <TextBlock Grid.Row="1" 
+                   Text="台北巴士快速磚" Style="{StaticResource PhoneTextNormalStyle}"/>
         <phone:LongListSelector 
+            Grid.Row="2"
             d:DataContext="{d:DesignInstance Type=ViewModels:KeyedBusTagVM, IsDesignTimeCreatable=True}"
             Name="BusCatLLS" 
             ItemsSource="{Binding GroupedBuses}" 
@@ -92,21 +109,19 @@
             JumpListStyle="{StaticResource JumpListStyle}" 
             IsGroupingEnabled="True"
             HideEmptyGroups ="True" 
-            LayoutMode="List" />
+            LayoutMode="List" DoubleTap="BusCatLLS_DoubleTap" />
 
-        <ProgressBar x:Name="prgbarWaiting" Height="10" 
-                     Margin="10,234,-10,452" IsIndeterminate="True" Foreground="LightBlue" Visibility="Collapsed"/>
     </Grid>
     
     <phone:PhoneApplicationPage.ApplicationBar>
         <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
-            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Pin.png" Text="pin" Click="ApplicationBarIconButton_Click"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Refresh.png" Text="refresh" Click="ApplicationBarIconButton_Click"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddBus.png" Text="add bus" Click="ApplicationBarIconButton_Click"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddStation.Png" Text="add station" Click="ApplicationBarIconButton_Click"/>
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Pin.png" Text="釘至桌面" Click="ApplicationBarIconButton_Click"/>
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Refresh.png" Text="刷新時間" Click="ApplicationBarIconButton_Click"/>
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddBus.png" Text="新增巴士" Click="ApplicationBarIconButton_Click"/>
             <shell:ApplicationBar.MenuItems>
-                <shell:ApplicationBarMenuItem Text="add bus"/>
-                <shell:ApplicationBarMenuItem Text="add station"/>
+                <shell:ApplicationBarMenuItem Text="釘至桌面" Click="ApplicationBarMenuItem_Click"/>
+                <shell:ApplicationBarMenuItem Text="刷新時間" Click="ApplicationBarMenuItem_Click"/>
+                <shell:ApplicationBarMenuItem Text="新增巴士" Click="ApplicationBarMenuItem_Click"/>
             </shell:ApplicationBar.MenuItems>
         </shell:ApplicationBar>
     </phone:PhoneApplicationPage.ApplicationBar>

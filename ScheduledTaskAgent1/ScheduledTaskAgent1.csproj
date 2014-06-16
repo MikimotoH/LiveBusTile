@@ -86,6 +86,7 @@
   <ItemGroup>
     <Compile Include="BusTag.cs" />
     <Compile Include="BusTicker.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="HttpClient.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="ScheduledAgent.cs" />

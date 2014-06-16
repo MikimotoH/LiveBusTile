@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Log = ScheduledTaskAgent1.Logger;
 
 namespace LiveBusTile.Services
 {
@@ -44,6 +45,12 @@ namespace LiveBusTile.Services
             m_busTags.Add(new BusTagVM(bus));
         }
 
+        public static void DeleteBus(BusTagVM item)
+        {
+            bool removeSuccess = m_busTags.Remove(item);
+            Log.Debug("removeSuccess=" + removeSuccess);
+        }
+
         public static void LoadData()
         {
             JsonSerializer serializer = new JsonSerializer();
@@ -54,7 +61,7 @@ namespace LiveBusTile.Services
                 using (StreamReader sr = new StreamReader(Application.GetResourceStream(new Uri("Data/default_bustags.json", UriKind.Relative)).Stream))
                 using (JsonReader reader = new JsonTextReader(sr))
                 {
-                    var buses = serializer.Deserialize(reader, typeof(List<BusTag>)) as List<BusTag>;
+                    var buses = serializer.Deserialize(reader, typeof(BusTag[])) as BusTag[];
                     m_busTags = new ObservableCollection<BusTagVM>(buses.Select(x=>new BusTagVM(x)));
                 }
                 return;
@@ -65,7 +72,7 @@ namespace LiveBusTile.Services
                 using (StreamReader sr = new StreamReader(Application.GetResourceStream(new Uri("Data/default_bustags.json", UriKind.Relative)).Stream))
                 using (JsonReader reader = new JsonTextReader(sr))
                 {
-                    var buses = serializer.Deserialize(reader, typeof(List<BusTag>)) as List<BusTag>;
+                    var buses = serializer.Deserialize(reader, typeof(BusTag[])) as BusTag[];
                     m_busTags = new ObservableCollection<BusTagVM>(buses.Select(x => new BusTagVM(x)));
                 }
                 return;
@@ -91,7 +98,7 @@ namespace LiveBusTile.Services
                 FileMode.Create, FileAccess.Write)))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
-                var buses = m_busTags.Select(x => new BusTag { busName = x.busName, station = x.station, dir = x.dir, tag = x.tag }).ToArray();
+                var buses = m_busTags.Select(x => x.BusTag ).ToArray();
                 serializer.Serialize(writer, buses);
             }
         }

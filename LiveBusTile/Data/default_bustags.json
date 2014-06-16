@@ -3,12 +3,14 @@
     "busName": "橘2",
     "tag": "上班",
     "dir": 0,
-    "station": "秀山國小"
+    "station": "秀山國小",
+    "timeToArrive": ""
   },
   {
     "busName": "橘2",
     "tag": "回家",
     "dir": 1,
-    "station": "捷運永安市場站"
+    "station": "捷運永安市場站",
+    "timeToArrive": ""
   }
 ]

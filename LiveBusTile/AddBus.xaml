@@ -19,7 +19,8 @@
         <DataTemplate x:Key="ItemTemplate">
             <Grid Height="Auto" Margin="0,1">
                 <TextBlock Text="{Binding String}" FontFamily="{StaticResource PhoneFontFamilyNormal}" 
-                           FontSize="36" Foreground="Orange" HorizontalAlignment="Center"/>
+                           FontSize="36" Foreground="Orange" HorizontalAlignment="Center" TextAlignment="Center"
+                           />
             </Grid>
         </DataTemplate>
     </phone:PhoneApplicationPage.Resources>
@@ -31,8 +32,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
-        <TextBlock Grid.Row="0" Text="LiveBusTile-選擇公車" Style="{StaticResource PhoneTextNormalStyle}"/>
+
+        <TextBlock Grid.Row="0" Text="台北巴士快速磚-選擇公車" Style="{StaticResource PhoneTextNormalStyle}"/>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="48"/>
