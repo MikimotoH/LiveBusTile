@@ -15,8 +15,7 @@
     <TargetFrameworkVersion>v8.0</TargetFrameworkVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
     <SilverlightApplication>true</SilverlightApplication>
-    <SupportedCultures>
-    </SupportedCultures>
+    <SupportedCultures>zh-TW</SupportedCultures>
     <XapOutputs>true</XapOutputs>
     <GenerateSilverlightManifest>true</GenerateSilverlightManifest>
     <XapFilename>LiveBusTile_$(Configuration)_$(Platform).xap</XapFilename>
@@ -92,6 +91,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AddBusStationTag.xaml.cs">
+      <DependentUpon>AddBusStationTag.xaml</DependentUpon>
+    </Compile>
     <Compile Include="AddBusStation.xaml.cs">
       <DependentUpon>AddBusStation.xaml</DependentUpon>
     </Compile>
@@ -115,7 +117,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AppResources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Services\DataService.cs" />
+    <Compile Include="DataService.cs" />
     <Compile Include="ViewModels\AllBusesVM.cs" />
     <Compile Include="ViewModels\BusTagVM.cs" />
     <Compile Include="ViewModels\KeyedBusTagVM.cs" />
@@ -125,6 +127,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
+    <Page Include="AddBusStationTag.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="AddBusStation.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -143,15 +149,39 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\AppStore-Icon-300x300.png" />
     <Content Include="Data\buses_simple.json" />
     <Content Include="Data\default_bustags.json" />
-    <Content Include="Data\stations_noregion.json" />
-    <Content Include="README_FIRST.txt" />
-    <Content Include="Toolkit.Content\ApplicationBar.Add.png" />
-    <Content Include="Toolkit.Content\ApplicationBar.Cancel.png" />
-    <Content Include="Toolkit.Content\ApplicationBar.Check.png" />
+    <None Include="Data\stations_noregion.json" />
+    <None Include="marketplace_pics\AppBar.AddBus.psd" />
+    <None Include="marketplace_pics\AppBar.AddStation.psd" />
+    <None Include="marketplace_pics\AppBar.Char.Disabled.psd" />
+    <None Include="marketplace_pics\AppBar.Numer.Input.psd" />
+    <None Include="marketplace_pics\AppBar.Pin.psd" />
+    <None Include="marketplace_pics\AppBar.Refresh.psd" />
+    <None Include="marketplace_pics\AppStore-Icon-300x300.psd" />
+    <None Include="marketplace_pics\Btn.Enter.psd" />
+    <None Include="marketplace_pics\Bus-Profiling-flattened-Icon.psd" />
+    <None Include="marketplace_pics\Bus-Profiling-Icon.psd" />
+    <None Include="marketplace_pics\Bus-Profiling.psd" />
+    <None Include="README_FIRST.txt" />
+    <None Include="marketplace_pics\AppStore-Icon-1000x800.png" />
+    <None Include="marketplace_pics\AppStore-Icon-300x300.png" />
+    <None Include="marketplace_pics\AppStore-Icon-358-square.png" />
+    <None Include="marketplace_pics\AppStore-Icon-358x173.png" />
+    <None Include="marketplace_pics\wp_ss_20140616_0001.png" />
+    <None Include="marketplace_pics\wp_ss_20140616_0002.png" />
+    <None Include="marketplace_pics\wp_ss_20140616_0003.png" />
+    <None Include="marketplace_pics\wp_ss_20140616_0004.png" />
+    <None Include="marketplace_pics\wp_ss_20140616_0005.png" />
+    <None Include="marketplace_pics\wp_ss_20140616_0006.png" />
+    <None Include="marketplace_pics\wp_ss_20140616_0007.png" />
+    <None Include="Toolkit.Content\ApplicationBar.Add.png" />
+    <None Include="Toolkit.Content\ApplicationBar.Cancel.png" />
+    <None Include="Toolkit.Content\ApplicationBar.Check.png" />
+    <None Include="marketplace_pics\wp_ss_20140617_0001.png" />
     <Content Include="Toolkit.Content\ApplicationBar.Delete.png" />
-    <Content Include="Toolkit.Content\ApplicationBar.Select.png" />
+    <None Include="Toolkit.Content\ApplicationBar.Select.png" />
     <None Include="packages.config" />
     <None Include="Properties\AppManifest.xml" />
     <None Include="Properties\WMAppManifest.xml">
@@ -173,8 +203,8 @@
     <Content Include="Images\AppBar.Pin.Png" />
     <Content Include="Images\Btn.Enter.Png" />
     <Content Include="Images\Input.Char.png" />
-    <Content Include="Images\AppBar.FindByChar.png" />
-    <Content Include="Images\AppBar.FindByNumber.Png" />
+    <None Include="Images\AppBar.FindByChar.png" />
+    <None Include="Images\AppBar.FindByNumber.Png" />
     <Content Include="Images\Input.Number.png" />
     <Content Include="Images\AppBar.Refresh.Png" />
   </ItemGroup>
@@ -184,6 +214,7 @@
       <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\AppResources.zh-TW.resx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="HtmlAgilityPack, Version=1.4.6.0, Culture=neutral, processorArchitecture=MSIL">
@@ -211,6 +242,7 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(TargetFrameworkVersion).Overrides.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

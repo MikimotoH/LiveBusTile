@@ -13,6 +13,7 @@ namespace ScheduledTaskAgent1
         Debug = 1,
         Warn = 2,
         Error = 3,
+        Msg = 4,
     };
 
     public static class Logger
@@ -84,14 +85,20 @@ namespace ScheduledTaskAgent1
 
         //public delegate void LogFunc(string msg, string func, string path, int line);
 
-        [Conditional("DEBUG")]
-        [DebuggerStepThrough]
         public static void Error(string msg, 
             [CallerMemberName] string func="",
             [CallerFilePath] string path="",
             [CallerLineNumber] int line=0)
         {
             Log(LogLevel.Error, func, path, line, msg);
+        }
+
+        public static void Msg(string msg,
+            [CallerMemberName] string func = "",
+            [CallerFilePath] string path = "",
+            [CallerLineNumber] int line = 0)
+        {
+            Log(LogLevel.Msg, func, path, line, msg);
         }
 
         [Conditional("DEBUG")]

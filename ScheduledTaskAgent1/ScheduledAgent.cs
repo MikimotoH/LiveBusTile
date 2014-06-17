@@ -109,12 +109,19 @@ namespace ScheduledTaskAgent1
             JsonSerializer serializer = new JsonSerializer();
             serializer.NullValueHandling = NullValueHandling.Ignore;
 
-            using (StreamWriter sw = new StreamWriter(
-                IsolatedStorageFile.GetUserStoreForApplication().OpenFile(@"Shared\ShellContent\saved_buses.json",
-                FileMode.Create, FileAccess.Write)))
-            using (JsonWriter writer = new JsonTextWriter(sw))
+            try
             {
-                serializer.Serialize(writer, busTags);
+                using (StreamWriter sw = new StreamWriter(
+                    IsolatedStorageFile.GetUserStoreForApplication().OpenFile(@"Shared\ShellContent\saved_buses.json",
+                    FileMode.OpenOrCreate, FileAccess.Write, FileShare.None)))
+                using (JsonWriter writer = new JsonTextWriter(sw))
+                {
+                    serializer.Serialize(writer, busTags);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.DumpStr());
             }
         }
 
@@ -134,7 +141,7 @@ namespace ScheduledTaskAgent1
 
             using (StreamReader sr = new StreamReader(
                 IsolatedStorageFile.GetUserStoreForApplication().OpenFile(@"Shared\ShellContent\saved_buses.json",
-                FileMode.Open, FileAccess.Read)))
+                FileMode.Open, FileAccess.Read, FileShare.Read)))
             using (JsonReader reader = new JsonTextReader(sr))
             {
                 return serializer.Deserialize(reader, typeof(BusTag[])) as BusTag[];
@@ -147,9 +154,10 @@ namespace ScheduledTaskAgent1
             try
             {
                 var busTags = LoadBusTags();
+                busTags = (from bus in busTags orderby bus.tag select bus).ToArray();
 
                 //Log.Create(false);
-                Log.Debug("busTags={"+(",".Joyn(busTags.Select(x=>x.busName+" "+x.station))+"}"));
+                Log.Debug("busTags=" + busTags.DumpArray());
 
                 var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
                 var waIdx = Enumerable.Range(0, busTags.Length).ToList();

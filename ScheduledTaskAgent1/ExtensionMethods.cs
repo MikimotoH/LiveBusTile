@@ -14,6 +14,10 @@ namespace ScheduledTaskAgent1
             return String.Format("{{ Uri={0}, NavigationMode={1}, IsNavigationInitiator={2}, e.Content={3} }}",
                 e.Uri, e.NavigationMode, e.IsNavigationInitiator, e.Content);
         }
+        public static string DumpStr(this Exception ex)
+        {
+            return String.Format("{{Msg=\"{0}\",StackTrace=\"{1}\"}}", ex.Message, ex.StackTrace);
+        }
 
         public static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue defaultValue)
         {
@@ -25,6 +29,11 @@ namespace ScheduledTaskAgent1
         public static string DumpStr<TKey, TValue>(this IDictionary<TKey, TValue> dict)
         {
             return "{" + String.Join(",", dict.Select(kv => kv.Key + "=" + kv.Value)) + "}";
+        }
+
+        public static string DumpArray<T>(this T[] arr) 
+        {
+            return "[" + arr.Length + "]{" + String.Join(", ", arr.Select(x => x.ToString())) + "}"; 
         }
 
         public static String Fmt(this String fmt, params object[] args)

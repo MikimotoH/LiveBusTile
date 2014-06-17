@@ -7,7 +7,6 @@ using System.Windows.Controls;
 using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
-using LiveBusTile.Services;
 using ScheduledTaskAgent1;
 using LiveBusTile.ViewModels;
 using Log = ScheduledTaskAgent1.Logger;
@@ -49,15 +48,24 @@ namespace LiveBusTile
         private void ApplicationBarIconButton_Click(object sender, EventArgs e)
         {
             BusDir dir = (tbDir.Text == "往↓" ? BusDir.go : BusDir.back);
-            BusTagVM bt = DataService.BusTags.First(x
-                => x.busName == tbBusName.Text
-                    && x.station == tbStation.Text
-                    && x.dir == dir
-                    && x.tag == m_orig_tag);
+            try
+            {
+                BusTagVM bt = DataService.BusTags.First(x
+                    => x.busName == tbBusName.Text
+                        && x.station == tbStation.Text
+                        && x.dir == dir
+                        && x.tag == m_orig_tag);
 
-            bool bRemoveSuccess = DataService.BusTags.Remove(bt);
-            Log.Debug("bRemoveSuccess=" + bRemoveSuccess);
-            NavigationService.GoBack();
+                bool bRemoveSuccess = DataService.BusTags.Remove(bt);
+                Log.Debug("bRemoveSuccess=" + bRemoveSuccess);
+                NavigationService.GoBack();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{0} {1} {2} {3} cannot be found!".Fmt(tbBusName.Text, tbStation.Text, dir, m_orig_tag));
+                Log.Error("BusTags={" + ",".Joyn(DataService.BusTags.Select(x => x.ToString()) ) + "}");
+                Log.Error("ex="+ex.DumpStr());
+            }
         }
     }
 }

@@ -7,9 +7,9 @@ using System.Resources;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ScheduledTaskAgent1")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("把常看的台北公車站牌同時秀在一個動態磚上，讓你一覽無遺。再者，應用程式內依照「標籤」分類為「上班」、「回家」，或是你自定的標籤整理。")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("MikimotoH")]
 [assembly: AssemblyProduct("ScheduledTaskAgent1")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]

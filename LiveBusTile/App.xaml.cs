@@ -12,7 +12,6 @@ using ScheduledTaskAgent1;
 using Log = ScheduledTaskAgent1.Logger;
 using System.IO.IsolatedStorage;
 using System.IO;
-using LiveBusTile.Services;
 using System.Collections.ObjectModel;
 
 namespace LiveBusTile
@@ -31,9 +30,10 @@ namespace LiveBusTile
         /// </summary>
         public App()
         {
-            Log.Debug("App ctor() m_RecusiveBack=" + m_RecusiveBack);
+            Log.Debug("App ctor()");
+            //Log.Debug("App ctor() m_RecusiveBack=" + m_RecusiveBack);
             //Log.Debug("App ctor() {0} {1}".Fmt(Debugger.IsAttached, Application.Current.ApplicationLifetimeObjects.Count));
-            Services.DataService.IsDesignTime = false;
+            DataService.IsDesignTime = false;
             IsolatedStorageFile.GetUserStoreForApplication().CreateDirectory(@"Shared\ShellContent");
 
             // Global handler for uncaught exceptions.
@@ -71,8 +71,8 @@ namespace LiveBusTile
             MainPage.RemoveAgent();
         }
 
-        static bool m_RecusiveBack = false;
-        public static bool RecusiveBack { get { return m_RecusiveBack; } set { m_RecusiveBack = value; } }
+        //static bool m_RecusiveBack = false;
+        //public static bool RecusiveBack { get { return m_RecusiveBack; } set { m_RecusiveBack = value; } }
 
         // Code to execute when the application is launching (eg, from Start)
         // This code will not execute when the application is reactivated
@@ -188,7 +188,6 @@ namespace LiveBusTile
         private void ClearBackStackAfterReset(object sender, NavigationEventArgs e)
         {
             Log.Debug("e=" + e.DumpStr());
-            Log.Debug("App.RecusiveBack=" + App.RecusiveBack);
 
             // Unregister the event so it doesn't get called again
             RootFrame.Navigated -= ClearBackStackAfterReset;

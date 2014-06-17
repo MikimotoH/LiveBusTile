@@ -15,7 +15,6 @@
     shell:SystemTray.IsVisible="True">
 
     <phone:PhoneApplicationPage.Resources>
-
         <DataTemplate x:Key="ItemTemplate">
             <Grid Height="Auto" Margin="0,1">
                 <TextBlock Text="{Binding String}" FontFamily="{StaticResource PhoneFontFamilyNormal}" 
@@ -29,22 +28,29 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock x:Name="tbTitle" Grid.Row="0" Text="台北巴士快速磚-選擇站牌" Style="{StaticResource PhoneTextNormalStyle}"/>
-        <Grid Grid.Row="1">
+        <TextBlock x:Name="tbTitle" Grid.Row="0" Text="台北巴士快速磚-選擇站牌(2/3)" Style="{StaticResource PhoneTextNormalStyle}"/>
+        <TextBlock x:Name="tbBusName" Grid.Row="1" Text="巴士名稱" FontSize="44"/>
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="96"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="48"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0"  Text="往↓" Tag="g" FontSize="44" VerticalAlignment="Top" x:Name="btnDir" Height="62" Margin="0,0,0,0" Grid.ColumnSpan="2" Tap="btnDir_Tap" />
-            <TextBox x:Name="tbStation" InputScope="Text" Grid.ColumnSpan="2" Margin="71,0,0,0"/>
-            <Image Grid.Column="2" Source="Images/Btn.Enter.Png" x:Name="btnEnter" Tap="btnEnter_Tap"/>
+            <Button x:Name="btnDir" Tap="btnDir_Tap">
+                <TextBlock Grid.Column="0"  Text="往↓" Tag="g" FontSize="40" 
+                           x:Name="btnDirText"/>
+            </Button>
+            <TextBox Grid.Column="1" x:Name="tbStation" InputScope="Text" />
+            <Button Grid.Column="2" x:Name="btnEnter" Tap="btnEnter_Tap"  Margin="0,0,8,0">
+                <Image Source="Images/Btn.Enter.Png"/>
+            </Button>
         </Grid>
         <phone:LongListSelector 
-            Grid.Row="2"
+            Grid.Row="3"
             d:DataContext="{d:DesignInstance Type=ViewModels:AllBusesVM, IsDesignTimeCreatable=True}"
             ItemsSource="{Binding SampledStations}" 
             x:Name="llsStations" 

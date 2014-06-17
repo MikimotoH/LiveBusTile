@@ -9,7 +9,6 @@ using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using System.Windows.Media.Imaging;
 using System.Windows.Input;
-using LiveBusTile.Services;
 using Log = ScheduledTaskAgent1.Logger;
 using LiveBusTile.ViewModels;
 
@@ -31,13 +30,14 @@ namespace LiveBusTile
         {
             if( (btnInputMethod.Tag as string) == "n")
             {
-                btnInputMethod.Source = new BitmapImage(new Uri("Images/Input.Char.png", UriKind.Relative));
+
+                btnInputMethodImage.Source = new BitmapImage(new Uri("Images/Input.Char.png", UriKind.Relative));
                 btnInputMethod.Tag = "a";
                 tbBusName.InputScope = new InputScope { Names = { new InputScopeName { NameValue = InputScopeNameValue.Text } } };
             }
             else if( (btnInputMethod.Tag  as string) == "a")
             {
-                btnInputMethod.Source = new BitmapImage(new Uri("Images/Input.Number.png", UriKind.Relative));
+                btnInputMethodImage.Source = new BitmapImage(new Uri("Images/Input.Number.png", UriKind.Relative));
                 btnInputMethod.Tag = "n";
                 tbBusName.InputScope = new InputScope { Names = { new InputScopeName { NameValue = InputScopeNameValue.Number } } };
             }
@@ -48,10 +48,13 @@ namespace LiveBusTile
         {
             if (m_prevent_TextChangeEvent)
                 return;
-            llsBuses.ItemsSource = 
+            List<StringVM> newList= 
                 (from bus in DataService.AllBuses.Keys 
                  where bus.Contains(tbBusName.Text) 
                  select new StringVM { String = bus }).ToList();
+            //if (newList.Count < 2)
+            //    return;
+            llsBuses.ItemsSource = newList;
         }
 
 
@@ -66,6 +69,11 @@ namespace LiveBusTile
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private void btnEnter_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
+            if (!DataService.AllBuses.Keys.Contains(tbBusName.Text))
+            {
+                MessageBox.Show("不存在的公車名稱："+tbBusName.Text);
+                return;
+            }
             NavigationService.Navigate(new Uri("/AddBusStation.xaml?busName=" + tbBusName.Text, UriKind.Relative));
         }
 

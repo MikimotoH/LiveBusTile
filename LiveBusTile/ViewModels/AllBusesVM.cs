@@ -1,5 +1,4 @@
-﻿using LiveBusTile.Services;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -24,6 +23,13 @@ namespace LiveBusTile.ViewModels
             get
             {
                 return new ObservableCollection<StringVM>(DataService.AllBuses["1"].stations_go.Select(x => new StringVM { String=x}));
+            }
+        }
+        public ObservableCollection<StringVM> SampledTags
+        {
+            get
+            {
+                return new ObservableCollection<StringVM> { new StringVM("上班"), new StringVM("回家") };
             }
         }
     }

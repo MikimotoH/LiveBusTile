@@ -20,6 +20,7 @@
             <Grid Height="Auto" Margin="0,1">
                 <TextBlock Text="{Binding String}" FontFamily="{StaticResource PhoneFontFamilyNormal}" 
                            FontSize="36" Foreground="Orange" HorizontalAlignment="Center" TextAlignment="Center"
+                           TextWrapping="Wrap"
                            />
             </Grid>
         </DataTemplate>
@@ -33,16 +34,23 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="台北巴士快速磚-選擇公車" Style="{StaticResource PhoneTextNormalStyle}"/>
+        <TextBlock Grid.Row="0" Text="台北巴士快速磚-選擇公車(1/3)" Style="{StaticResource PhoneTextNormalStyle}"/>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="48"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="48"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Image Grid.Column="0" Source="Images/Input.Number.png" Tag="n" x:Name="btnInputMethod" Tap="btnInputMethod_Tap" Width="48" Height="48" />
-            <TextBox Grid.Column="1" x:Name="tbBusName" InputScope="Number" TextChanged="tbBusName_TextChanged" KeyDown="tbBusName_KeyDown"/>
-            <Image Grid.Column="2" Source="Images/Btn.Enter.Png" x:Name="btnEnter" Tap="btnEnter_Tap" />
+            
+            <Button Grid.Column="0" Tag="n" x:Name="btnInputMethod" Tap="btnInputMethod_Tap">
+                <Image Source="Images/Input.Number.png" x:Name="btnInputMethodImage"/>
+            </Button>
+            <TextBox Grid.Column="1" x:Name="tbBusName" InputScope="Number" 
+                     TextWrapping="Wrap"
+                     TextChanged="tbBusName_TextChanged" KeyDown="tbBusName_KeyDown"/>
+            <Button Grid.Column="2" x:Name="btnEnter" Margin="0,0,4,0" Tap="btnEnter_Tap">
+                <Image Source="Images/Btn.Enter.Png"/>
+            </Button>
         </Grid>
         <phone:LongListSelector 
             Grid.Row="2"

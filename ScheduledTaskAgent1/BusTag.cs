@@ -23,6 +23,11 @@ namespace ScheduledTaskAgent1
         public BusDir dir ;
         public string station ;
         public string timeToArrive;
+        public override string ToString()
+        {
+            return "{{ busName=\"{0}\",station=\"{1}\",dir={2},tag=\"{3}\",timeToArrive=\"{4}\"}}".
+                Fmt(busName, station, dir, tag, timeToArrive);
+        }
     }
 
     public class StationPair

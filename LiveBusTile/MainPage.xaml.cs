@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.IO;
 using ScheduledTaskAgent1;
-using LiveBusTile.Services;
 using System.Threading;
 using System.Collections.ObjectModel;
 
@@ -43,25 +42,33 @@ namespace LiveBusTile
         {
             Log.Debug("e=" + e.DumpStr());
             Log.Debug("NavigationContext.QueryString=" + NavigationContext.QueryString.DumpStr());
-            Log.Debug("App.RecusiveBack=" + App.RecusiveBack);
+            //Log.Debug("App.RecusiveBack=" + App.RecusiveBack);
 
 
             if (NavigationContext.QueryString.GetValue("Op", "") == "Add" 
-                && App.RecusiveBack==true)
-            {                
+                //&& App.RecusiveBack==true 
+                && e.NavigationMode == NavigationMode.New)
+            {
+                while (NavigationService.CanGoBack)
+                {
+                    JournalEntry jo = NavigationService.RemoveBackEntry();
+                    Log.Debug("jo.Source=" + jo.Source);
+                }
+
                 DataService.AddBus(new BusTag
                 {
                     busName = NavigationContext.QueryString["busName"],
                     station = NavigationContext.QueryString["station"],
-                    dir = NavigationContext.QueryString["dir"]=="g"?BusDir.go:BusDir.back,
+                    dir = (BusDir)Enum.Parse(typeof(BusDir), NavigationContext.QueryString["dir"]),
                     tag = NavigationContext.QueryString["tag"]
                 });
-                App.RecusiveBack = false;
+                //App.RecusiveBack = false;
+                //DataService.SaveData();
             }
             DataContext = new KeyedBusTagVM();
 
-            Log.Debug("exit ; NavigationContext.QueryString.Clear()");
-            NavigationContext.QueryString.Clear();
+            Log.Debug("exit");
+            //NavigationContext.QueryString.Clear();
         }
 
 
@@ -70,30 +77,31 @@ namespace LiveBusTile
             Log.Debug("e="+e.DumpStr());
             Log.Debug("NavigationContext.QueryString=" + NavigationContext.QueryString.DumpStr());
 
-            Log.Debug("exit ; NavigationContext.QueryString.Clear()");
-            NavigationContext.QueryString.Clear();
+            Log.Debug("exit");
+            //NavigationContext.QueryString.Clear();
         }
         
         protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)
         {
-            Log.Debug("NavigationService.CanGoBack="+NavigationService.CanGoBack);
-            if (NavigationService.CanGoBack)
-            {
-                Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
-                    + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
-                while (NavigationService.CanGoBack)
-                {
-                    JournalEntry jo = NavigationService.RemoveBackEntry();
-                    Log.Debug("jo.Source=" + jo.Source);
-                    Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
-                        + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
-                }
-                Log.Debug("NavigationService.BackStack.Count()=" + NavigationService.BackStack.Count());
-            }
 
-            Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
-                + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
-            Log.Debug("NavigationService.CanGoBack=" + NavigationService.CanGoBack);
+            //Log.Debug("NavigationService.CanGoBack="+NavigationService.CanGoBack);
+            //if (NavigationService.CanGoBack)
+            //{
+            //    Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
+            //        + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
+            //while (NavigationService.CanGoBack)
+            //{
+                //JournalEntry jo = NavigationService.RemoveBackEntry();
+                //Log.Debug("jo.Source=" + jo.Source);
+                //Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
+                //    + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
+            //}
+            //    Log.Debug("NavigationService.BackStack.Count()=" + NavigationService.BackStack.Count());
+            //}
+
+            //Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
+            //    + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
+            //Log.Debug("NavigationService.CanGoBack=" + NavigationService.CanGoBack);
 
             base.OnBackKeyPress(e);
         }
@@ -113,9 +121,6 @@ namespace LiveBusTile
                 RemoveAgent();
             }
             refreshBusTileTask = new PeriodicTask(taskName);
-
-            // The description is required for periodic agents. This is the string that the user
-            // will see in the background services Settings page on the phone.
             refreshBusTileTask.Description = "Refresh Bus Due Time on Tile at Hub (HomeScreen)";
 
             // Place the call to add a periodic agent. This call must be placed in 
@@ -198,7 +203,7 @@ namespace LiveBusTile
                 case "釘至桌面":
                     {
                         DataService.SaveData();
-                        BusTag[] busTags = DataService.BusTags.Select(x => x.BusTag).ToArray();
+                        var busTags = (from bus in DataService.BusTags orderby bus.tag select bus).ToArray();
                         ScheduledTaskAgent1.ScheduledAgent.GenerateTileJpg(
                             "\n".Joyn(busTags.Select(x => x.busName + " " + x.timeToArrive)));
 
@@ -220,8 +225,6 @@ namespace LiveBusTile
                     break;
                 case "新增巴士":
                     NavigationService.Navigate(new Uri("/AddBus.xaml", UriKind.Relative));
-                    //DataService.AddBus(DataService.RandomBusTag());
-                    //DataContext = new KeyedBusTagVM();
                     break;
                 //case "add station":
                     //NavigationService.Navigate(new Uri("/AddStation.xaml", UriKind.Relative));
