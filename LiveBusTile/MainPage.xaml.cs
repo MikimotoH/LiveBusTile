@@ -231,6 +231,12 @@ namespace LiveBusTile
                     //DataService.AddBus(DataService.RandomBusTag());
                     //DataContext = new KeyedBusTagVM();
                     //break;
+                case "關於…":
+                    NavigationService.Navigate(new Uri("/About.xaml", UriKind.Relative));
+                    break;
+                case "設定":
+                    NavigationService.Navigate(new Uri("/Settings.xaml", UriKind.Relative));
+                    break;
                 default:
                     break;
             }

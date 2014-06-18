@@ -98,7 +98,8 @@
         <ProgressBar Grid.Row="0" x:Name="prgbarWaiting" Height="10" 
                      IsIndeterminate="True" Foreground="LightBlue" Background="Transparent" Visibility="Collapsed"/>
         <TextBlock Grid.Row="1" 
-                   Text="台北巴士快速磚" Style="{StaticResource PhoneTextNormalStyle}"/>
+                   Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" 
+                   Style="{StaticResource PhoneTextNormalStyle}"/>
         <phone:LongListSelector 
             Grid.Row="2"
             d:DataContext="{d:DesignInstance Type=ViewModels:KeyedBusTagVM, IsDesignTimeCreatable=True}"
@@ -122,6 +123,8 @@
                 <shell:ApplicationBarMenuItem Text="釘至桌面" Click="ApplicationBarMenuItem_Click"/>
                 <shell:ApplicationBarMenuItem Text="刷新時間" Click="ApplicationBarMenuItem_Click"/>
                 <shell:ApplicationBarMenuItem Text="新增巴士" Click="ApplicationBarMenuItem_Click"/>
+                <shell:ApplicationBarMenuItem Text="設定" Click="ApplicationBarMenuItem_Click"/>
+                <shell:ApplicationBarMenuItem Text="關於…" Click="ApplicationBarMenuItem_Click"/>
             </shell:ApplicationBar.MenuItems>
         </shell:ApplicationBar>
     </phone:PhoneApplicationPage.ApplicationBar>

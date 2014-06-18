@@ -16,5 +16,10 @@ namespace LiveBusTile
         {
             InitializeComponent();
         }
+
+        private void Hyperlink_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

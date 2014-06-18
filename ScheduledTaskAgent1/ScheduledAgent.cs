@@ -150,15 +150,28 @@ namespace ScheduledTaskAgent1
             }
         }
 
-
+ 
         protected override void OnInvoke(ScheduledTask task)
         {
             try
             {
+                //Log.Create(false);
+                ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
+
+                bool bWiFiOnly = false;
+                IsolatedStorageSettings.ApplicationSettings.TryGetValue("WiFiOnly", out bWiFiOnly);
+                if ( (bWiFiOnly && !WifiConnected())
+                    || tile==null)
+                {
+                    ScheduledActionService.LaunchForTest(task.Name, TimeSpan.FromSeconds(30));
+                    this.NotifyComplete();
+                    return;
+                }
+
+
                 var busTags = LoadBusTags();
                 busTags = (from bus in busTags orderby bus.tag select bus).ToArray();
 
-                //Log.Create(false);
                 Log.Debug("busTags=" + busTags.DumpArray());
 
                 var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
@@ -182,14 +195,14 @@ namespace ScheduledTaskAgent1
                 }
 
                 SaveBusTags(busTags);
-                
+
                 Deployment.Current.Dispatcher.BeginInvoke(() =>
                 {
                     Log.Debug("Deployment.Current.Dispatcher.BeginInvoke enter");
                     try
-                    {   
-                        UpdateTileImage(busTags);
+                    {
                         Log.Debug("UpdateTileImage()");
+                        UpdateTileImage(busTags);
                         Log.Debug("Deployment.Current.Dispatcher.BeginInvoke exit");
                     }
                     catch (Exception e)
@@ -206,7 +219,7 @@ namespace ScheduledTaskAgent1
             }
             catch (Exception e)
             {
-                Log.Error(e.ToString());
+                Log.Error(e.DumpStr());
             }
         }
 

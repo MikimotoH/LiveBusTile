@@ -36,7 +36,11 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock x:Name="tbTitle" Grid.Row="0" Text="台北巴士快速磚-編輯標籤(3/3)" Style="{StaticResource PhoneTextNormalStyle}"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" 
+                       Style="{StaticResource PhoneTextNormalStyle}"/>
+            <TextBlock Text="-編輯標籤(3/3)"/>
+        </StackPanel>
         <TextBlock Grid.Row="1" x:Name="tbBusName" Text="巴士名稱" FontSize="44" Margin="0,10"/>
         <TextBlock Grid.Row="2" x:Name="tbStation" Text="站牌名稱" FontSize="44" Margin="0,10"/>
         <TextBlock Grid.Row="3" x:Name="tbDir" Text="方向" FontSize="44" Margin="0,10"/>
