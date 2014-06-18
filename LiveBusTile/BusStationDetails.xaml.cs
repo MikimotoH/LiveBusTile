@@ -24,10 +24,23 @@ namespace LiveBusTile
         {
             tbBusName.Text = NavigationContext.QueryString["busName"];
             tbStation.Text = NavigationContext.QueryString["station"];
-            tbDir.Text = NavigationContext.QueryString["dir"]=="go"?"往↓":"返↑";
+            BusDir dir = (BusDir)Enum.Parse(typeof(BusDir),NavigationContext.QueryString["dir"]);
+            tbDir.Text = (dir==BusDir.go?"往↓":"返↑");
             tbTag.Text = NavigationContext.QueryString["tag"];
             m_orig_tag = tbTag.Text;
+
+            var stpair = DataService.AllBuses[tbBusName.Text];
+            if (dir == BusDir.go && stpair.stations_go.Length>0)
+            {
+                tbDir.Text += stpair.stations_go.LastElement();
+            }
+            else if(dir==BusDir.back && stpair.stations_back.Length>0)
+            {
+                tbDir.Text += stpair.stations_back.LastElement();
+            }
         }
+
+
         protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)
         {
             Log.Debug("e.Cancel=" + e.Cancel);

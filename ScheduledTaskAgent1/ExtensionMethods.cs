@@ -31,14 +31,18 @@ namespace ScheduledTaskAgent1
             return "{" + String.Join(",", dict.Select(kv => kv.Key + "=" + kv.Value)) + "}";
         }
 
-        public static string DumpArray<T>(this T[] arr) 
+        public static string DumpArray<T>(this IEnumerable<T> arr) 
         {
-            return "[" + arr.Length + "]{" + String.Join(", ", arr.Select(x => x.ToString())) + "}"; 
+            return "[" + arr.Count() + "]{" + String.Join(", ", arr.Select(x => x.ToString())) + "}"; 
         }
 
         public static String Fmt(this String fmt, params object[] args)
         {
             return String.Format(fmt, args);
+        }
+        public static T LastElement<T>(this T[] arr)
+        {
+            return arr[arr.Length - 1];
         }
 
         public static String Joyn(this String separator, IEnumerable<object> values)

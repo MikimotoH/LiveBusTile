@@ -104,6 +104,7 @@ namespace ScheduledTaskAgent1
         }
 
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         private void SaveBusTags(BusTag[] busTags)
         {
             JsonSerializer serializer = new JsonSerializer();
@@ -125,6 +126,7 @@ namespace ScheduledTaskAgent1
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public BusTag[] LoadBusTags()
         {
             JsonSerializer serializer = new JsonSerializer();

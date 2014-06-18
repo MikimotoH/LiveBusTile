@@ -7,7 +7,7 @@ using System.Resources;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("LiveBusTile")]
-[assembly: AssemblyDescription("把常看的台北公車站牌同時秀在一個動態磚上，讓你一覽無遺。再者，應用程式內依照「標籤」分類為「上班」、「回家」，或是你自定的標籤整理。")]
+[assembly: AssemblyDescription("把常看的公車站牌同時秀在一個動態磚上。比如說，要出門上班時可以選橘2與275，但不知道哪一個先來，而且兩個站牌是在不同地方。本程式可讓兩個公車站牌並列秀出，讓你立刻可以決定。背景程式會定時取得資訊，只要解鎖手機看桌面動態磚就立刻可以決定，甚至不用開啟進入程式。可將公車站牌依照標籤分類為「上班」、「回家」，或是自定的標籤。")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("MikimotoH")]
 [assembly: AssemblyProduct("LiveBusTile")]
@@ -32,6 +32,6 @@ using System.Resources;
 //
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("1.0.0.1")]
+[assembly: AssemblyVersion("1.0.0.2")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: NeutralResourcesLanguageAttribute("zh-TW")]

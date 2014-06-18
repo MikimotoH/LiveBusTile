@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Input;
 using Log = ScheduledTaskAgent1.Logger;
 using LiveBusTile.ViewModels;
+using System.IO.IsolatedStorage;
 
 namespace LiveBusTile
 {
@@ -24,23 +25,39 @@ namespace LiveBusTile
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             llsBuses.ItemsSource = DataService.AllBuses.Keys.Select(x => new StringVM {String=x}).ToList();
+            string inputMethod = "n";
+            IsolatedStorageSettings.ApplicationSettings.TryGetValue("InputMethod", out inputMethod);
+            UpdateInputMethod(inputMethod);
         }
 
-        private void btnInputMethod_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        private void UpdateInputMethod(string inputMethod)
         {
-            if( (btnInputMethod.Tag as string) == "n")
-            {
-
-                btnInputMethodImage.Source = new BitmapImage(new Uri("Images/Input.Char.png", UriKind.Relative));
-                btnInputMethod.Tag = "a";
-                tbBusName.InputScope = new InputScope { Names = { new InputScopeName { NameValue = InputScopeNameValue.Text } } };
-            }
-            else if( (btnInputMethod.Tag  as string) == "a")
+            if (inputMethod == "n")
             {
                 btnInputMethodImage.Source = new BitmapImage(new Uri("Images/Input.Number.png", UriKind.Relative));
                 btnInputMethod.Tag = "n";
                 tbBusName.InputScope = new InputScope { Names = { new InputScopeName { NameValue = InputScopeNameValue.Number } } };
             }
+            else
+            {
+                btnInputMethodImage.Source = new BitmapImage(new Uri("Images/Input.Char.png", UriKind.Relative));
+                btnInputMethod.Tag = "a";
+                tbBusName.InputScope = new InputScope { Names = { new InputScopeName { NameValue = InputScopeNameValue.Text } } };
+            }
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            IsolatedStorageSettings.ApplicationSettings["InputMethod"] = btnInputMethod.Tag;
+            base.OnNavigatedFrom(e);
+        }
+
+        private void btnInputMethod_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            if( (btnInputMethod.Tag as string) == "n")
+                UpdateInputMethod("a");
+            else
+                UpdateInputMethod("n");
         }
 
         bool m_prevent_TextChangeEvent=false;
@@ -52,8 +69,6 @@ namespace LiveBusTile
                 (from bus in DataService.AllBuses.Keys 
                  where bus.Contains(tbBusName.Text) 
                  select new StringVM { String = bus }).ToList();
-            //if (newList.Count < 2)
-            //    return;
             llsBuses.ItemsSource = newList;
         }
 
@@ -61,9 +76,7 @@ namespace LiveBusTile
         private void tbBusName_KeyDown(object sender, KeyEventArgs e)
         {
             if(e.Key == Key.Enter)
-            {
                 btnEnter_Tap(null, null);
-            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]

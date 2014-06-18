@@ -51,6 +51,7 @@ namespace LiveBusTile
             Log.Debug("removeSuccess=" + removeSuccess);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         static void LoadDefaultData()
         {
             JsonSerializer serializer = new JsonSerializer();
@@ -64,6 +65,7 @@ namespace LiveBusTile
         }
 
         static Object m_mutex = new Object();
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public static void LoadData()
         {
             lock (m_mutex)
@@ -130,6 +132,7 @@ namespace LiveBusTile
 
         #region AllBuses
         static Dictionary<string, StationPair> m_all_buses;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public static Dictionary<string, StationPair> AllBuses
         {
             get

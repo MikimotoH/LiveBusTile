@@ -312,7 +312,8 @@ namespace LiveBusTile
         void GotoDetailsPage(BusTagVM bt)
         {
             NavigationService.Navigate(new Uri(
-                "/BusStationDetails.xaml?busName={0}&station={1}&dir={2}&tag={3}".Fmt(bt.busName, bt.station, bt.dir, bt.tag), UriKind.Relative));
+                "/BusStationDetails.xaml?busName={0}&station={1}&dir={2}&tag={3}"
+                .Fmt(bt.busName, bt.station, bt.dir, bt.tag), UriKind.Relative));
         }
 
 

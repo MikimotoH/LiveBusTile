@@ -92,6 +92,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="About.xaml.cs">
+      <DependentUpon>About.xaml</DependentUpon>
+    </Compile>
     <Compile Include="AddBusStationTag.xaml.cs">
       <DependentUpon>AddBusStationTag.xaml</DependentUpon>
     </Compile>
@@ -128,6 +131,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
+    <Page Include="About.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="AddBusStationTag.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -181,6 +188,22 @@
     <None Include="Toolkit.Content\ApplicationBar.Cancel.png" />
     <None Include="Toolkit.Content\ApplicationBar.Check.png" />
     <None Include="marketplace_pics\wp_ss_20140617_0001.png" />
+    <None Include="marketplace_pics\720p\screenshot-0.png" />
+    <None Include="marketplace_pics\720p\screenshot-1.png" />
+    <None Include="marketplace_pics\720p\screenshot-2.png" />
+    <None Include="marketplace_pics\720p\screenshot-3.png" />
+    <None Include="marketplace_pics\720p\screenshot-4.5.png" />
+    <None Include="marketplace_pics\720p\screenshot-4.png" />
+    <None Include="marketplace_pics\720p\screenshot-5.png" />
+    <None Include="marketplace_pics\720p\screenshot-6.png" />
+    <None Include="marketplace_pics\wvga\screenshots-0.png" />
+    <None Include="marketplace_pics\wvga\screenshots-1.png" />
+    <None Include="marketplace_pics\wvga\screenshots-2.png" />
+    <None Include="marketplace_pics\wvga\screenshots-3.png" />
+    <None Include="marketplace_pics\wvga\screenshots-4.png" />
+    <None Include="marketplace_pics\wvga\screenshots-5.png" />
+    <None Include="marketplace_pics\wvga\screenshots-6.png" />
+    <None Include="marketplace_pics\wvga\screenshots-7.png" />
     <Content Include="Toolkit.Content\ApplicationBar.Delete.png" />
     <None Include="Toolkit.Content\ApplicationBar.Select.png" />
     <None Include="packages.config" />
