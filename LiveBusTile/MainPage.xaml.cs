@@ -128,9 +128,9 @@ namespace LiveBusTile
             try
             {
                 ScheduledActionService.Add(refreshBusTileTask);
-                // If debugging is enabled, use LaunchForTest to launch the agent in one minute.
-                ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromMilliseconds(1000));
-                Log.Debug("ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromMilliseconds(1000))");
+
+                ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromSeconds(1));
+                Log.Debug("ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromSeconds(1))");
             }
             catch (InvalidOperationException exception)
             {
@@ -246,7 +246,7 @@ namespace LiveBusTile
 
         Action<Action> runAtUI = (a) => { Deployment.Current.Dispatcher.BeginInvoke(a); };
 
-        async void RefreshBusTime()
+        void RefreshBusTime()
         {
             prgbarWaiting.Visibility = Visibility.Visible;
             foreach (var btn in this.ApplicationBar.Buttons)
@@ -254,40 +254,7 @@ namespace LiveBusTile
             this.ApplicationBar.IsMenuEnabled = false;
 
             var busTags = DataService.BusTags;
-            var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
-            var waIdx = Enumerable.Range(0, busTags.Count).ToList();
-            var timeToArrives = new string[busTags.Count];
-
-            while (tasks.Count>0)
-            {
-                await Task.Run(() =>
-                {
-                    int j = Task.WaitAny(tasks.ToArray());
-                    //Debug.WriteLine("Task.WaitAny() returns "+j);
-                });
-
-                for (int i = tasks.Count - 1; i >= 0; --i)
-                {
-                    if (tasks.Count == 0)
-                        break;
-                    if (tasks[i].IsCompleted)
-                    {
-                        //Debug.WriteLine("i={0} IsCompleted", i);
-                        //Debug.WriteLine("waIdx[" + waIdx.Count + "]={" + ",".Joyn(waIdx.Select(x => x.ToString())) + "}");
-
-                        int fIdx = waIdx[i];
-                        timeToArrives[fIdx] = tasks[i].Result;
-                        //Debug.WriteLine("fIdx={0}", fIdx);
-                        
-                        Debug.WriteLine("busTags[fIdx={0}].timeToArrive = {1}", fIdx, timeToArrives[fIdx]);
-                        busTags[fIdx].timeToArrive = timeToArrives[fIdx];
-                        
-                        waIdx.RemoveAt(i);
-                        tasks.RemoveAt(i);
-                    }
-                }
-            }
-
+            ScheduledAgent.RefreshBusTime(DataService.BusTags);
             foreach (var btn in this.ApplicationBar.Buttons)
                 (btn as ApplicationBarIconButton).IsEnabled = true;
             this.ApplicationBar.IsMenuEnabled = true;

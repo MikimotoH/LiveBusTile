@@ -126,7 +126,6 @@
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\AllBusesVM.cs" />
-    <Compile Include="ViewModels\BusTagVM.cs" />
     <Compile Include="ViewModels\KeyedBusTagVM.cs" />
   </ItemGroup>
   <ItemGroup>

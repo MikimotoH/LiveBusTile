@@ -138,7 +138,10 @@
     <value>Menu Item</value>
   </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>1.0.0.3</value>
+    <value>1.0.0.4</value>
     <comment>Application Version on Market Place Sumbission</comment>
+  </data>
+  <data name="NetworkFault" xml:space="preserve">
+    <value>網路有問題</value>
   </data>
 </root>

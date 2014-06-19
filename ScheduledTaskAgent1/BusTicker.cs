@@ -41,7 +41,7 @@ namespace ScheduledTaskAgent1
             if (nodes.Count == 0)
             {
                 Log.Debug("nodes.Count == 0");
-                return "發生錯誤";
+                return "網路障礙";
             }
             return nodes[0].InnerText;
         }

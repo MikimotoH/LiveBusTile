@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using Log = ScheduledTaskAgent1.Logger;
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 
 
 namespace ScheduledTaskAgent1
@@ -150,6 +151,41 @@ namespace ScheduledTaskAgent1
             }
         }
 
+        public static async void RefreshBusTime(ObservableCollection<BusTagVM> busTags)
+        {
+            var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
+            var waIdx = Enumerable.Range(0, busTags.Count).ToList();
+
+            while (tasks.Count > 0)
+            {
+                await Task.Run(() =>
+                {
+                    int j = Task.WaitAny(tasks.ToArray());
+                    //Debug.WriteLine("Task.WaitAny() returns "+j);
+                });
+
+                for (int i = tasks.Count - 1; i >= 0; --i)
+                {
+                    if (tasks.Count == 0)
+                        break;
+                    if (tasks[i].IsCompleted)
+                    {
+                        int fIdx = waIdx[i];
+                        try
+                        {
+                            busTags[fIdx].timeToArrive = tasks[i].Result;
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex.DumpStr());
+                            busTags[fIdx].timeToArrive = "網路障礙";
+                        }
+                        waIdx.RemoveAt(i);
+                        tasks.RemoveAt(i);
+                    }
+                }
+            }
+        }
  
         protected override void OnInvoke(ScheduledTask task)
         {
@@ -163,38 +199,46 @@ namespace ScheduledTaskAgent1
                 if ( (bWiFiOnly && !WifiConnected())
                     || tile==null)
                 {
-                    ScheduledActionService.LaunchForTest(task.Name, TimeSpan.FromSeconds(30));
+                    ScheduledActionService.LaunchForTest(task.Name, TimeSpan.FromSeconds(1));
                     this.NotifyComplete();
                     return;
                 }
 
-
-                var busTags = LoadBusTags();
-                busTags = (from bus in busTags orderby bus.tag select bus).ToArray();
+                var busTags = new ObservableCollection<BusTagVM>(
+                    from bus in LoadBusTags() orderby bus.tag select new BusTagVM(bus));
 
                 Log.Debug("busTags=" + busTags.DumpArray());
+                RefreshBusTime(busTags);
 
-                var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
-                var waIdx = Enumerable.Range(0, busTags.Length).ToList();
+                //var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
+                //var waIdx = Enumerable.Range(0, busTags.Length).ToList();
 
-                while (tasks.Count > 0)
-                {
-                    Task.WaitAny(tasks.ToArray());
-                    for (int i = tasks.Count - 1; i >= 0; --i)
-                    {
-                        if (tasks.Count == 0)
-                            break;
-                        if (tasks[i].IsCompleted)
-                        {
-                            int fIdx = waIdx[i];
-                            busTags[fIdx].timeToArrive = tasks[i].Result;
-                            waIdx.RemoveAt(i);
-                            tasks.RemoveAt(i);
-                        }
-                    }
-                }
+                //while (tasks.Count > 0)
+                //{
+                //    Task.WaitAny(tasks.ToArray());
+                //    for (int i = tasks.Count - 1; i >= 0; --i)
+                //    {
+                //        if (tasks.Count == 0)
+                //            break;
+                //        if (tasks[i].IsCompleted)
+                //        {
+                //            int fIdx = waIdx[i];
+                //            try
+                //            {
+                //                busTags[fIdx].timeToArrive = tasks[i].Result;
+                //            }
+                //            catch (Exception ex)
+                //            {
+                //                Log.Error(ex.DumpStr());
+                //                busTags[fIdx].timeToArrive = "網路障礙";
+                //            }
+                //            waIdx.RemoveAt(i);
+                //            tasks.RemoveAt(i);
+                //        }
+                //    }
+                //}
 
-                SaveBusTags(busTags);
+                SaveBusTags(busTags.Select(x=>x.BusTag).ToArray());
 
                 Deployment.Current.Dispatcher.BeginInvoke(() =>
                 {
@@ -202,7 +246,7 @@ namespace ScheduledTaskAgent1
                     try
                     {
                         Log.Debug("UpdateTileImage()");
-                        UpdateTileImage(busTags);
+                        UpdateTileImage(busTags.Select(x => x.BusTag).ToArray());
                         Log.Debug("Deployment.Current.Dispatcher.BeginInvoke exit");
                     }
                     catch (Exception e)
@@ -211,7 +255,7 @@ namespace ScheduledTaskAgent1
                     }
                     finally
                     {
-                        ScheduledActionService.LaunchForTest(task.Name, TimeSpan.FromSeconds(30));
+                        ScheduledActionService.LaunchForTest(task.Name, TimeSpan.FromSeconds(1));
                         this.NotifyComplete();
                         //Log.Close();
                     }

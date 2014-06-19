@@ -88,11 +88,20 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.0.0.3.
+        ///   Looks up a localized string similar to 1.0.0.4.
         /// </summary>
         public static string AppVersion {
             get {
                 return ResourceManager.GetString("AppVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 網路有問題.
+        /// </summary>
+        public static string NetworkFault {
+            get {
+                return ResourceManager.GetString("NetworkFault", resourceCulture);
             }
         }
         
