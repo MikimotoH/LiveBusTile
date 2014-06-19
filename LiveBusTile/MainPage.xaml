@@ -47,7 +47,7 @@
         <DataTemplate x:Key="GroupHeader">
             <Border Background="Transparent">
                 <Border Background="Transparent" BorderBrush="Transparent" BorderThickness="1"	
-                        Width="400" Height="Auto" 				 
+                        Width="400" Height="Auto"
                         HorizontalAlignment="Left">
                     <TextBlock Text="{Binding Key}" 
                                Foreground="Red" 
