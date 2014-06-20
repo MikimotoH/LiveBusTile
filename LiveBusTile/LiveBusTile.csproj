@@ -110,7 +110,11 @@
     <Compile Include="BusStationDetails.xaml.cs">
       <DependentUpon>BusStationDetails.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ExampleData.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="ListBusList.xaml.cs">
+      <DependentUpon>ListBusList.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LocalizedStrings.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -150,6 +154,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="BusStationDetails.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ListBusList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
