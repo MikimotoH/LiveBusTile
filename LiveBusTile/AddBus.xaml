@@ -11,19 +11,28 @@
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d"
-    xmlns:ViewModels="clr-namespace:LiveBusTile.ViewModels"
+    xmlns:data="clr-namespace:LiveBusTile"    
     shell:SystemTray.IsVisible="True">
     
     <phone:PhoneApplicationPage.Resources>
-        
-        <DataTemplate x:Key="ItemTemplate">
-            <Grid Height="Auto" Margin="0,1">
-                <TextBlock Text="{Binding String}" FontFamily="{StaticResource PhoneFontFamilyNormal}" 
-                           FontSize="36" Foreground="Orange" HorizontalAlignment="Center" TextAlignment="Center"
-                           TextWrapping="Wrap"
-                           />
-            </Grid>
-        </DataTemplate>
+        <data:ExampleAllBuses x:Key="ExampleAllBuses"/>
+        <Style x:Key="CenteredListBoxItemStyle" TargetType="ListBoxItem" >
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Border x:Name="LayoutRoot" BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                Background="{TemplateBinding Background}" 
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                            <ContentPresenter HorizontalAlignment="Stretch">
+                                <TextBlock Text="{Binding}" />
+                            </ContentPresenter>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </phone:PhoneApplicationPage.Resources>
     
     <!--LayoutRoot is the root grid where all page content is placed-->
@@ -40,35 +49,28 @@
         </StackPanel>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <Button Grid.Column="0" Tag="n" x:Name="btnInputMethod" Tap="btnInputMethod_Tap">
-                <Image Source="Images/Input.Number.png" x:Name="btnInputMethodImage"/>
-            </Button>
-            <TextBox Grid.Column="1" x:Name="tbBusName" InputScope="Number" 
+            <TextBox Grid.Column="0" x:Name="tbBusName" InputScope="Text" 
                      TextWrapping="Wrap"
                      TextChanged="tbBusName_TextChanged" KeyDown="tbBusName_KeyDown"/>
             <Button Grid.Column="2" x:Name="btnEnter" Margin="0,0,4,0" Tap="btnEnter_Tap">
                 <Image Source="Images/Btn.Enter.Png"/>
             </Button>
         </Grid>
-        <phone:LongListSelector 
+
+        <ListBox
             Grid.Row="2"
-            d:DataContext="{d:DesignInstance Type=ViewModels:AllBusesVM, IsDesignTimeCreatable=True}"
-            ItemsSource="{Binding AllBuses}"
-            x:Name="llsBuses" 
-            Tap="llsBuses_Tap"
-            ItemTemplate="{StaticResource ItemTemplate}"
-            />
-
-
-        <!--ContentPanel - place additional content here-->
-        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
-
-        </Grid>
+            x:Name="lbAllBuses" 
+            Tap="lbAllBuses_Tap"
+            HorizontalContentAlignment="Center"
+            ItemContainerStyle="{StaticResource CenteredListBoxItemStyle}"
+            FontStretch="Expanded" FontSize="38" Foreground="Orange" 
+            ItemsSource="{StaticResource ExampleAllBuses}"
+            >
+        </ListBox>
     </Grid>
 
 </phone:PhoneApplicationPage>

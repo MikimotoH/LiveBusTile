@@ -14,7 +14,10 @@ namespace ScheduledTaskAgent1
         {
             return new ObservableCollection<T>(arr);
         }
-
+        public static bool IsNone(this String s)
+        {
+            return String.IsNullOrEmpty(s);
+        }
         public static string DumpStr(this NavigationEventArgs e)
         {
             return String.Format("{{ Uri={0}, NavigationMode={1}, IsNavigationInitiator={2}, e.Content={3} }}",

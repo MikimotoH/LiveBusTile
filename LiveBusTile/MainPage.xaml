@@ -6,126 +6,143 @@
     xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ViewModels="clr-namespace:LiveBusTile.ViewModels"
-    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
-    mc:Ignorable="d"
-    
     FontFamily="{StaticResource PhoneFontFamilyNormal}"
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="{StaticResource PhoneForegroundBrush}"
-    SupportedOrientations="Portrait"  Orientation="Portrait"
-    shell:SystemTray.IsVisible="True"
-    
-    >
-    
-    <!--LayoutRoot is the root grid where all page content is placed-->
+    SupportedOrientations="Portrait" Orientation="Portrait"
+    mc:Ignorable="d"
+    xmlns:data="clr-namespace:LiveBusTile"
+    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
+    shell:SystemTray.IsVisible="True">
+
+
     <phone:PhoneApplicationPage.Resources>
-        <phone:JumpListItemBackgroundConverter x:Key="BackgroundConverter"/>
-        <phone:JumpListItemForegroundConverter x:Key="ForegroundConverter"/>
-        <Style x:Key="JumpListStyle" TargetType="phone:LongListSelector">
-            <Setter Property="LayoutMode" Value="List" />
-            <Setter Property="Margin" Value="12,12,0,0"/>
-            <Setter Property="ItemTemplate">
+        <data:ExampleBusGroups x:Key="ExampleBusGroups"/>
+
+        <Style x:Key="StretchedListBoxItemStyle" TargetType="ListBoxItem" >
+            <Setter Property="Template">
                 <Setter.Value>
-                    <DataTemplate>
-                        <Border Background="{Binding Converter={StaticResource BackgroundConverter}}" 
-                                Width="470" 
-                                Height="70" 
-                                Margin="6">
-                            <TextBlock Text="{Binding Key}"
-                                       Foreground="{Binding Converter={StaticResource ForegroundConverter}}"                                       
-                                       FontFamily="{StaticResource PhoneFontFamilySemiBold}"
-                                       FontSize="28"  
-                                       Padding="2"
-                                       VerticalAlignment="Bottom"/>
+                    <ControlTemplate>
+                        <Border x:Name="LayoutRoot" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" HorizontalAlignment="{TemplateBinding HorizontalAlignment}" VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                            <ContentPresenter HorizontalAlignment="Stretch"/>
                         </Border>
-                    </DataTemplate>
+                    </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>        
-        
-        <DataTemplate x:Key="GroupHeader">
-            <Border Background="Transparent">
-                <Border Background="Transparent" BorderBrush="Transparent" BorderThickness="1"	
-                        Width="400" Height="Auto"
-                        HorizontalAlignment="Left">
-                    <TextBlock Text="{Binding Key}" 
-                               Foreground="Red" 
-                               FontSize="36"
-                               Padding="2" FontWeight="ExtraBold"                               
-                               HorizontalAlignment="Left"
-                               VerticalAlignment="Center"/>
-                </Border>
-            </Border> 
-        </DataTemplate>
-        
-        <DataTemplate x:Key="ItemTemplate">
-            <Grid Height="Auto" Margin="5,5">
-                <toolkit:ContextMenuService.ContextMenu>
-                    <toolkit:ContextMenu>
-                        <toolkit:MenuItem Click="Item_Delete_Click" Header="刪除"/>
-                        <toolkit:MenuItem Click="Item_Details_Click" Header="詳情"/>
-                    </toolkit:ContextMenu>
-                </toolkit:ContextMenuService.ContextMenu>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width=".8*"/>
-                    <ColumnDefinition Width="1.9*"/>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="{Binding busName}" TextAlignment="Left"  HorizontalAlignment="Stretch"
-                           FontFamily="{StaticResource PhoneFontFamilyBold}" FontSize="28" Foreground="#FFFFE4B3" Margin="5,0"
-                           Grid.Column="0" />
-                <Border Grid.Column="1" BorderBrush="White" BorderThickness="1">
-                    <TextBlock Text="{Binding station}" TextAlignment="Left" HorizontalAlignment="Stretch"
-                           FontFamily="{StaticResource PhoneFontFamilyNormal}" FontSize="28" Foreground="Orange"  Margin="5,0"
-                           Grid.Column="1" />
-                </Border>
-                <TextBlock Text="{Binding timeToArrive}" TextAlignment="Right" HorizontalAlignment="Stretch"
-                           FontFamily="{StaticResource PhoneFontFamilyBold}" FontSize="28" Foreground="Orange"  Margin="5,0"
-                           Grid.Column="2" />
-            </Grid>
-        </DataTemplate>
+        </Style>
+
+        <Style x:Key="HilitedListBoxItemStyle" TargetType="ListBoxItem" >
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="LayoutRoot" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" HorizontalAlignment="{TemplateBinding HorizontalAlignment}" VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="MouseOver"/>
+
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="SelectionStates">
+                                    <VisualState x:Name="Unselected">
+                                        <Storyboard>
+                                            <ColorAnimation Duration="0" To="White" Storyboard.TargetProperty="(Control.Background).(SolidColorBrush.Color)" Storyboard.TargetName="ContentContainer" d:IsOptimized="True"/>
+                                            <ColorAnimation Duration="0" To="White" Storyboard.TargetProperty="(Control.Foreground).(SolidColorBrush.Color)" Storyboard.TargetName="ContentContainer" d:IsOptimized="True"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Selected">
+                                        <Storyboard>
+                                            <ColorAnimation Duration="0" To="Red" Storyboard.TargetProperty="(Control.Foreground).(SolidColorBrush.Color)" Storyboard.TargetName="ContentContainer" d:IsOptimized="True"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="SelectedUnfocused">
+                                        <Storyboard>
+                                            <ColorAnimation Duration="0" To="Red" Storyboard.TargetProperty="(Control.Foreground).(SolidColorBrush.Color)" Storyboard.TargetName="ContentContainer" d:IsOptimized="True"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <ContentControl x:Name="ContentContainer" ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                            Content="{TemplateBinding Content}" Foreground="#FF1BA1E2" 
+                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                            Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Background="Black" BorderBrush="Black"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </phone:PhoneApplicationPage.Resources>
-    
-    
-    <Grid x:Name="LayoutRoot" Background="Transparent"
-          >
+
+    <!--LayoutRoot is the root grid where all page content is placed-->
+    <Grid x:Name="LayoutRoot" Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*" />
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <ProgressBar Grid.Row="0" x:Name="prgbarWaiting" Height="10" 
                      IsIndeterminate="True" Foreground="LightBlue" Background="Transparent" Visibility="Collapsed"/>
-        <TextBlock Grid.Row="1" 
-                   Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" 
-                   Style="{StaticResource PhoneTextNormalStyle}"/>
-        <phone:LongListSelector 
-            Grid.Row="2"
-            d:DataContext="{d:DesignInstance Type=ViewModels:KeyedBusTagVM, IsDesignTimeCreatable=True}"
-            Name="BusCatLLS" 
-            ItemsSource="{Binding GroupedBuses}" 
-            ItemTemplate="{StaticResource ItemTemplate}"
-            GroupHeaderTemplate="{StaticResource GroupHeader}"
-            JumpListStyle="{StaticResource JumpListStyle}" 
-            IsGroupingEnabled="True"
-            HideEmptyGroups ="True" 
-            LayoutMode="List" DoubleTap="BusCatLLS_DoubleTap" />
+        <TextBlock Grid.Row="1" Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}"/>
+        <ListBox x:Name="lbBusGroups" Grid.Row="2" ItemsSource="{StaticResource ExampleBusGroups}" 
+                 HorizontalContentAlignment="Stretch" ItemContainerStyle="{StaticResource StretchedListBoxItemStyle}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid x:Name="grdBusLists" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="{Binding GroupName}" FontSize="30" Foreground="Beige"
+                                   Margin="10,10">
+                            <toolkit:ContextMenuService.ContextMenu>
+                                <toolkit:ContextMenu x:Name="ctxmenuListName">
+                                    <toolkit:MenuItem Header="更名" Click="ListNameMenuItem_Rename_Click"/>
+                                </toolkit:ContextMenu>
+                            </toolkit:ContextMenuService.ContextMenu>
+                        </TextBlock>
 
+                        <ListBox  x:Name="lbBuses" ItemsSource="{Binding Buses}" Grid.Row="1" 
+                                  ItemContainerStyle="{StaticResource StretchedListBoxItemStyle}" Margin="8,0,0,0" 
+                                  Tap="lbBuses_Tap" DoubleTap="lbBuses_DoubleTap" MouseMove="lbBuses_MouseMove">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="5,5" x:Name="grdBusRow" RenderTransformOrigin="0.5,0.5">
+                                        <toolkit:ContextMenuService.ContextMenu>
+                                            <toolkit:ContextMenu>
+                                                <toolkit:MenuItem Click="BusItem_Delete_Click" Header="刪除"/>
+                                                <toolkit:MenuItem Click="BusItem_Details_Click" Header="詳情"/>
+                                                <toolkit:MenuItem Click="BusItem_Refresh_Click" Header="刷新時間"/>
+                                            </toolkit:ContextMenu>
+                                        </toolkit:ContextMenuService.ContextMenu>
+                                        <Grid.ColumnDefinitions >
+                                            <ColumnDefinition Width="140"  x:Name="coldef0"  />
+                                            <ColumnDefinition Width="*"    x:Name="coldef1"  />
+                                            <ColumnDefinition Width="98"   x:Name="coldef2"  />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="ExtraBlack" FontSize="28" Foreground="Orange"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Station}" FontSize="28" Foreground="#FFFFE4B3" Margin="3,0"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding TimeToArrive}" FontSize="28" Foreground="Red"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
-    
+
     <phone:PhoneApplicationPage.ApplicationBar>
-        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
-            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Pin.png" Text="釘至桌面" Click="ApplicationBarIconButton_Click"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Refresh.png" Text="刷新時間" Click="ApplicationBarIconButton_Click"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddBus.png" Text="新增巴士" Click="ApplicationBarIconButton_Click"/>
+        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True" x:Name="appbar">
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Pin.png" Text="釘至桌面" Click="AppBar_Pin_Click"/>
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Refresh.png" Text="刷新時間" Click="AppBar_Refresh_Click"/>
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddBus.png" Text="新增巴士" Click="AppBar_AddBus_Click"/>
             <shell:ApplicationBar.MenuItems>
-                <shell:ApplicationBarMenuItem Text="釘至桌面" Click="ApplicationBarMenuItem_Click"/>
-                <shell:ApplicationBarMenuItem Text="刷新時間" Click="ApplicationBarMenuItem_Click"/>
-                <shell:ApplicationBarMenuItem Text="新增巴士" Click="ApplicationBarMenuItem_Click"/>
-                <shell:ApplicationBarMenuItem Text="設定" Click="ApplicationBarMenuItem_Click"/>
-                <shell:ApplicationBarMenuItem Text="關於…" Click="ApplicationBarMenuItem_Click"/>
+                <shell:ApplicationBarMenuItem Text="設定" Click="AppBar_Settings_Click"/>
+                <shell:ApplicationBarMenuItem Text="關於…" Click="AppBar_About_Click"/>
             </shell:ApplicationBar.MenuItems>
         </shell:ApplicationBar>
     </phone:PhoneApplicationPage.ApplicationBar>
+
 </phone:PhoneApplicationPage>

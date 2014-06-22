@@ -4,13 +4,13 @@
   <Languages xmlns="">
     <Language code="zh-TW" />
   </Languages>
-  <App xmlns="" ProductID="{ddb6fc0b-3323-4322-9188-18e965b04492}" Title="台北巴士快速磚" RuntimeType="Silverlight" Version="1.0.0.4" Genre="apps.normal" Author="MikimotoH" Description="把常看的公車站牌同時秀在一個動態磚上。&#xD;&#xA;比如說，要出門上班時可以選橘2與275，但不知道哪一個先來，而且兩個站牌是在不同地方。本程式可讓兩個公車站牌並列秀出，讓你立刻可以決定。&#xD;&#xA;背景程式會定時取得資訊，只要解鎖手機看桌面動態磚就立刻可以決定，甚至不用開啟進入程式。&#xD;&#xA;可將公車站牌依照標籤分類為「上班」、「回家」，或是自定的標籤。" Publisher="MikimotoH" PublisherID="{0cbe5e37-3c4d-4a56-8cb9-1846ff24a561}">
+  <App xmlns="" ProductID="{ddb6fc0b-3323-4322-9188-18e965b04492}" Title="台北巴士快速磚" RuntimeType="Silverlight" Version="1.2.0.0" Genre="apps.normal" Author="MikimotoH" Description="把常看的公車站牌同時秀在一個動態磚上。&#xD;&#xA;比如說，要出門上班時可以選橘2與275，但不知道哪一個先來，而且兩個站牌是在不同地方。本程式可讓兩個公車站牌並列秀出，讓你立刻可以決定。&#xD;&#xA;背景程式會定時取得資訊，只要解鎖手機看桌面動態磚就立刻可以決定，甚至不用開啟進入程式。&#xD;&#xA;可將公車站牌依照標籤分類為「上班」、「回家」，或是自定的標籤。" Publisher="MikimotoH" PublisherID="{0cbe5e37-3c4d-4a56-8cb9-1846ff24a561}">
     <IconPath IsRelative="true" IsResource="false">Images\AppStore-Icon-300x300.png</IconPath>
     <Capabilities>
       <Capability Name="ID_CAP_NETWORKING" />
     </Capabilities>
     <Tasks>
-      <DefaultTask Name="_default" NavigationPage="ListBusList.xaml" />
+      <DefaultTask Name="_default" NavigationPage="MainPage.xaml" />
       <ExtendedTask Name="BackgroundTask">
         <BackgroundServiceAgent Specifier="ScheduledTaskAgent" Name="ScheduledTaskAgent1" Source="ScheduledTaskAgent1" Type="ScheduledTaskAgent1.ScheduledAgent" />
       </ExtendedTask>

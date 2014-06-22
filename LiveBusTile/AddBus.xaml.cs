@@ -9,9 +9,8 @@ using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using System.Windows.Media.Imaging;
 using System.Windows.Input;
-using Log = ScheduledTaskAgent1.Logger;
-using LiveBusTile.ViewModels;
 using System.IO.IsolatedStorage;
+using ScheduledTaskAgent1;
 
 namespace LiveBusTile
 {
@@ -24,40 +23,7 @@ namespace LiveBusTile
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            llsBuses.ItemsSource = DataService.AllBuses.Keys.Select(x => new StringVM {String=x}).ToList();
-            string inputMethod = "n";
-            IsolatedStorageSettings.ApplicationSettings.TryGetValue("InputMethod", out inputMethod);
-            UpdateInputMethod(inputMethod);
-        }
-
-        private void UpdateInputMethod(string inputMethod)
-        {
-            if (inputMethod == "n")
-            {
-                btnInputMethodImage.Source = new BitmapImage(new Uri("Images/Input.Number.png", UriKind.Relative));
-                btnInputMethod.Tag = "n";
-                tbBusName.InputScope = new InputScope { Names = { new InputScopeName { NameValue = InputScopeNameValue.Number } } };
-            }
-            else
-            {
-                btnInputMethodImage.Source = new BitmapImage(new Uri("Images/Input.Char.png", UriKind.Relative));
-                btnInputMethod.Tag = "a";
-                tbBusName.InputScope = new InputScope { Names = { new InputScopeName { NameValue = InputScopeNameValue.Text } } };
-            }
-        }
-
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            IsolatedStorageSettings.ApplicationSettings["InputMethod"] = btnInputMethod.Tag;
-            base.OnNavigatedFrom(e);
-        }
-
-        private void btnInputMethod_Tap(object sender, System.Windows.Input.GestureEventArgs e)
-        {
-            if( (btnInputMethod.Tag as string) == "n")
-                UpdateInputMethod("a");
-            else
-                UpdateInputMethod("n");
+            lbAllBuses.ItemsSource = Database.AllBuses.Keys;
         }
 
         bool m_prevent_TextChangeEvent=false;
@@ -65,11 +31,8 @@ namespace LiveBusTile
         {
             if (m_prevent_TextChangeEvent)
                 return;
-            List<StringVM> newList= 
-                (from bus in DataService.AllBuses.Keys 
-                 where bus.Contains(tbBusName.Text) 
-                 select new StringVM { String = bus }).ToList();
-            llsBuses.ItemsSource = newList;
+            List<string> newList = Database.AllBuses.Keys.Where(x => x.Contains(tbBusName.Text)).ToList();
+            lbAllBuses.ItemsSource = newList;
         }
 
 
@@ -79,10 +42,9 @@ namespace LiveBusTile
                 btnEnter_Tap(null, null);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private void btnEnter_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-            if (!DataService.AllBuses.Keys.Contains(tbBusName.Text))
+            if (!Database.AllBuses.Keys.Contains(tbBusName.Text))
             {
                 MessageBox.Show("不存在的公車名稱："+tbBusName.Text);
                 return;
@@ -90,17 +52,24 @@ namespace LiveBusTile
             NavigationService.Navigate(new Uri("/AddBusStation.xaml?busName=" + tbBusName.Text, UriKind.Relative));
         }
 
-        private void llsBuses_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        private void lbAllBuses_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-            Log.Debug("");
-            if (llsBuses.SelectedItem == null)
+            App.m_AppLog.Debug("");
+            if (lbAllBuses.SelectedItem == null)
                 return;
-            Log.Debug("llsBuses.SelectedItem=" + (llsBuses.SelectedItem as StringVM).String);
+            App.m_AppLog.Debug("lbAllBuses.SelectedItem=" + (lbAllBuses.SelectedItem as string));
             m_prevent_TextChangeEvent = true;
-            tbBusName.Text = (llsBuses.SelectedItem as StringVM).String;
+            tbBusName.Text = (lbAllBuses.SelectedItem as string);
             m_prevent_TextChangeEvent = false;
         }
+    }
 
-
+    public class ExampleAllBuses: List<string>
+    {
+        public ExampleAllBuses()
+        {
+            Add("綠2");
+            Add("敦化幹線");
+        }
     }
 }

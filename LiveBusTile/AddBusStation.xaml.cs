@@ -10,8 +10,7 @@ using Microsoft.Phone.Shell;
 using System.Windows.Media.Imaging;
 using System.Windows.Input;
 using ScheduledTaskAgent1;
-using LiveBusTile.ViewModels;
-using Log = ScheduledTaskAgent1.Logger;
+
 
 namespace LiveBusTile
 {
@@ -25,37 +24,42 @@ namespace LiveBusTile
         string m_busName;
         StationPair m_stationPair;
         BusDir m_dir = BusDir.go;
-        string[] CurStations()
-        {
-            return m_dir == BusDir.go ? m_stationPair.stations_go : m_stationPair.stations_back;
-        }
+
+        //string[] CurStations()
+        //{
+        //    return m_dir == BusDir.go ? m_stationPair.stations_go : m_stationPair.stations_back;
+        //}
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             m_busName = NavigationContext.QueryString["busName"];
-            m_stationPair = DataService.AllBuses[m_busName];
+            m_stationPair = Database.AllBuses[m_busName];
             m_dir = BusDir.go;
-            llsStations.ItemsSource = CurStations().Select(x=>new StringVM(x)).ToList();
             tbBusName.Text = m_busName;
+
+            lbStationsGo.ItemsSource = m_stationPair.stations_go.ToList();
+            pivotItemGo.Header = "往：" + m_stationPair.stations_go.LastElement();
+            lbStationsBack.ItemsSource = m_stationPair.stations_back.ToList();
+            pivotItemBack.Header = "返：" + m_stationPair.stations_back.LastElement();
         }
 
-        private void btnDir_Tap(object sender, System.Windows.Input.GestureEventArgs e)
-        {
-            if( m_dir == BusDir.go)
-            {
-                if (m_stationPair.stations_back.Length == 0)
-                    return;
-                btnDirText.Text = "返↑";
-                m_dir = BusDir.back;
-                llsStations.ItemsSource = CurStations().Select(x => new StringVM(x)).ToList();
-            }
-            else
-            {
-                btnDirText.Text = "往↓";
-                m_dir = BusDir.go;
-                llsStations.ItemsSource = CurStations().Select(x => new StringVM(x)).ToList();
-            }
-        }
+        //private void btnDir_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        //{
+        //    if( m_dir == BusDir.go)
+        //    {
+        //        if (m_stationPair.stations_back.Length == 0)
+        //            return;
+        //        btnDirText.Text = "返";
+        //        m_dir = BusDir.back;
+        //    }
+        //    else
+        //    {
+        //        btnDirText.Text = "往";
+        //        m_dir = BusDir.go;
+        //    }
+        //    lbStationsGo.ItemsSource = CurStations().ToList();
+        //    tbGoTo.Text = "到：" + CurStations().LastElement();
+        //}
 
         private void tbBusName_KeyDown(object sender, KeyEventArgs e)
         {
@@ -65,27 +69,61 @@ namespace LiveBusTile
 
         private void btnEnter_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-            if (!CurStations().Contains(tbStation.Text))
+            if (! m_stationPair.GetStations(m_dir).Contains(tbStation.Text))
             {
                 MessageBox.Show("不存在的站牌："+tbStation.Text);
                 return;
             }
             NavigationService.Navigate(new Uri(
-                "/AddBusStationTag.xaml?busName={0}&station={1}&dir={2}"
+                "/AddBusStationGroup.xaml?busName={0}&station={1}&dir={2}"
                 .Fmt(m_busName, tbStation.Text, m_dir.ToString()), UriKind.Relative));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        private void llsStations_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+
+        private void lbStationsGo_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-            Log.Debug("");
-            if (llsStations.SelectedItem == null)
+            App.m_AppLog.Debug("");
+            if (lbStationsGo.SelectedItem == null)
                 return;
-            Log.Debug("llsStations.SelectedItem=" + (llsStations.SelectedItem as StringVM).String);
-            tbStation.Text = (llsStations.SelectedItem as StringVM).String;
+            App.m_AppLog.Debug("lbStationsGo.SelectedItem=" + (lbStationsGo.SelectedItem as string));
+            tbStation.Text = (lbStationsGo.SelectedItem as string);
+            m_dir = BusDir.go;
+        }
+        private void lbStationsBack_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            App.m_AppLog.Debug("");
+            if (lbStationsBack.SelectedItem == null)
+                return;
+            App.m_AppLog.Debug("lbStationsBack.SelectedItem=" + (lbStationsBack.SelectedItem as string));
+            tbStation.Text = (lbStationsBack.SelectedItem as string);
+            m_dir = BusDir.back;
         }
 
 
-
     }
+
+    public class ExampleBusStationsGo:List<string>
+    {
+        public ExampleBusStationsGo()
+        {
+            Add("捷運永安市場站");
+            Add("永安市場");
+            Add("八二三紀念公園");
+            Add("得和路一");
+            Add("得和路");
+        }
+    }
+
+    public class ExampleBusStationsBack : List<string>
+    {
+        public ExampleBusStationsBack()
+        {
+            Add("自立路");
+            Add("民生路");
+            Add("秀朗國小");
+            Add("得和路");
+            Add("永安市場");
+        }
+    }
+
 }

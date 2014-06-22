@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using Log = ScheduledTaskAgent1.Logger;
-using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 
 
@@ -47,10 +46,10 @@ namespace ScheduledTaskAgent1
 
         const string m_tileImgPath = @"Shared\ShellContent\Tile.jpg";
 
-        static void UpdateTileImage(BusTag[] busTags)
+        static void UpdateTileImage(BusInfo[] buses)
         {
             Log.Debug("");
-            GenerateTileJpg("\n".Joyn(busTags.Select(x => x.busName + " " + x.timeToArrive)));
+            GenerateTileJpg("\n".Joyn(buses.Select(x => x.Name + " " + x.TimeToArrive)));
             ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
 
             if (tile != null)
@@ -100,69 +99,29 @@ namespace ScheduledTaskAgent1
         {
             var profile = Windows.Networking.Connectivity.NetworkInformation.GetInternetConnectionProfile();
             var interfaceType = profile.NetworkAdapter.IanaInterfaceType;
-            // 71 is WiFi & 6 is Ethernet(LAN)
+            // 71 is WiFi & 6 is Ethernet(LAN),   243 & 244 is 3G/Mobile
             return (interfaceType == 71 || interfaceType == 6);
         }
 
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
-        private void SaveBusTags(BusTag[] busTags)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="busList"></param>
+        /// <returns> true means Network is OK. false means Network has problem</returns>
+        public static async Task<bool> RefreshBusTime(BusInfo[] busList)
         {
-            JsonSerializer serializer = new JsonSerializer();
-            serializer.NullValueHandling = NullValueHandling.Ignore;
-
-            try
-            {
-                using (StreamWriter sw = new StreamWriter(
-                    IsolatedStorageFile.GetUserStoreForApplication().OpenFile(@"Shared\ShellContent\saved_buses.json",
-                    FileMode.OpenOrCreate, FileAccess.Write, FileShare.None)))
-                using (JsonWriter writer = new JsonTextWriter(sw))
-                {
-                    serializer.Serialize(writer, busTags);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex.DumpStr());
-            }
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
-        public BusTag[] LoadBusTags()
-        {
-            JsonSerializer serializer = new JsonSerializer();
-            serializer.NullValueHandling = NullValueHandling.Ignore;
-
-            if (!IsolatedStorageFile.GetUserStoreForApplication().FileExists((@"Shared\ShellContent\saved_buses.json")))
-            {
-                using (StreamReader sr = new StreamReader(Application.GetResourceStream(new Uri("Data/default_bustags.json", UriKind.Relative)).Stream))
-                using (JsonReader reader = new JsonTextReader(sr))
-                {
-                    return serializer.Deserialize(reader, typeof(BusTag[])) as BusTag[];
-                }
-            }
-
-            using (StreamReader sr = new StreamReader(
-                IsolatedStorageFile.GetUserStoreForApplication().OpenFile(@"Shared\ShellContent\saved_buses.json",
-                FileMode.Open, FileAccess.Read, FileShare.Read)))
-            using (JsonReader reader = new JsonTextReader(sr))
-            {
-                return serializer.Deserialize(reader, typeof(BusTag[])) as BusTag[];
-            }
-        }
-
-        public static async void RefreshBusTime(ObservableCollection<BusTagVM> busTags)
-        {
-            var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
-            var waIdx = Enumerable.Range(0, busTags.Count).ToList();
+            var tasks = busList.Select(b => BusTicker.GetBusDueTime(b)).ToList();
+            var waIdx = Enumerable.Range(0, busList.Length).ToList();
+            bool bNetworkIsOK = true;
 
             while (tasks.Count > 0)
             {
-                await Task.Run(() =>
+                int j = await Task.Run(() =>
                 {
-                    int j = Task.WaitAny(tasks.ToArray());
-                    //Debug.WriteLine("Task.WaitAny() returns "+j);
+                    return Task.WaitAny(tasks.ToArray());
                 });
+                
+                //Debug.WriteLine("Task.WaitAny() returns "+j);
 
                 for (int i = tasks.Count - 1; i >= 0; --i)
                 {
@@ -171,27 +130,29 @@ namespace ScheduledTaskAgent1
                     if (tasks[i].IsCompleted)
                     {
                         int fIdx = waIdx[i];
-                        try
+                        if (tasks[i].Status == TaskStatus.RanToCompletion)
                         {
-                            busTags[fIdx].timeToArrive = tasks[i].Result;
+                            busList[fIdx].TimeToArrive = tasks[i].Result;
+                            Log.Debug("bus: {{ {0},{1},\"{2}\" }}".Fmt(busList[fIdx].Name, busList[fIdx].Station, busList[fIdx].TimeToArrive));
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Log.Error(ex.DumpStr());
-                            busTags[fIdx].timeToArrive = "網路障礙";
+                            bNetworkIsOK = false;
                         }
+
                         waIdx.RemoveAt(i);
                         tasks.RemoveAt(i);
                     }
                 }
             }
+            return bNetworkIsOK;
         }
  
-        protected override void OnInvoke(ScheduledTask task)
+        protected override async void OnInvoke(ScheduledTask task)
         {
             try
             {
-                //Log.Create(false);
+                Log.Create(false, "AgentLog.txt");
                 ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
 
                 bool bWiFiOnly = false;
@@ -204,49 +165,20 @@ namespace ScheduledTaskAgent1
                     return;
                 }
 
-                var busTags = new ObservableCollection<BusTagVM>(
-                    from bus in LoadBusTags() orderby bus.tag select new BusTagVM(bus));
+                BusInfo[] buses= Database.FavBuses;
 
-                Log.Debug("busTags=" + busTags.DumpArray());
-                RefreshBusTime(busTags);
+                Log.Debug("buses=" + buses.DumpArray());
+                bool bNetworkIsOK = await RefreshBusTime(buses);
 
-                //var tasks = busTags.Select(b => BusTicker.GetBusDueTime(b)).ToList();
-                //var waIdx = Enumerable.Range(0, busTags.Length).ToList();
+                Database.SaveFavBusGroups();
 
-                //while (tasks.Count > 0)
-                //{
-                //    Task.WaitAny(tasks.ToArray());
-                //    for (int i = tasks.Count - 1; i >= 0; --i)
-                //    {
-                //        if (tasks.Count == 0)
-                //            break;
-                //        if (tasks[i].IsCompleted)
-                //        {
-                //            int fIdx = waIdx[i];
-                //            try
-                //            {
-                //                busTags[fIdx].timeToArrive = tasks[i].Result;
-                //            }
-                //            catch (Exception ex)
-                //            {
-                //                Log.Error(ex.DumpStr());
-                //                busTags[fIdx].timeToArrive = "網路障礙";
-                //            }
-                //            waIdx.RemoveAt(i);
-                //            tasks.RemoveAt(i);
-                //        }
-                //    }
-                //}
-
-                SaveBusTags(busTags.Select(x=>x.BusTag).ToArray());
-
+ 
                 Deployment.Current.Dispatcher.BeginInvoke(() =>
                 {
-                    Log.Debug("Deployment.Current.Dispatcher.BeginInvoke enter");
                     try
                     {
                         Log.Debug("UpdateTileImage()");
-                        UpdateTileImage(busTags.Select(x => x.BusTag).ToArray());
+                        UpdateTileImage(buses);
                         Log.Debug("Deployment.Current.Dispatcher.BeginInvoke exit");
                     }
                     catch (Exception e)
@@ -255,15 +187,25 @@ namespace ScheduledTaskAgent1
                     }
                     finally
                     {
-                        ScheduledActionService.LaunchForTest(task.Name, TimeSpan.FromSeconds(1));
+                        Log.Debug("ScheduledActionService.LaunchForTest - start");
+                        ScheduledActionService.LaunchForTest(task.Name, TimeSpan.FromSeconds(25));
+                        Log.Debug("ScheduledActionService.LaunchForTest - finish");
+                        Log.Close();
                         this.NotifyComplete();
-                        //Log.Close();
                     }
                 });
             }
             catch (Exception e)
             {
                 Log.Error(e.DumpStr());
+            }
+            finally
+            {
+                Log.Debug("ScheduledActionService.LaunchForTest - start");
+                ScheduledActionService.LaunchForTest(task.Name, TimeSpan.FromSeconds(25));
+                Log.Debug("ScheduledActionService.LaunchForTest - finish");
+                Log.Close();
+                this.NotifyComplete();
             }
         }
 

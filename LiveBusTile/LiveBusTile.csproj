@@ -95,8 +95,8 @@
     <Compile Include="About.xaml.cs">
       <DependentUpon>About.xaml</DependentUpon>
     </Compile>
-    <Compile Include="AddBusStationTag.xaml.cs">
-      <DependentUpon>AddBusStationTag.xaml</DependentUpon>
+    <Compile Include="AddBusStationGroup.xaml.cs">
+      <DependentUpon>AddBusStationGroup.xaml</DependentUpon>
     </Compile>
     <Compile Include="AddBusStation.xaml.cs">
       <DependentUpon>AddBusStation.xaml</DependentUpon>
@@ -110,27 +110,24 @@
     <Compile Include="BusStationDetails.xaml.cs">
       <DependentUpon>BusStationDetails.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ExampleData.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="ListBusList.xaml.cs">
-      <DependentUpon>ListBusList.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="LocalizedStrings.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="LocalizedStrings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\AppResources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AppResources.resx</DependentUpon>
     </Compile>
-    <Compile Include="DataService.cs" />
     <Compile Include="Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModels\AllBusesVM.cs" />
-    <Compile Include="ViewModels\KeyedBusTagVM.cs" />
+    <Compile Include="WindowsPhoneControl1.xaml.cs">
+      <DependentUpon>WindowsPhoneControl1.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -141,7 +138,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="AddBusStationTag.xaml">
+    <Page Include="AddBusStationGroup.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -157,10 +154,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ListBusList.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -169,12 +162,13 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="WindowsPhoneControl1.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Images\AppStore-Icon-300x300.png" />
-    <Content Include="Data\buses_simple.json" />
-    <Content Include="Data\default_bustags.json" />
-    <None Include="Data\stations_noregion.json" />
     <None Include="marketplace_pics\AppBar.AddBus.psd" />
     <None Include="marketplace_pics\AppBar.AddStation.psd" />
     <None Include="marketplace_pics\AppBar.Char.Disabled.psd" />
@@ -186,7 +180,6 @@
     <None Include="marketplace_pics\Bus-Profiling-flattened-Icon.psd" />
     <None Include="marketplace_pics\Bus-Profiling-Icon.psd" />
     <None Include="marketplace_pics\Bus-Profiling.psd" />
-    <None Include="README_FIRST.txt" />
     <None Include="marketplace_pics\AppStore-Icon-1000x800.png" />
     <None Include="marketplace_pics\AppStore-Icon-300x300.png" />
     <None Include="marketplace_pics\AppStore-Icon-358-square.png" />
@@ -264,9 +257,6 @@
     <Reference Include="Microsoft.Phone.Controls.Toolkit">
       <HintPath>..\packages\WPtoolkit.4.2013.08.16\lib\wp8\Microsoft.Phone.Controls.Toolkit.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\portable-net45+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System.Windows.Interactivity" />
     <Reference Include="System.Xml.XPath, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -282,7 +272,9 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="ViewModels\" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(TargetFrameworkVersion).Overrides.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

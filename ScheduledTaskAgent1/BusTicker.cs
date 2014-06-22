@@ -21,11 +21,11 @@ namespace ScheduledTaskAgent1
         const string route_url = @"http://pda.5284.com.tw/MQS/businfo2.jsp?routename=";
 
 
-
-        public static Task<string> GetBusDueTime(BusTag b)
+        public static Task<string> GetBusDueTime(BusInfo b)
         {
-            return GetBusDueTime(b.busName, b.station, b.dir);
+            return GetBusDueTime(b.Name, b.Station, b.Dir);
         }
+
         public static async Task<string> GetBusDueTime(string busName, string stationName, BusDir busDir)
         {
             string url = @"http://pda.5284.com.tw/MQS/businfo3.jsp?Mode=1&Dir={1}&Route={0}&Stop={2}".Fmt(

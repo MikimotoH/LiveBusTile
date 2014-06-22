@@ -11,16 +11,32 @@
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d"
-    xmlns:ViewModels="clr-namespace:LiveBusTile.ViewModels"
+    xmlns:data="clr-namespace:LiveBusTile"
     shell:SystemTray.IsVisible="True">
 
     <phone:PhoneApplicationPage.Resources>
-        <DataTemplate x:Key="ItemTemplate">
-            <Grid Height="Auto" Margin="0,1">
-                <TextBlock Text="{Binding String}" FontFamily="{StaticResource PhoneFontFamilyNormal}" 
-                           FontSize="36" Foreground="Orange" HorizontalAlignment="Center" />
-            </Grid>
-        </DataTemplate>
+        <data:ExampleBusStationsGo x:Key="ExampleBusStationsGo"/>
+        <data:ExampleBusStationsBack x:Key="ExampleBusStationsBack"/>
+        <Style x:Key="CenteredListBoxItemStyle" TargetType="ListBoxItem" >
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <TextBlock FontSize="36" Foreground="Magenta" Text="{Binding}" 
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SmallPivotTitleStyle" TargetType="phone:PivotItem">
+            <Setter Property="Header">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock FontSize="20" Foreground="Brown"/>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </phone:PhoneApplicationPage.Resources>
 
     <!--LayoutRoot is the root grid where all page content is placed-->
@@ -40,33 +56,69 @@
         <TextBlock x:Name="tbBusName" Grid.Row="1" Text="巴士名稱" FontSize="44"/>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="btnDir" Tap="btnDir_Tap">
-                <TextBlock Grid.Column="0"  Text="往↓" Tag="g" FontSize="40" 
+            <!--
+            <Button x:Name="btnDir" Tap="btnDir_Tap" Visibility="Collapsed">
+                <TextBlock Grid.Column="0"  Text="往" Tag="g" FontSize="32" 
                            x:Name="btnDirText"/>
             </Button>
-            <TextBox Grid.Column="1" x:Name="tbStation" InputScope="Text" />
-            <Button Grid.Column="2" x:Name="btnEnter" Tap="btnEnter_Tap"  Margin="0,0,8,0">
+            -->
+            <TextBox Grid.Column="0" x:Name="tbStation" InputScope="Text" FontSize="32" />
+            <Button Grid.Column="1" x:Name="btnEnter" Tap="btnEnter_Tap"  Margin="0,0,8,0">
                 <Image Source="Images/Btn.Enter.Png"/>
             </Button>
         </Grid>
-        <phone:LongListSelector 
-            Grid.Row="3"
-            d:DataContext="{d:DesignInstance Type=ViewModels:AllBusesVM, IsDesignTimeCreatable=True}"
-            ItemsSource="{Binding SampledStations}" 
-            x:Name="llsStations" 
-            ItemTemplate="{StaticResource ItemTemplate}"
-            Tap="llsStations_Tap" 
+        
+        <phone:Pivot Grid.Row="3">
+            <phone:Pivot.HeaderTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <TextBlock Text="{Binding}" FontSize="20" Foreground="Aqua" />
+                    </Grid>
+                </DataTemplate>
+            </phone:Pivot.HeaderTemplate>
+            <phone:PivotItem x:Name="pivotItemGo" Header="往：秀山站">
+                <ListBox
+                    x:Name="lbStationsGo" 
+                    Margin="0,-10,0,0"
+                    Tap="lbStationsGo_Tap" 
+                    ItemContainerStyle="{StaticResource CenteredListBoxItemStyle}"
+                    ItemsSource="{StaticResource ExampleBusStationsGo}" 
+                    />
+            </phone:PivotItem>
+            <phone:PivotItem x:Name="pivotItemBack" Header="返：碧湖社區">
+                <ListBox
+                    x:Name="lbStationsBack" 
+                    Margin="0,-10,0,0"
+                    Tap="lbStationsBack_Tap" 
+                    ItemContainerStyle="{StaticResource CenteredListBoxItemStyle}"
+                    ItemsSource="{StaticResource ExampleBusStationsBack}" 
+                    />
+            </phone:PivotItem>
+        </phone:Pivot>
+
+        <!--
+        
+        <ListBox
+            Grid.Row="4"
+            x:Name="lbStationsGo" 
+            Tap="lbStationsGo_Tap" 
+            ItemContainerStyle="{StaticResource CenteredListBoxItemStyle}"
+            ItemsSource="{StaticResource ExampleBusStationsGo}" 
             />
-
-
-        <!--ContentPanel - place additional content here-->
-        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
-
-        </Grid>
+        <Border Grid.Row="5" BorderThickness="1" BorderBrush="Beige">
+            <TextBlock x:Name="tbBackTo" Text="返：碧湖社區"  FontSize="36" HorizontalAlignment="Left"/>
+        </Border>
+        <ListBox
+            Grid.Row="6"
+            x:Name="lbStationsBack" 
+            Tap="lbStationsBack_Tap" 
+            ItemContainerStyle="{StaticResource CenteredListBoxItemStyle}"
+            ItemsSource="{StaticResource ExampleBusStationsBack}" 
+            />
+        -->
     </Grid>
 
 </phone:PhoneApplicationPage>

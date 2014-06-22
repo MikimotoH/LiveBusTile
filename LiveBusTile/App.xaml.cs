@@ -7,12 +7,11 @@ using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using LiveBusTile.Resources;
-using LiveBusTile.ViewModels;
 using ScheduledTaskAgent1;
-using Log = ScheduledTaskAgent1.Logger;
 using System.IO.IsolatedStorage;
 using System.IO;
 using System.Collections.ObjectModel;
+using Microsoft.Phone.Scheduler;
 
 namespace LiveBusTile
 {
@@ -24,16 +23,20 @@ namespace LiveBusTile
         /// </summary>
         /// <returns>The root frame of the Phone Application.</returns>
         public static PhoneApplicationFrame RootFrame { get; private set; }
+        public static AppLog m_AppLog;
+
 
         /// <summary>
         /// Constructor for the Application object.
         /// </summary>
         public App()
         {
-            Log.Debug("App ctor()");
+            m_AppLog = new AppLog();
+            m_AppLog.Create(false, "AppLog.txt");
+
+            m_AppLog.Debug("App ctor()");
             //Log.Debug("App ctor() m_RecusiveBack=" + m_RecusiveBack);
             //Log.Debug("App ctor() {0} {1}".Fmt(Debugger.IsAttached, Application.Current.ApplicationLifetimeObjects.Count));
-            DataService.IsDesignTime = false;
             IsolatedStorageFile.GetUserStoreForApplication().CreateDirectory(@"Shared\ShellContent");
 
             // Global handler for uncaught exceptions.
@@ -68,7 +71,7 @@ namespace LiveBusTile
                 PhoneApplicationService.Current.UserIdleDetectionMode = IdleDetectionMode.Disabled;
             }
             //Log.Create(true);
-            MainPage.RemoveAgent();
+            RemoveAgent();
         }
 
         //static bool m_RecusiveBack = false;
@@ -78,27 +81,27 @@ namespace LiveBusTile
         // This code will not execute when the application is reactivated
         private void Application_Launching(object sender, LaunchingEventArgs e)
         {
-            Log.Debug("e="+e.ToString());
+            m_AppLog.Debug("e="+e.ToString());
         }
 
         // Code to execute when the application is activated (brought to foreground)
         // This code will not execute when the application is first launched
         private void Application_Activated(object sender, ActivatedEventArgs e)
         {
-            Log.Debug("e.IsApplicationInstancePreserved=" + e.IsApplicationInstancePreserved);
-            DataService.LoadData();
+            m_AppLog.Debug("e.IsApplicationInstancePreserved=" + e.IsApplicationInstancePreserved);
+            Database.LoadFavBusGroups();
 
             // Ensure that application state is restored appropriately
-            MainPage.RemoveAgent();
+            RemoveAgent();
         }
 
         // Code to execute when the application is deactivated (sent to background)
         // This code will not execute when the application is closing
         private void Application_Deactivated(object sender, DeactivatedEventArgs e)
         {
-            Log.Debug("e.Reason="+e.Reason);
-            DataService.SaveData();
-            MainPage.StartPeriodicAgent();
+            m_AppLog.Debug("e.Reason="+e.Reason);
+            Database.SaveFavBusGroups();
+            StartPeriodicAgent();
         }
         
 
@@ -106,17 +109,17 @@ namespace LiveBusTile
         // This code will not execute when the application is deactivated
         private void Application_Closing(object sender, ClosingEventArgs e)
         {
-            Log.Debug("Application_Closing, e=" + e );
-            DataService.SaveData();
-            MainPage.StartPeriodicAgent();
+            m_AppLog.Debug("Application_Closing, e=" + e );
+            Database.SaveFavBusGroups();
+            StartPeriodicAgent();
             // Ensure that required application state is persisted here.
-            //Log.Close();
+            m_AppLog.Close();
         }
 
         // Code to execute if a navigation fails
         private void RootFrame_NavigationFailed(object sender, NavigationFailedEventArgs e)
         {
-            Log.Debug("e={{ Exception={0}, e.Handled={1}, e.Uri={2} }}".Fmt(e.Exception, e.Handled, e.Uri));
+            m_AppLog.Debug("e={{ Exception={0}, e.Handled={1}, e.Uri={2} }}".Fmt(e.Exception, e.Handled, e.Uri));
             if (Debugger.IsAttached)
             {
                 // A navigation has failed; break into the debugger
@@ -127,7 +130,7 @@ namespace LiveBusTile
         // Code to execute on Unhandled Exceptions
         private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
-            Log.Error("e={{ ExceptionObject={{ Message={0},StackTrace={1} }},  Handled={2} }}".Fmt(
+            m_AppLog.Error("e={{ ExceptionObject={{ Message={0},StackTrace={1} }},  Handled={2} }}".Fmt(
                 e.ExceptionObject.Message, e.ExceptionObject.StackTrace, e.Handled));
             if (Debugger.IsAttached)
             {
@@ -144,7 +147,7 @@ namespace LiveBusTile
         // Do not add any additional code to this method
         private void InitializePhoneApplication()
         {
-            Log.Debug("phoneApplicationInitialized=" + phoneApplicationInitialized);
+            m_AppLog.Debug("phoneApplicationInitialized=" + phoneApplicationInitialized);
             if (phoneApplicationInitialized)
                 return;
 
@@ -166,7 +169,7 @@ namespace LiveBusTile
         // Do not add any additional code to this method
         private void CompleteInitializePhoneApplication(object sender, NavigationEventArgs e)
         {
-            Log.Debug("e=" + e.DumpStr());
+            m_AppLog.Debug("e=" + e.DumpStr());
             // Set the root visual to allow the application to render
             if (RootVisual != RootFrame)
                 RootVisual = RootFrame;
@@ -177,7 +180,7 @@ namespace LiveBusTile
 
         private void CheckForResetNavigation(object sender, NavigationEventArgs e)
         {
-            Log.Debug("e="+e.DumpStr());
+            m_AppLog.Debug("e="+e.DumpStr());
 
             // If the app has received a 'reset' navigation, then we need to check
             // on the next navigation to see if the page stack should be reset
@@ -187,7 +190,7 @@ namespace LiveBusTile
 
         private void ClearBackStackAfterReset(object sender, NavigationEventArgs e)
         {
-            Log.Debug("e=" + e.DumpStr());
+            m_AppLog.Debug("e=" + e.DumpStr());
 
             // Unregister the event so it doesn't get called again
             RootFrame.Navigated -= ClearBackStackAfterReset;
@@ -264,7 +267,92 @@ namespace LiveBusTile
 
         private void PhoneApplicationService_RunningInBackground(object sender, RunningInBackgroundEventArgs e)
         {
-            Log.Debug("e=" + e.ToString());
+            m_AppLog.Debug("e=" + e.ToString());
+            StartPeriodicAgent();
         }
+
+
+        public void RemoveAgent()
+        {
+            string taskName = "refreshBusTileTask";
+            m_AppLog.Debug("taskName=" + taskName);
+            PeriodicTask refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
+            if (refreshBusTileTask == null)
+            {
+                m_AppLog.Debug("ScheduledActionService.Find(" + taskName + ") returns null.");
+                return;
+            }
+
+            try
+            {
+                m_AppLog.Debug("ScheduledActionService.Remove(" + taskName + ")");
+                ScheduledActionService.Remove(taskName);
+            }
+            catch (Exception e)
+            {
+                m_AppLog.Error(e.ToString());
+            }
+        }
+
+        public void StartPeriodicAgent()
+        {
+            string taskName = "refreshBusTileTask";
+            // Obtain a reference to the period task, if one exists
+            PeriodicTask refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
+
+            // If the task already exists and background agent is enabled for the
+            // app, remove the task and then add it again to update 
+            // the schedule.
+            if (refreshBusTileTask != null)
+            {
+                RemoveAgent();
+            }
+            refreshBusTileTask = new PeriodicTask(taskName);
+            refreshBusTileTask.Description = "Refresh Bus Due Time on Tile at Hub (HomeScreen)";
+
+            // Place the call to add a periodic agent. This call must be placed in 
+            // a try block in case the user has disabled agents.
+            try
+            {
+                ScheduledActionService.Add(refreshBusTileTask);
+
+                ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromSeconds(1));
+                m_AppLog.Debug("ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromSeconds(1))");
+            }
+            catch (InvalidOperationException exception)
+            {
+                m_AppLog.Error(exception.ToString());
+                if (exception.Message.Contains("BNS Error: The action is disabled"))
+                {
+                    m_AppLog.Error("Background agents for this application have been disabled by the user.");
+                }
+                else if (exception.Message.Contains("BNS Error: The maximum number of ScheduledActions of this type have already been added."))
+                {
+                    // No user action required. The system prompts the user when the hard limit of periodic tasks has been reached.
+                    m_AppLog.Error("BNS Error: The maximum number of ScheduledActions of this type have already been added.");
+                }
+                else
+                {
+                    m_AppLog.Error("An InvalidOperationException occurred.\n" + exception.ToString());
+                }
+            }
+            catch (SchedulerServiceException e)
+            {
+                m_AppLog.Error(e.ToString());
+            }
+            catch(Exception e2)
+            {
+                m_AppLog.Error("e2=" + e2.DumpStr());
+            }
+            finally
+            {
+                // Determine if there is a running periodic agent and update the UI.
+                //refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
+                //if (refreshBusTileTask != null)
+                //{
+                //}
+            }
+        }
+
     }
 }

@@ -7,19 +7,12 @@ using System.Windows.Controls;
 using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
-using LiveBusTile.Resources;
-using LiveBusTile.ViewModels;
-using System.Windows.Controls.Primitives;
-using Microsoft.Phone.Scheduler;
-using System.Diagnostics;
-using Log = ScheduledTaskAgent1.Logger;
-using System.Threading.Tasks;
-using HtmlAgilityPack;
-using System.IO;
+using System.Windows.Media;
 using ScheduledTaskAgent1;
 using System.Threading;
+using System.Threading.Tasks;
+using LiveBusTile.Resources;
 using System.Collections.ObjectModel;
-
 
 namespace LiveBusTile
 {
@@ -28,285 +21,199 @@ namespace LiveBusTile
         public MainPage()
         {
             InitializeComponent();
-
-            //// Set the data context of the listbox control to the sample data
-            //this.Loaded += new RoutedEventHandler( MainPage_Loaded );
-            
-            // Sample code to localize the ApplicationBar
-            //BuildLocalizedApplicationBar();
         }
 
-        
-        // Load data for the ViewModel Items
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            Log.Debug("e=" + e.DumpStr());
-            Log.Debug("NavigationContext.QueryString=" + NavigationContext.QueryString.DumpStr());
-            //Log.Debug("App.RecusiveBack=" + App.RecusiveBack);
-
-
-            if (NavigationContext.QueryString.GetValue("Op", "") == "Add" 
-                //&& App.RecusiveBack==true 
-                && e.NavigationMode == NavigationMode.New)
+            lbBusGroups.ItemsSource = Database.FavBusGroups;
+            if((string)PhoneApplicationService.Current.State.GetValue("Op", "")== "Add")
             {
                 while (NavigationService.CanGoBack)
-                {
-                    JournalEntry jo = NavigationService.RemoveBackEntry();
-                    Log.Debug("jo.Source=" + jo.Source);
-                }
-
-                DataService.AddBus(new BusTag
-                {
-                    busName = NavigationContext.QueryString["busName"],
-                    station = NavigationContext.QueryString["station"],
-                    dir = (BusDir)Enum.Parse(typeof(BusDir), NavigationContext.QueryString["dir"]),
-                    tag = NavigationContext.QueryString["tag"]
-                });
-                //App.RecusiveBack = false;
-                //DataService.SaveData();
-            }
-            DataContext = new KeyedBusTagVM();
-
-            Log.Debug("exit");
-            //NavigationContext.QueryString.Clear();
-        }
-
-
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            Log.Debug("e="+e.DumpStr());
-            Log.Debug("NavigationContext.QueryString=" + NavigationContext.QueryString.DumpStr());
-
-            Log.Debug("exit");
-            //NavigationContext.QueryString.Clear();
-        }
-        
-        protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)
-        {
-
-            //Log.Debug("NavigationService.CanGoBack="+NavigationService.CanGoBack);
-            //if (NavigationService.CanGoBack)
-            //{
-            //    Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
-            //        + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
-            //while (NavigationService.CanGoBack)
-            //{
-                //JournalEntry jo = NavigationService.RemoveBackEntry();
-                //Log.Debug("jo.Source=" + jo.Source);
-                //Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
-                //    + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
-            //}
-            //    Log.Debug("NavigationService.BackStack.Count()=" + NavigationService.BackStack.Count());
-            //}
-
-            //Log.Debug("NavigationService.BackStack[" + NavigationService.BackStack.Count() + "]={"
-            //    + ", ".Joyn(NavigationService.BackStack.Select(j => j.Source.ToString())) + "}");
-            //Log.Debug("NavigationService.CanGoBack=" + NavigationService.CanGoBack);
-
-            base.OnBackKeyPress(e);
-        }
-
-
-        public static void StartPeriodicAgent()
-        {
-            string taskName = "refreshBusTileTask";
-            // Obtain a reference to the period task, if one exists
-            PeriodicTask refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
-
-            // If the task already exists and background agent is enabled for the
-            // app, remove the task and then add it again to update 
-            // the schedule.
-            if (refreshBusTileTask != null)
-            {
-                RemoveAgent();
-            }
-            refreshBusTileTask = new PeriodicTask(taskName);
-            refreshBusTileTask.Description = "Refresh Bus Due Time on Tile at Hub (HomeScreen)";
-
-            // Place the call to add a periodic agent. This call must be placed in 
-            // a try block in case the user has disabled agents.
-            try
-            {
-                ScheduledActionService.Add(refreshBusTileTask);
-
-                ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromSeconds(1));
-                Log.Debug("ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromSeconds(1))");
-            }
-            catch (InvalidOperationException exception)
-            {
-                Log.Error(exception.ToString());
-                if (exception.Message.Contains("BNS Error: The action is disabled"))
-                {
-                    Log.Error("Background agents for this application have been disabled by the user.");
-                }
-                else if (exception.Message.Contains("BNS Error: The maximum number of ScheduledActions of this type have already been added."))
-                {
-                    // No user action required. The system prompts the user when the hard limit of periodic tasks has been reached.
-                    Log.Error("BNS Error: The maximum number of ScheduledActions of this type have already been added.");
-                }
-                else
-                {
-                    Log.Error("An InvalidOperationException occurred.\n" + exception.ToString());
-                }
-            }
-            catch (SchedulerServiceException e)
-            {
-                Log.Error(e.ToString());
-            }
-            finally
-            {
-                // Determine if there is a running periodic agent and update the UI.
-                //refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
-                //if (refreshBusTileTask != null)
-                //{
-                //}
+                    NavigationService.RemoveBackEntry();
+                PhoneApplicationService.Current.State.Remove("Op");
             }
         }
 
-        public static void RemoveAgent()
+
+
+        private void BusItem_Delete_Click(object sender, RoutedEventArgs e)
         {
-            string taskName = "refreshBusTileTask";
-            Log.Debug("taskName="+taskName);
-            PeriodicTask refreshBusTileTask = ScheduledActionService.Find(taskName) as PeriodicTask;
-            if (refreshBusTileTask == null)
+            BusInfo busInfo = (sender as MenuItem).DataContext as BusInfo;
+            // TODO 
+            // improve search speed
+
+            var group = Database.FavBusGroups.FirstOrDefault( g => g.Buses.Contains(busInfo));
+            if (group == null)
             {
-                Log.Debug("ScheduledActionService.Find("+taskName+") returns null.");
+                App.m_AppLog.Error("can not find group which contains busInfo="+busInfo);
                 return;
             }
+                
+            group.Buses.Remove(busInfo);
+            if(group.Buses.Count==0)
+                Database.FavBusGroups.Remove(group);
 
-            try
+
+            //foreach (var y in Database.FavBusGroups)
+            //{
+            //    foreach (var x in y.Buses )
+            //    {
+            //        if (x == busInfo)
+            //        {
+            //            y.Buses.Remove(x);
+            //            if (y.Buses.Count == 0)
+            //            {
+            //                Database.FavBusGroups.Remove(y);
+            //            }
+            //            lbBusGroups.ItemsSource = Database.FavBusGroups.ToObservableCollection();
+            //        }
+            //    }
+            //}
+
+        }
+        
+        private void BusItem_Details_Click(object sender, RoutedEventArgs e)
+        {
+            GotoDetailsPage((sender as MenuItem).DataContext as BusInfo);
+        }
+
+        void GotoDetailsPage(BusInfo busInfo)
+        {
+            PhoneApplicationService.Current.State["busInfo"] = busInfo;
+            var bg = Database.FavBusGroups.FirstOrDefault(x => x.Buses.Contains(busInfo));
+            PhoneApplicationService.Current.State["busInfo.Group"]  = bg.GroupName;
+            
+            NavigationService.Navigate(new Uri(
+                "/BusStationDetails.xaml", UriKind.Relative));
+        }
+               
+        private void BusItem_Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            AppBar_Refresh_Click(sender,  e);
+        }
+        
+        void UpdateTileJpg()
+        {
+            Database.SaveFavBusGroups();
+
+            ScheduledTaskAgent1.ScheduledAgent.GenerateTileJpg(
+                "\n".Joyn(Database.FavBuses.Select(x => x.Name + " " + x.TimeToArrive)));
+
+            ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
+            var tileData = new StandardTileData
             {
-                Log.Debug("ScheduledActionService.Remove("+taskName+")");
-                ScheduledActionService.Remove(taskName);
-            }
-            catch (Exception e)
-            {
-                Log.Error(e.ToString());
-            }
-        }
-        private void ApplicationBarMenuItem_Click(object sender, EventArgs e)
-        {
-            var mi = sender as ApplicationBarMenuItem;
-            HandleApplicationBar(mi.Text);
-        }
+                Title = DateTime.Now.ToString("HH:mm:ss"),
+                BackgroundImage = new Uri("isostore:/" + @"Shared\ShellContent\Tile.jpg", UriKind.Absolute),
+            };
+            if (tile == null)
+                ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), tileData);
+            else
+                tile.Update(tileData);
 
-        private void ApplicationBarIconButton_Click(object sender, EventArgs e)
+        }
+        private void AppBar_Pin_Click(object sender, EventArgs e)
         {
-            var btn = sender as ApplicationBarIconButton;
-            HandleApplicationBar(btn.Text);
+            App.m_AppLog.Debug("");
+            UpdateTileJpg();
         }
 
-        void HandleApplicationBar(string text)
+        private async void AppBar_Refresh_Click(object sender, EventArgs e)
         {
-            switch (text)
-            {
-                case "釘至桌面":
-                    {
-                        DataService.SaveData();
-                        var busTags = (from bus in DataService.BusTags orderby bus.tag select bus).ToArray();
-                        ScheduledTaskAgent1.ScheduledAgent.GenerateTileJpg(
-                            "\n".Joyn(busTags.Select(x => x.busName + " " + x.timeToArrive)));
-
-                        ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
-                        var tileData = new StandardTileData
-                        {
-                            Title = DateTime.Now.ToString("HH:mm:ss"),
-                            BackgroundImage = new Uri("isostore:/" + @"Shared\ShellContent\Tile.jpg", UriKind.Absolute),
-                        };
-                        if (tile == null)
-                            ShellTile.Create( new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative),  tileData);
-                        else
-                            tile.Update(tileData);
-                    }
-                    break;
-
-                case "刷新時間":
-                    RefreshBusTime();
-                    break;
-                case "新增巴士":
-                    NavigationService.Navigate(new Uri("/AddBus.xaml", UriKind.Relative));
-                    break;
-                //case "add station":
-                    //NavigationService.Navigate(new Uri("/AddStation.xaml", UriKind.Relative));
-                    //DataService.AddBus(DataService.RandomBusTag());
-                    //DataContext = new KeyedBusTagVM();
-                    //break;
-                case "關於…":
-                    NavigationService.Navigate(new Uri("/About.xaml", UriKind.Relative));
-                    break;
-                case "設定":
-                    NavigationService.Navigate(new Uri("/Settings.xaml", UriKind.Relative));
-                    break;
-                default:
-                    break;
-            }
-        }
-
-
-
-        Action<Action> runAtUI = (a) => { Deployment.Current.Dispatcher.BeginInvoke(a); };
-
-        void RefreshBusTime()
-        {
+            App.m_AppLog.Debug("enter sender="+sender.GetType());
             prgbarWaiting.Visibility = Visibility.Visible;
             foreach (var btn in this.ApplicationBar.Buttons)
                 (btn as ApplicationBarIconButton).IsEnabled = false;
             this.ApplicationBar.IsMenuEnabled = false;
 
-            var busTags = DataService.BusTags;
-            ScheduledAgent.RefreshBusTime(DataService.BusTags);
+            bool bIsNetworkOK = await ScheduledAgent.RefreshBusTime(Database.FavBuses);
+            App.m_AppLog.Debug("bIsNetworkOK=" + bIsNetworkOK);
+
             foreach (var btn in this.ApplicationBar.Buttons)
                 (btn as ApplicationBarIconButton).IsEnabled = true;
             this.ApplicationBar.IsMenuEnabled = true;
             prgbarWaiting.Visibility = Visibility.Collapsed;
+            if (!bIsNetworkOK)
+                MessageBox.Show(AppResources.NetworkFault);
+            else
+                UpdateTileJpg();
+            //lbBusGroups.ItemsSource = Database.FavBusGroups.ToObservableCollection();
+                        
+            App.m_AppLog.Debug("exit");
         }
 
-        private void Item_Delete_Click(object sender, RoutedEventArgs e)
+        private void AppBar_AddBus_Click(object sender, EventArgs e)
         {
-            BusTagVM bt = (sender as MenuItem).DataContext as BusTagVM;
-            DataService.DeleteBus(bt);
-            DataContext = new KeyedBusTagVM();
+            App.m_AppLog.Debug("");
+            NavigationService.Navigate(new Uri("/AddBus.xaml", UriKind.Relative));
         }
 
-        private void Item_Details_Click(object sender, RoutedEventArgs e)
+        private void AppBar_Settings_Click(object sender, EventArgs e)
         {
-            GotoDetailsPage((sender as MenuItem).DataContext as BusTagVM);
+            App.m_AppLog.Debug("");
+            NavigationService.Navigate(new Uri("/Settings.xaml", UriKind.Relative));
         }
 
-        private void BusCatLLS_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
+        private void AppBar_About_Click(object sender, EventArgs e)
         {
-            if (BusCatLLS.SelectedItem == null)
-            {
-                Log.Debug("e={{ OriginalSource={0}, Handled={1} }}".Fmt(e.OriginalSource, e.Handled));
+            App.m_AppLog.Debug("");
+            NavigationService.Navigate(new Uri("/About.xaml", UriKind.Relative));
+        }
+
+        private void ListNameMenuItem_Rename_Click(object sender, RoutedEventArgs e)
+        {
+            App.m_AppLog.Debug("");
+
+        }
+
+        private void lbBuses_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+
+        }
+
+        private void lbBuses_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            ListBox lb = sender as ListBox;
+            if (lb.SelectedItem == null)
                 return;
-            }
-            GotoDetailsPage(BusCatLLS.SelectedItem as BusTagVM);
+            ListBoxItem lbi = lb.ItemContainerGenerator.ContainerFromItem(lb.SelectedItem) as ListBoxItem;
+            App.m_AppLog.Debug("lbi.Content={0}".Fmt((lbi.Content as BusInfo)));
+            BusInfo busInfo = lbi.Content as BusInfo;
+            GotoDetailsPage(busInfo);
         }
-        void GotoDetailsPage(BusTagVM bt)
+
+        private void lbBuses_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            NavigationService.Navigate(new Uri(
-                "/BusStationDetails.xaml?busName={0}&station={1}&dir={2}&tag={3}"
-                .Fmt(bt.busName, bt.station, bt.dir, bt.tag), UriKind.Relative));
+            App.m_AppLog.Debug("MouseEventArgs={{ OriginalSource={0}, StylusDevice={{ DeviceType={1}, Inverted={2} }}, GetPosition(lbBusGroups)={3} }}"
+                .Fmt(e.OriginalSource.GetType(), e.StylusDevice.DeviceType, e.StylusDevice.Inverted, e.GetPosition(lbBusGroups).ToString()));
         }
 
 
+    }
 
+    public class ExampleBusGroups : ObservableCollection<BusGroup>
+    {
+        public ExampleBusGroups()
+        {
+            Add(new BusGroup
+            {
+                GroupName = "上班",
+                Buses = new ObservableCollection<BusInfo>
+                {
+                    new BusInfo{Name="橘2", Dir=BusDir.go, Station="秀山國小", TimeToArrive="無資料"},
+                    new BusInfo{Name="敦化幹線", Dir=BusDir.back, Station="秀景里", TimeToArrive="無資料"},
+                }
+            });
 
-        // Sample code for building a localized ApplicationBar
-        //private void BuildLocalizedApplicationBar()
-        //{
-        //    // Set the page's ApplicationBar to a new instance of ApplicationBar.
-        //    ApplicationBar = new ApplicationBar();
-
-        //    // Create a new button and set the text value to the localized string from AppResources.
-        //    ApplicationBarIconButton appBarButton = new ApplicationBarIconButton(new Uri("/Assets/AppBar/appbar.add.rest.png", UriKind.Relative));
-        //    appBarButton.Text = AppResources.AppBarButtonText;
-        //    ApplicationBar.Buttons.Add(appBarButton);
-
-        //    // Create a new menu item with the localized string from AppResources.
-        //    ApplicationBarMenuItem appBarMenuItem = new ApplicationBarMenuItem(AppResources.AppBarMenuItemText);
-        //    ApplicationBar.MenuItems.Add(appBarMenuItem);
-        //}
+            Add(new BusGroup
+            {
+                GroupName = "回家",
+                Buses = new ObservableCollection<BusInfo>
+                { 
+                    new BusInfo{Name="橘2", Dir=BusDir.back, Station="捷運永安市場站", TimeToArrive="無資料"} ,
+                    new BusInfo{Name="275", Dir=BusDir.back, Station="忠孝敦化路口", TimeToArrive="無資料"} ,
+                }
+            });
+        }
     }
 
 }

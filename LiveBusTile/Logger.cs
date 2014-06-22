@@ -5,7 +5,7 @@ using System.IO;
 using System.IO.IsolatedStorage;
 using System.Runtime.CompilerServices;
 
-namespace ScheduledTaskAgent1
+namespace LiveBusTile
 {
     public enum LogLevel
     {
@@ -16,28 +16,26 @@ namespace ScheduledTaskAgent1
         Msg = 4,
     };
 
-    public static class Logger
+    public class AppLog : IDisposable
     {
-        static StreamWriter m_stm;
-        //const string logpath = logdir + @"\log.txt";
+        StreamWriter m_stm;
         const string timeFmt = "yyMMdd_HH:mm:ss.fff";
 
-        static Logger()
+        public AppLog()
         {
             System.Diagnostics.Debug.WriteLine("Logger.Logger() ctor");
         }
 
-        public static void Create(bool overwrite, string logFileName,
+        public void Create(bool overwrite, string logFileName,
             [CallerFilePath] string path = "",
             [CallerMemberName] string func = "",
             [CallerLineNumber] int line = 0            
             )
         {
+            const string logdir = @"Shared\ShellContent";
             System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Create(overwrite={5}) enter m_stm={6}",
                 DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
                 , overwrite, m_stm);
-
-            const string logdir = @"Shared\ShellContent";
 
             try
             {
@@ -49,7 +47,7 @@ namespace ScheduledTaskAgent1
                 return;
             }
             m_stm = new StreamWriter(
-                IsolatedStorageFile.GetUserStoreForApplication().OpenFile(logdir + "\\" + logFileName,
+                IsolatedStorageFile.GetUserStoreForApplication().OpenFile(logdir+"\\"+logFileName,
                 overwrite ? FileMode.OpenOrCreate : FileMode.Append,
                 FileAccess.Write, FileShare.Read));
             //Console.SetOut(m_stm);
@@ -59,7 +57,7 @@ namespace ScheduledTaskAgent1
                 , overwrite, m_stm);
         }
 
-        public static void Flush
+        public void Flush
             (
             [CallerFilePath] string path = "",
             [CallerMemberName] string func = "",
@@ -77,9 +75,9 @@ namespace ScheduledTaskAgent1
 
         
 
-        static void Log(LogLevel logLevel, string func, string path, int line, string msg)
+        void Log(LogLevel logLevel, string func, string path, int line, string msg)
         {
-            string msg1 = "{0}<{1}>{2}:{3}:{4} [{5}] {6}".Fmt( DateTime.Now.ToString("yyMMdd_HH:mm:ss.fff"),
+            string msg1 = String.Format("{0}<{1}>{2}:{3}:{4} [{5}] {6}", DateTime.Now.ToString("yyMMdd_HH:mm:ss.fff"),
                 logLevel.ToString(), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId, 
                 msg);
             System.Diagnostics.Debug.WriteLine(msg1);
@@ -95,7 +93,7 @@ namespace ScheduledTaskAgent1
 
         //public delegate void LogFunc(string msg, string func, string path, int line);
 
-        public static void Error(string msg, 
+        public void Error(string msg, 
             [CallerMemberName] string func="",
             [CallerFilePath] string path="",
             [CallerLineNumber] int line=0)
@@ -103,7 +101,7 @@ namespace ScheduledTaskAgent1
             Log(LogLevel.Error, func, path, line, msg);
         }
 
-        public static void Msg(string msg,
+        public void Msg(string msg,
             [CallerMemberName] string func = "",
             [CallerFilePath] string path = "",
             [CallerLineNumber] int line = 0)
@@ -113,7 +111,7 @@ namespace ScheduledTaskAgent1
 
         [Conditional("DEBUG")]
         [DebuggerStepThrough]
-        public static void Debug(string msg,
+        public void Debug(string msg,
             [CallerMemberName] string func = "",
             [CallerFilePath] string path = "",
             [CallerLineNumber] int line = 0)
@@ -121,7 +119,7 @@ namespace ScheduledTaskAgent1
             Log(LogLevel.Debug, func, path, line, msg);
         }
 
-        public static void LogRawMsg(string msg)
+        public void LogRawMsg(string msg)
         {
             System.Diagnostics.Debug.WriteLine(msg);
             if (m_stm != null)
@@ -129,7 +127,7 @@ namespace ScheduledTaskAgent1
         }
 
 
-        public static void Close(
+        public void Close(
             [CallerFilePath] string path = "",
             [CallerMemberName] string func = "",
             [CallerLineNumber] int line = 0
@@ -145,21 +143,10 @@ namespace ScheduledTaskAgent1
                     DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
             }
         }
-    }
 
-    public static class ForEachExtensions
-    {
-        public static void ForEachIndex<T>(this IEnumerable<T> enumerable, Action<T, int> handler)
+        public void Dispose()
         {
-            int idx = 0;
-            foreach (T item in enumerable)
-                handler(item, idx++);
-        }
-
-        public static void ForEach<T>(this IEnumerable<T> enumeration, Action<T> action)
-        {
-            foreach (T item in enumeration)
-                action(item);
+            Close();
         }
     }
 

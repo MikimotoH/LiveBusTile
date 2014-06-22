@@ -61,24 +61,6 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to add.
-        /// </summary>
-        public static string AppBarButtonText {
-            get {
-                return ResourceManager.GetString("AppBarButtonText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Menu Item.
-        /// </summary>
-        public static string AppBarMenuItemText {
-            get {
-                return ResourceManager.GetString("AppBarMenuItemText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to 台北巴士快速磚.
         /// </summary>
         public static string ApplicationTitle {
@@ -88,7 +70,7 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.0.0.4.
+        ///   Looks up a localized string similar to 1.2.0.0.
         /// </summary>
         public static string AppVersion {
             get {
@@ -97,7 +79,7 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 網路有問題.
+        ///   Looks up a localized string similar to 網路障礙.
         /// </summary>
         public static string NetworkFault {
             get {
@@ -120,15 +102,6 @@ namespace LiveBusTile.Resources {
         public static string ResourceLanguage {
             get {
                 return ResourceManager.GetString("ResourceLanguage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Sample Runtime Property Value.
-        /// </summary>
-        public static string SampleProperty {
-            get {
-                return ResourceManager.GetString("SampleProperty", resourceCulture);
             }
         }
     }

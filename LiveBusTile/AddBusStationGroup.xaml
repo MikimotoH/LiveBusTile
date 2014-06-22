@@ -1,5 +1,5 @@
 ﻿<phone:PhoneApplicationPage
-    x:Class="LiveBusTile.AddBusStationTag"
+    x:Class="LiveBusTile.AddBusStationGroup"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
@@ -11,18 +11,29 @@
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d"
-    xmlns:ViewModels="clr-namespace:LiveBusTile.ViewModels"
+    xmlns:data="clr-namespace:LiveBusTile"
     xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
     shell:SystemTray.IsVisible="True">
 
     <phone:PhoneApplicationPage.Resources>
-
-        <DataTemplate x:Key="ItemTemplate">
-            <Grid Height="Auto" Margin="0,1">
-                <TextBlock Text="{Binding String}" FontFamily="{StaticResource PhoneFontFamilyNormal}" 
-                           FontSize="36" Foreground="Orange" HorizontalAlignment="Center" />
-            </Grid>
-        </DataTemplate>
+        <data:ExampleGroupNames x:Key="ExampleGroupNames"/>
+        <Style x:Key="CenteredListBoxItemStyle" TargetType="ListBoxItem" >
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Border x:Name="LayoutRoot" BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                Background="{TemplateBinding Background}" 
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                            <ContentPresenter HorizontalAlignment="Stretch">
+                                <TextBlock FontSize="38" Foreground="Magenta" Text="{Binding}"/>
+                            </ContentPresenter>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </phone:PhoneApplicationPage.Resources>
 
     <!--LayoutRoot is the root grid where all page content is placed-->
@@ -50,18 +61,20 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="標籤" FontSize="44"/>
-            <TextBox Grid.Column="1" x:Name="tbTag" KeyDown="tbTag_KeyDown"/>
+            <TextBlock Grid.Column="0" Text="群組" FontSize="44"/>
+            <TextBox Grid.Column="1" x:Name="tbGroupName" KeyDown="tbGroupName_KeyDown"/>
             <Button Grid.Column="2" x:Name="btnEnter" Margin="0,0,4,0" Tap="btnEnter_Tap">
                 <Image Source="Images/Btn.Enter.Png"/>
             </Button>
         </Grid>
-        <phone:LongListSelector 
+        <ListBox 
             Grid.Row="5"
-            d:DataContext="{d:DesignInstance Type=ViewModels:AllBusesVM, IsDesignTimeCreatable=True}"
-            ItemsSource="{Binding SampledTags}" 
-            x:Name="llsTags" 
-            ItemTemplate="{StaticResource ItemTemplate}" Tap="llsTags_Tap"
+            ItemsSource="{Binding ExampleGroupNames}" 
+            x:Name="lbGroupNames" 
+            ItemContainerStyle="{StaticResource CenteredListBoxItemStyle}"
+            Tap="lbGroupNames_Tap"
+            FontSize="40"
+            Foreground="Orange"            
             />
 
     </Grid>

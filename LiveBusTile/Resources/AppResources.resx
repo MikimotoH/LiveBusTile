@@ -128,20 +128,11 @@
   <data name="ApplicationTitle" xml:space="preserve">
     <value>台北巴士快速磚</value>
   </data>
-  <data name="SampleProperty" xml:space="preserve">
-    <value>Sample Runtime Property Value</value>
-  </data>
-  <data name="AppBarButtonText" xml:space="preserve">
-    <value>add</value>
-  </data>
-  <data name="AppBarMenuItemText" xml:space="preserve">
-    <value>Menu Item</value>
-  </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>1.0.0.4</value>
+    <value>1.2.0.0</value>
     <comment>Application Version on Market Place Sumbission</comment>
   </data>
   <data name="NetworkFault" xml:space="preserve">
-    <value>網路有問題</value>
+    <value>網路障礙</value>
   </data>
 </root>
