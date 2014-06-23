@@ -31,7 +31,7 @@ namespace LiveBusTile
             tbTimeToArrive.Text = m_busInfo.TimeToArrive;
 
             tbDir.Text = (m_busInfo.Dir == BusDir.go ? "往" : "返");
-            m_orig_group = PhoneApplicationService.Current.State["busInfo.Group"] as string;
+            m_orig_group = PhoneApplicationService.Current.State["groupName"] as string;
             tbGroup.Text = m_orig_group;
 
             
@@ -52,12 +52,13 @@ namespace LiveBusTile
             App.m_AppLog.Debug("e.Cancel=" + e.Cancel);
             if(!Database.IsLegalGroupName(tbGroup.Text))
             {
-                MessageBox.Show("不合法的群組名稱：「{0}」".Fmt(tbGroup.Text));
+                MessageBox.Show(AppResources.IllegalGroupName.Fmt(tbGroup.Text));
                 tbGroup.Focus();
-                tbGroup.SelectAll();
+                //tbGroup.SelectAll();
+                e.Cancel = false;
                 return;
-                
             }
+
             if (tbGroup.Text != m_orig_group)
             {
                 App.m_AppLog.Debug("m_orig_group={0}, tbGroup.Text={1}".Fmt(m_orig_group, tbGroup.Text));
@@ -65,15 +66,18 @@ namespace LiveBusTile
                 BusGroup new_group = Database.FavBusGroups.FirstOrDefault(x => x.GroupName == tbGroup.Text);
                 Debug.Assert(old_group != null);
                 if (new_group == null)
-                    Database.FavBusGroups.Add(new BusGroup { GroupName = tbGroup.Text, Buses = new ObservableCollection<BusInfo> { m_busInfo } });
+                    Database.FavBusGroups.Add(new BusGroup{ GroupName = tbGroup.Text, Buses = new ObservableCollection<BusInfo> { m_busInfo } });
                 else
                     new_group.Buses.Add(m_busInfo);
 
                 old_group.Buses.Remove(m_busInfo);
                 if (old_group.Buses.Count == 0)
                     Database.FavBusGroups.Remove(old_group);
-                
+
+                Database.SaveFavBusGroups();
             }
+
+
             base.OnBackKeyPress(e);
         }
 
@@ -109,6 +113,7 @@ namespace LiveBusTile
                     if (!bRemoveSuccess) { MessageBox.Show("Database.FavBusGroups.Remove({0}) failed".Fmt(bg.GroupName)); return; }
                 }
                 App.m_AppLog.Debug("bRemoveSuccess=" + bRemoveSuccess);
+                Database.SaveFavBusGroups();
                 NavigationService.GoBack();
             }
             catch (Exception ex)
@@ -117,6 +122,32 @@ namespace LiveBusTile
                 App.m_AppLog.Error("Database.FavBusGroups=" + Database.FavBusGroups.DumpArray());
                 App.m_AppLog.Error("ex="+ex.DumpStr());
             }
+        }
+    }
+
+
+    public class FavGroupNames : IEnumerable<string>
+    {
+        public static ICollection<string> Words
+        {
+            get
+            {
+                var groups = new HashSet<string>(Database.FavBusGroups.Select(x => x.GroupName));
+                groups.Add("上班");
+                groups.Add("回家");
+                
+                return (ICollection<string>)(groups.ToList());
+            }
+        }
+
+        public IEnumerator<string> GetEnumerator()
+        {
+            return Words.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return Words.GetEnumerator();
         }
     }
 }

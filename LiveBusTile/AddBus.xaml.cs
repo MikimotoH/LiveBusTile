@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Input;
 using System.IO.IsolatedStorage;
 using ScheduledTaskAgent1;
+using System.Collections.ObjectModel;
 
 namespace LiveBusTile
 {
@@ -23,7 +24,10 @@ namespace LiveBusTile
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            lbAllBuses.ItemsSource = Database.AllBuses.Keys;
+            llsAllBuses.ItemsSource = Database.AllBuses.Keys
+                .GroupBy(b => Database.BusKeyName(b))
+                .Select(g => new KeyedBusVM(g))
+                .ToObservableCollection();
         }
 
         bool m_prevent_TextChangeEvent=false;
@@ -31,8 +35,12 @@ namespace LiveBusTile
         {
             if (m_prevent_TextChangeEvent)
                 return;
-            List<string> newList = Database.AllBuses.Keys.Where(x => x.Contains(tbBusName.Text)).ToList();
-            lbAllBuses.ItemsSource = newList;
+
+            llsAllBuses.ItemsSource = Database.AllBuses.Keys
+                .Where(x => x.Contains(tbBusName.Text))
+                .GroupBy(b => Database.BusKeyName(b))
+                .Select(g => new KeyedBusVM(g))
+                .ToObservableCollection();
         }
 
 
@@ -52,24 +60,86 @@ namespace LiveBusTile
             NavigationService.Navigate(new Uri("/AddBusStation.xaml?busName=" + tbBusName.Text, UriKind.Relative));
         }
 
-        private void lbAllBuses_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        private void llsAllBuses_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
         {
             App.m_AppLog.Debug("");
-            if (lbAllBuses.SelectedItem == null)
+            string s = null;
+            try
+            {
+                s = (e.OriginalSource as FrameworkElement).DataContext as string;
+            }
+            catch (Exception ex)
+            {
+                App.m_AppLog.Error(ex.DumpStr());
                 return;
-            App.m_AppLog.Debug("lbAllBuses.SelectedItem=" + (lbAllBuses.SelectedItem as string));
+            }
+            if (s == null)
+                return;
             m_prevent_TextChangeEvent = true;
-            tbBusName.Text = (lbAllBuses.SelectedItem as string);
+            tbBusName.Text = s;
+            tbBusName.Focus();
+            tbBusName.Select(s.Length, 0);
+
             m_prevent_TextChangeEvent = false;
+        }
+
+        private void llsAllBuses_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            llsAllBuses_DoubleTap(sender, e);
+            //App.m_AppLog.Debug("e.OriginalSource=" + e.OriginalSource);
+            //if (e.OriginalSource == null)
+            //    return;
+            //App.m_AppLog.Debug("e.OriginalSource.GetType()=" + e.OriginalSource.GetType());
+            //var fe = e.OriginalSource as FrameworkElement;
+            //if (fe == null)
+            //    return;
+            //App.m_AppLog.Debug("fe.DataContext=" + fe.DataContext);
+            //if (fe.DataContext == null)
+            //    return;
+            //App.m_AppLog.Debug("fe.DataContext.GetType()=" + fe.DataContext.GetType());
+            //App.m_AppLog.Debug("(e.OriginalSource as FrameworkElement).DataContext.GetType()=" + fe.DataContext.GetType());
+            /*
+            string s = null;
+            try
+            {
+                s = (e.OriginalSource as FrameworkElement).DataContext as string;
+            }
+            catch (Exception ex)
+            {
+                App.m_AppLog.Error(ex.DumpStr());
+                return;
+            }
+            if (s == null)
+                return;
+            App.m_AppLog.Debug("s=" + s);
+
+            m_prevent_TextChangeEvent = true;
+            tbBusName.Text = s;
+            tbBusName.Focus();
+            tbBusName.Select(s.Length, 0);
+
+            m_prevent_TextChangeEvent = false;
+             * */
+        }
+
+        protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)
+        {
+            if (!tbBusName.Text.IsNone())
+            {
+                tbBusName.Text = "";
+                e.Cancel = true;
+                return;
+            }
+            base.OnBackKeyPress(e);
         }
     }
 
-    public class ExampleAllBuses: List<string>
+    public class ExampleAllBuses: ObservableCollection<KeyedBusVM>
     {
         public ExampleAllBuses()
         {
-            Add("綠2");
-            Add("敦化幹線");
+            Add(new KeyedBusVM("綠", new string[] { "綠1", "綠2", "綠3", "綠4", "綠5" }));
+            Add(new KeyedBusVM("幹線", new string[]{"敦化幹線", "信義幹線", "仁愛幹線", "信義幹線"}));
         }
     }
 }

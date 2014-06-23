@@ -85,7 +85,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BusInfo.cs" />
-    <Compile Include="BusTag.cs" />
     <Compile Include="BusTicker.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="HttpClient.cs" />

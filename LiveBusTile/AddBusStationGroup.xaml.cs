@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Input;
 using ScheduledTaskAgent1;
 using System.Collections.ObjectModel;
+using LiveBusTile.Resources;
 
 namespace LiveBusTile
 {
@@ -34,7 +35,10 @@ namespace LiveBusTile
             tbStation.Text = m_station;
             tbDir.Text = "到：" + Database.AllBuses[m_busName].GetStations(m_dir).LastElement();
 
-            lbGroupNames.ItemsSource = Database.FavBusGroups.Select(x=>x.GroupName).ToList();
+            var groups = new HashSet<string>(Database.FavBusGroups.Select(x => x.GroupName));
+            groups.Add("上班");
+            groups.Add("回家");
+            lbGroupNames.ItemsSource = groups.ToList();
         }
 
         private void lbGroupNames_Tap(object sender, System.Windows.Input.GestureEventArgs e)
@@ -54,7 +58,7 @@ namespace LiveBusTile
         {
             if(Database.IsLegalGroupName(tbGroupName.Text)==false)
             {
-                MessageBox.Show("不合法的群組名稱：「{0}」".Fmt( tbGroupName.Text ));
+                MessageBox.Show(AppResources.IllegalGroupName.Fmt( tbGroupName.Text ));
                 return;
 
             }

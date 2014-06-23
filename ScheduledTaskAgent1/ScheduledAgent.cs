@@ -84,13 +84,23 @@ namespace ScheduledTaskAgent1
 
             grid.Measure(new Size(grid.Width, grid.Height));
             grid.Arrange(new Rect(new Point(0, 0), new Size(grid.Width, grid.Height)));
+            grid.Width = 336;
+            grid.Height = 336;
 
-            using (var stream = IsolatedStorageFile.GetUserStoreForApplication().OpenFile(m_tileImgPath, FileMode.Create))
+            try
             {
-                WriteableBitmap bitmap = new WriteableBitmap(grid, null);
-                bitmap.Render(grid, null);
-                bitmap.Invalidate();
-                bitmap.SaveJpeg(stream, (int)grid.Width, (int)grid.Height, 0, 100);
+                using (var stream = IsolatedStorageFile.GetUserStoreForApplication().OpenFile(m_tileImgPath, FileMode.Create))
+                {
+                    WriteableBitmap bitmap = new WriteableBitmap(grid, null);
+                    bitmap.Render(grid, null);
+                    bitmap.Invalidate();
+                    bitmap.SaveJpeg(stream, (int)grid.Width, (int)grid.Height, 0, 100);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.DumpStr());
+                return;
             }
         }
 

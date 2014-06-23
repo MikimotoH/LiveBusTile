@@ -11,8 +11,14 @@
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d"
+    xmlns:data="clr-namespace:LiveBusTile"    
+    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
     shell:SystemTray.IsVisible="True">
-
+    
+    <phone:PhoneApplicationPage.Resources>
+        <data:FavGroupNames x:Key="words"/>
+    </phone:PhoneApplicationPage.Resources>
+    
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <Grid.RowDefinitions>
@@ -31,7 +37,12 @@
             <TextBlock Text="方向"  Style="{StaticResource PhoneTextTitle2Style}"/>
             <TextBlock x:Name="tbDir" Text="往" FontSize="36" Margin="10,10" Foreground="Orange" FontWeight="Bold" />
             <TextBlock Text="群組" Style="{StaticResource PhoneTextTitle2Style}"/>
-            <TextBox x:Name="tbGroup" Text="上班" FontSize="36" />
+            
+            <toolkit:AutoCompleteBox 
+                x:Name="tbGroup" 
+                Text="上班" FontSize="36" 
+                ItemsSource="{StaticResource words}"/>
+            
             <TextBlock Text="時間" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle2Style}"/>
             <TextBlock x:Name="tbTimeToArrive" Text="20分" Margin="10,10" FontSize="36" Foreground="Orange"  FontWeight="Bold"/>
         </StackPanel>

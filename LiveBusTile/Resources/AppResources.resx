@@ -135,4 +135,7 @@
   <data name="NetworkFault" xml:space="preserve">
     <value>網路障礙</value>
   </data>
+  <data name="IllegalGroupName" xml:space="preserve">
+    <value>不合法的群組名稱：「{0}」</value>
+  </data>
 </root>

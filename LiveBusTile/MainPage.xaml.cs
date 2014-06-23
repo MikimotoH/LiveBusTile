@@ -7,12 +7,11 @@ using System.Windows.Controls;
 using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
-using System.Windows.Media;
-using ScheduledTaskAgent1;
-using System.Threading;
-using System.Threading.Tasks;
-using LiveBusTile.Resources;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using ScheduledTaskAgent1;
+using LiveBusTile.Resources;
+using System.Diagnostics;
 
 namespace LiveBusTile
 {
@@ -23,75 +22,70 @@ namespace LiveBusTile
             InitializeComponent();
         }
 
+        private ObservableCollection<GroupBusVM> FavGroupBusVM
+        {
+            get
+            {
+                var vm = new ObservableCollection<GroupBusVM>();
+                foreach (var y in Database.FavBusGroups)
+                {
+                    vm.Add(new GroupBusVM(y.GroupName));
+                    foreach (var x in y.Buses)
+                        vm.Add(new GroupBusVM(x, y.GroupName));
+                }
+                return vm;
+            }
+        }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            lbBusGroups.ItemsSource = Database.FavBusGroups;
-            if((string)PhoneApplicationService.Current.State.GetValue("Op", "")== "Add")
+            //App.m_AppLog.Debug("Screen Width = " + Application.Current.RootVisual.RenderSize.Width);
+
+            lbBus.ItemsSource = FavGroupBusVM;
+
+            if ((string)PhoneApplicationService.Current.State.GetValue("Op", "") == "Add")
             {
                 while (NavigationService.CanGoBack)
                     NavigationService.RemoveBackEntry();
                 PhoneApplicationService.Current.State.Remove("Op");
             }
+
         }
-
-
 
         private void BusItem_Delete_Click(object sender, RoutedEventArgs e)
         {
-            BusInfo busInfo = (sender as MenuItem).DataContext as BusInfo;
-            // TODO 
-            // improve search speed
+            var gbvm = (sender as MenuItem).DataContext as GroupBusVM;
+            BusInfo busInfo = gbvm.BusInfo;
 
-            var group = Database.FavBusGroups.FirstOrDefault( g => g.Buses.Contains(busInfo));
+            var group = Database.FavBusGroups.FirstOrDefault(g => g.GroupName==gbvm.GroupName );
             if (group == null)
             {
-                App.m_AppLog.Error("can not find group which contains busInfo="+busInfo);
+                App.m_AppLog.Error("can not find group which contains busInfo=" + busInfo);
                 return;
             }
-                
+
             group.Buses.Remove(busInfo);
-            if(group.Buses.Count==0)
+            if (group.Buses.Count == 0)
                 Database.FavBusGroups.Remove(group);
-
-
-            //foreach (var y in Database.FavBusGroups)
-            //{
-            //    foreach (var x in y.Buses )
-            //    {
-            //        if (x == busInfo)
-            //        {
-            //            y.Buses.Remove(x);
-            //            if (y.Buses.Count == 0)
-            //            {
-            //                Database.FavBusGroups.Remove(y);
-            //            }
-            //            lbBusGroups.ItemsSource = Database.FavBusGroups.ToObservableCollection();
-            //        }
-            //    }
-            //}
-
+            
+            lbBus.ItemsSource = FavGroupBusVM;
         }
-        
+
         private void BusItem_Details_Click(object sender, RoutedEventArgs e)
         {
-            GotoDetailsPage((sender as MenuItem).DataContext as BusInfo);
+            var gbvm = (sender as MenuItem).DataContext as GroupBusVM;
+            GotoDetailsPage(gbvm.BusInfo, gbvm.GroupName);
         }
 
-        void GotoDetailsPage(BusInfo busInfo)
+        void GotoDetailsPage(BusInfo busInfo, string groupName)
         {
             PhoneApplicationService.Current.State["busInfo"] = busInfo;
-            var bg = Database.FavBusGroups.FirstOrDefault(x => x.Buses.Contains(busInfo));
-            PhoneApplicationService.Current.State["busInfo.Group"]  = bg.GroupName;
-            
+            PhoneApplicationService.Current.State["groupName"] = groupName;
             NavigationService.Navigate(new Uri(
                 "/BusStationDetails.xaml", UriKind.Relative));
         }
-               
-        private void BusItem_Refresh_Click(object sender, RoutedEventArgs e)
-        {
-            AppBar_Refresh_Click(sender,  e);
-        }
-        
+
+
         void UpdateTileJpg()
         {
             Database.SaveFavBusGroups();
@@ -111,6 +105,7 @@ namespace LiveBusTile
                 tile.Update(tileData);
 
         }
+
         private void AppBar_Pin_Click(object sender, EventArgs e)
         {
             App.m_AppLog.Debug("");
@@ -119,7 +114,10 @@ namespace LiveBusTile
 
         private async void AppBar_Refresh_Click(object sender, EventArgs e)
         {
-            App.m_AppLog.Debug("enter sender="+sender.GetType());
+            App.m_AppLog.Debug("enter sender=" + sender.GetType());
+            if (Database.FavBuses.Count() == 0)
+                return;
+
             prgbarWaiting.Visibility = Visibility.Visible;
             foreach (var btn in this.ApplicationBar.Buttons)
                 (btn as ApplicationBarIconButton).IsEnabled = false;
@@ -135,9 +133,13 @@ namespace LiveBusTile
             if (!bIsNetworkOK)
                 MessageBox.Show(AppResources.NetworkFault);
             else
-                UpdateTileJpg();
-            //lbBusGroups.ItemsSource = Database.FavBusGroups.ToObservableCollection();
-                        
+            {
+                lbBus.ItemsSource = FavGroupBusVM;
+                ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
+                if(tile!=null)
+                    UpdateTileJpg();
+            }
+
             App.m_AppLog.Debug("exit");
         }
 
@@ -162,57 +164,91 @@ namespace LiveBusTile
         private void ListNameMenuItem_Rename_Click(object sender, RoutedEventArgs e)
         {
             App.m_AppLog.Debug("");
-
         }
 
-        private void lbBuses_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        private void lbBus_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-
-        }
-
-        private void lbBuses_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
-        {
-            ListBox lb = sender as ListBox;
-            if (lb.SelectedItem == null)
+            App.m_AppLog.Debug("");
+            var gbvm = (e.OriginalSource as FrameworkElement).DataContext as GroupBusVM;
+            BusInfo busInfo = gbvm.BusInfo;
+            if (busInfo == null)
+            {
+                NavigationService.Navigate(new Uri("/ChangeGroupName.xaml?groupName=" + gbvm.GroupName, UriKind.Relative));
                 return;
-            ListBoxItem lbi = lb.ItemContainerGenerator.ContainerFromItem(lb.SelectedItem) as ListBoxItem;
-            App.m_AppLog.Debug("lbi.Content={0}".Fmt((lbi.Content as BusInfo)));
-            BusInfo busInfo = lbi.Content as BusInfo;
-            GotoDetailsPage(busInfo);
+            }
+            
+            GotoDetailsPage(busInfo, gbvm.GroupName);
         }
 
-        private void lbBuses_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            App.m_AppLog.Debug("MouseEventArgs={{ OriginalSource={0}, StylusDevice={{ DeviceType={1}, Inverted={2} }}, GetPosition(lbBusGroups)={3} }}"
-                .Fmt(e.OriginalSource.GetType(), e.StylusDevice.DeviceType, e.StylusDevice.Inverted, e.GetPosition(lbBusGroups).ToString()));
-        }
 
 
     }
 
-    public class ExampleBusGroups : ObservableCollection<BusGroup>
+    public class GroupBusVM : INotifyPropertyChanged
     {
-        public ExampleBusGroups()
-        {
-            Add(new BusGroup
-            {
-                GroupName = "上班",
-                Buses = new ObservableCollection<BusInfo>
-                {
-                    new BusInfo{Name="橘2", Dir=BusDir.go, Station="秀山國小", TimeToArrive="無資料"},
-                    new BusInfo{Name="敦化幹線", Dir=BusDir.back, Station="秀景里", TimeToArrive="無資料"},
-                }
-            });
+        public GroupBusVM() { }
+        public GroupBusVM(string groupName) { GroupName = groupName; }
+        public GroupBusVM(BusInfo b, string groupName) { m_BusInfo = b; GroupName = groupName; }
 
-            Add(new BusGroup
-            {
-                GroupName = "回家",
-                Buses = new ObservableCollection<BusInfo>
-                { 
-                    new BusInfo{Name="橘2", Dir=BusDir.back, Station="捷運永安市場站", TimeToArrive="無資料"} ,
-                    new BusInfo{Name="275", Dir=BusDir.back, Station="忠孝敦化路口", TimeToArrive="無資料"} ,
-                }
-            });
+        public string GroupName{get;set;}
+        public string BusName { get { return m_BusInfo.Name; } set { if (m_BusInfo.Name != value) { m_BusInfo.Name = value; NotifyPropertyChanged("BusName"); } } }
+        public string Station { get { return m_BusInfo.Station; } set { if (m_BusInfo.Station != value) { m_BusInfo.Station = value; NotifyPropertyChanged("Station"); } } }
+
+        BusInfo m_BusInfo;
+        public BusInfo BusInfo { get { return m_BusInfo; } }
+        public string TimeToArrive { 
+            get { return m_BusInfo.TimeToArrive; } 
+            set { if (m_BusInfo.TimeToArrive != value) { m_BusInfo.TimeToArrive = value; NotifyPropertyChanged("TimeToArrive"); } } 
+        }
+
+        public bool IsGroupHeader { get { return m_BusInfo==null; } }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void NotifyPropertyChanged(String propertyName)
+        {
+            if (null != PropertyChanged)
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class ExampleGroupBusVM : ObservableCollection<GroupBusVM>
+    {
+        public ExampleGroupBusVM()
+        {
+            Add(new GroupBusVM("上班") );
+            Add(new GroupBusVM(new BusInfo { Name = "橘2", Station = "秀山國小", TimeToArrive = "無資料" }, "上班"));
+            Add(new GroupBusVM(new BusInfo { Name = "敦化幹線", Station = "秀景里", TimeToArrive = "無資料" }, "上班"));
+
+            Add(new GroupBusVM ("回家") );
+            Add(new GroupBusVM(new BusInfo{Name = "橘2", Station = "捷運永安市場站", TimeToArrive = "無資料"}, "回家"));
+            Add(new GroupBusVM(new BusInfo{Name = "275", Station = "忠孝敦化路口", TimeToArrive = "無資料" }, "回家"));
+        }
+    }
+
+    public abstract class TemplateSelector : ContentControl
+    {
+        public abstract DataTemplate SelectTemplate(object item, DependencyObject container);
+
+        protected override void OnContentChanged(object oldContent, object newContent)
+        {
+            base.OnContentChanged(oldContent, newContent);
+            ContentTemplate = SelectTemplate(newContent, this);
+        }
+    }
+
+    public class GroupBusTemplateSelector : TemplateSelector
+    {
+        public DataTemplate GroupHeader{get;set;}
+
+        public DataTemplate BusInfo{get;set;}
+
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            var gb = item as GroupBusVM;
+            if (gb.IsGroupHeader)
+                return GroupHeader;
+            else
+                return BusInfo;
         }
     }
 

@@ -33,6 +33,54 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <phone:JumpListItemBackgroundConverter x:Key="BackgroundConverter"/>
+        <phone:JumpListItemForegroundConverter x:Key="ForegroundConverter"/>
+        <Style x:Key="JumpListStyle" TargetType="phone:LongListSelector">
+            <Setter Property="LayoutMode" Value="List" />
+            <Setter Property="Margin" Value="12,12,0,0"/>
+            <Setter Property="ItemTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Border Background="Red"
+                                Width="480"
+                                Height="100"
+                                Margin="6">
+                            <TextBlock Text="{Binding Key}"
+                                       Foreground="Beige"
+                                       FontWeight="ExtraBold"
+                                       FontSize="36"
+                                       Padding="2"
+                                       VerticalAlignment="Bottom"/>
+                        </Border>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <DataTemplate x:Key="GroupHeader">
+            <Border Background="Transparent">
+                <Border Background="Transparent" BorderBrush="Transparent" BorderThickness="1"	
+                        Width="480"
+                        HorizontalAlignment="Left">
+                    <TextBlock Text="{Binding Key}"
+                               Foreground="Red"
+                               FontSize="36"
+                               Padding="2" FontWeight="ExtraBold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="LLSItemTemplate">
+            <Grid Height="Auto" Margin="5,5">
+                <TextBlock Text="{Binding }" TextAlignment="Center" HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           FontSize="36" Foreground="Orange" Margin="5,0"
+                           />
+            </Grid>
+        </DataTemplate>
     </phone:PhoneApplicationPage.Resources>
     
     <!--LayoutRoot is the root grid where all page content is placed-->
@@ -54,23 +102,26 @@
             </Grid.ColumnDefinitions>
             
             <TextBox Grid.Column="0" x:Name="tbBusName" InputScope="Text" 
-                     TextWrapping="Wrap"
+                     TextWrapping="Wrap" FontSize="48"
                      TextChanged="tbBusName_TextChanged" KeyDown="tbBusName_KeyDown"/>
             <Button Grid.Column="2" x:Name="btnEnter" Margin="0,0,4,0" Tap="btnEnter_Tap">
                 <Image Source="Images/Btn.Enter.Png"/>
             </Button>
         </Grid>
-
-        <ListBox
+        
+        <phone:LongListSelector
             Grid.Row="2"
-            x:Name="lbAllBuses" 
-            Tap="lbAllBuses_Tap"
-            HorizontalContentAlignment="Center"
-            ItemContainerStyle="{StaticResource CenteredListBoxItemStyle}"
-            FontStretch="Expanded" FontSize="38" Foreground="Orange" 
+            x:Name="llsAllBuses"
             ItemsSource="{StaticResource ExampleAllBuses}"
-            >
-        </ListBox>
+            ItemTemplate="{StaticResource LLSItemTemplate}"
+            GroupHeaderTemplate="{StaticResource GroupHeader}"
+            JumpListStyle="{StaticResource JumpListStyle}"
+            IsGroupingEnabled="True"
+            HideEmptyGroups ="True"
+            LayoutMode="List" 
+            DoubleTap="llsAllBuses_DoubleTap"
+            Tap="llsAllBuses_Tap"
+            />
     </Grid>
 
 </phone:PhoneApplicationPage>

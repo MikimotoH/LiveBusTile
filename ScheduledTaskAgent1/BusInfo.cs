@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -25,6 +26,20 @@ namespace ScheduledTaskAgent1
         public override string ToString()
         {
             return "{{Name=\"{0}\",Station=\"{1}\",Dir={2},TimeToArrive=\"{3}\" }}".Fmt(Name,Station,Dir,TimeToArrive);
+        }
+
+        public string DirWithDestStation 
+        {
+            get
+            {
+                var stats = Database.AllBuses[Name].GetStations(Dir);
+                string pfx="往：";
+                if (Dir == BusDir.back)
+                    pfx = "返：";
+                if (stats.Length > 0)
+                    return pfx + stats.LastElement();
+                else return pfx;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -235,6 +250,39 @@ namespace ScheduledTaskAgent1
                 || p.Contains(Database.field_separator))
                 return false;
             return true;
+        }
+
+
+        public static string BusKeyName(string busName)
+        {
+            if (Regex.IsMatch(busName, @"^\d{4}") && busName.Contains("→"))
+                return "公路客運";
+            else if (Regex.IsMatch(busName, @"^\d{1,4}[^\d]*$"))
+                return "0000~9999";
+            else if (Regex.IsMatch(busName, @"^紅"))
+                return "紅";
+            else if (Regex.IsMatch(busName, @"^藍"))
+                return "藍";
+            else if (Regex.IsMatch(busName, @"^棕"))
+                return "棕";
+            else if (Regex.IsMatch(busName, @"^綠"))
+                return "綠";
+            else if (Regex.IsMatch(busName, @"^橘"))
+                return "橘";
+            else if (Regex.IsMatch(busName, @"^小"))
+                return "小";
+            else if (Regex.IsMatch(busName, @"^市民"))
+                return "市民";
+            else if (Regex.IsMatch(busName, @"^F"))
+                return "Ｆ";
+            else if (Regex.IsMatch(busName, @"幹線"))
+                return "幹線";
+            else if (Regex.IsMatch(busName, @"先導") || Regex.IsMatch(busName, @"環狀"))
+                return "先導環狀";
+            else if (Regex.IsMatch(busName, @"通勤"))
+                return "通勤";
+            else
+                return "其他";
         }
     }
 }

@@ -110,10 +110,14 @@
     <Compile Include="BusStationDetails.xaml.cs">
       <DependentUpon>BusStationDetails.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ChangeGroupName.xaml.cs">
+      <DependentUpon>ChangeGroupName.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="KeyedBusVM.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="MainPage.xaml.cs">
-      <DependentUpon>MainPage.xaml</DependentUpon>
+    <Compile Include="OldMainPage.xaml.cs">
+      <DependentUpon>OldMainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="LocalizedStrings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -125,8 +129,8 @@
     <Compile Include="Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WindowsPhoneControl1.xaml.cs">
-      <DependentUpon>WindowsPhoneControl1.xaml</DependentUpon>
+    <Compile Include="MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -154,7 +158,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainPage.xaml">
+    <Page Include="ChangeGroupName.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OldMainPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -162,7 +170,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="WindowsPhoneControl1.xaml">
+    <Page Include="MainPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

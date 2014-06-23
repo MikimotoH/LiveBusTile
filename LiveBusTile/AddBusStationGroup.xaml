@@ -21,15 +21,10 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate>
-                        <Border x:Name="LayoutRoot" BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}" 
-                                Background="{TemplateBinding Background}" 
-                                HorizontalAlignment="Center" 
-                                VerticalAlignment="{TemplateBinding VerticalAlignment}">
-                            <ContentPresenter HorizontalAlignment="Stretch">
-                                <TextBlock FontSize="38" Foreground="Magenta" Text="{Binding}"/>
-                            </ContentPresenter>
-                        </Border>
+                        <TextBlock FontSize="36" Foreground="Magenta" Text="{Binding}" 
+                                   FontWeight="Bold"
+                                   TextAlignment="Center"
+                                   HorizontalAlignment="Stretch" />
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>

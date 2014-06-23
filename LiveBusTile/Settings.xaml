@@ -10,6 +10,7 @@
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
+    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"    
     mc:Ignorable="d"
     shell:SystemTray.IsVisible="True">
 
@@ -29,8 +30,16 @@
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
             <StackPanel>
-                <CheckBox x:Name="ckWiFiOnly" Content="只在Wi-Fi時背景更新" IsChecked="false" />
-                <TextBlock Margin="10,0" TextWrapping="Wrap">勾選此選項，可以節省電信資費，但動態磚只會在有Wi-Fi連線時才會更新</TextBlock>
+                <toolkit:ToggleSwitch Header="Wi-Fi時背景更新" x:Name="tgWifiOnly">
+                    <toolkit:ToggleSwitch.HeaderTemplate>
+                        <DataTemplate>
+                            <ContentControl>
+                                <TextBlock FontSize="42" Foreground="White" TextWrapping="Wrap" Text="{Binding}"/>
+                            </ContentControl>
+                        </DataTemplate>
+                    </toolkit:ToggleSwitch.HeaderTemplate>                    
+                </toolkit:ToggleSwitch>
+                <TextBlock Margin="10,0" TextWrapping="Wrap">打開此選項，可以節省電信資費，但動態磚只會在有Wi-Fi連線時才會更新</TextBlock>
             </StackPanel>
 
         </Grid>

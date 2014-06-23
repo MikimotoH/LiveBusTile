@@ -89,6 +89,7 @@ namespace LiveBusTile
             tbStation.Text = (lbStationsGo.SelectedItem as string);
             m_dir = BusDir.go;
         }
+
         private void lbStationsBack_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
             App.m_AppLog.Debug("");
@@ -97,6 +98,14 @@ namespace LiveBusTile
             App.m_AppLog.Debug("lbStationsBack.SelectedItem=" + (lbStationsBack.SelectedItem as string));
             tbStation.Text = (lbStationsBack.SelectedItem as string);
             m_dir = BusDir.back;
+        }
+
+        private void tbStation_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.Key == Key.Enter)
+            {
+                btnEnter_Tap(sender, null);
+            }
         }
 
 

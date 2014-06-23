@@ -79,6 +79,15 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 不合法的群組名稱：「{0}」.
+        /// </summary>
+        public static string IllegalGroupName {
+            get {
+                return ResourceManager.GetString("IllegalGroupName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 網路障礙.
         /// </summary>
         public static string NetworkFault {

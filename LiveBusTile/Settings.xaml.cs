@@ -21,12 +21,12 @@ namespace LiveBusTile
         {
             bool bWiFiOnly = false;
             IsolatedStorageSettings.ApplicationSettings.TryGetValue("WiFiOnly", out bWiFiOnly);
-            ckWiFiOnly.IsChecked = bWiFiOnly;
+            tgWifiOnly.IsChecked = bWiFiOnly;
             //base.OnNavigatedTo(e);
         }
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            IsolatedStorageSettings.ApplicationSettings["WiFiOnly"] = ckWiFiOnly.IsChecked;
+            IsolatedStorageSettings.ApplicationSettings["WiFiOnly"] = tgWifiOnly.IsChecked;
             //base.OnNavigatedFrom(e);
         }
     }
