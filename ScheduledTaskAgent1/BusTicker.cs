@@ -23,7 +23,7 @@ namespace ScheduledTaskAgent1
 
         public static Task<string> GetBusDueTime(BusInfo b)
         {
-            return GetBusDueTime(b.Name, b.Station, b.Dir);
+            return GetBusDueTime(b.m_Name, b.m_Station, b.m_Dir);
         }
 
         public static async Task<string> GetBusDueTime(string busName, string stationName, BusDir busDir)

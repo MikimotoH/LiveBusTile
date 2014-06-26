@@ -50,19 +50,13 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <!--
-            <Button x:Name="btnDir" Tap="btnDir_Tap" Visibility="Collapsed">
-                <TextBlock Grid.Column="0"  Text="往" Tag="g" FontSize="32" 
-                           x:Name="btnDirText"/>
-            </Button>
-            -->
             <TextBox Grid.Column="0" x:Name="tbStation" InputScope="Text" FontSize="32" KeyDown="tbStation_KeyDown" />
             <Button Grid.Column="1" x:Name="btnEnter" Tap="btnEnter_Tap"  Margin="0,0,8,0">
                 <Image Source="Images/Btn.Enter.Png"/>
             </Button>
         </Grid>
         
-        <phone:Pivot Grid.Row="3">
+        <phone:Pivot Grid.Row="3" x:Name="pivot">
             <phone:Pivot.HeaderTemplate>
                 <DataTemplate>
                     <Grid>

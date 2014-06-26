@@ -26,24 +26,20 @@ namespace LiveBusTile
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             m_busInfo = PhoneApplicationService.Current.State["busInfo"] as BusInfo;
-            tbBusName.Text = m_busInfo.Name;
-            tbStation.Text = m_busInfo.Station;
-            tbTimeToArrive.Text = m_busInfo.TimeToArrive;
+            tbBusName.Text = m_busInfo.m_Name;
+            tbStation.Text = m_busInfo.m_Station;
+            tbTimeToArrive.Text = m_busInfo.m_TimeToArrive;
 
-            tbDir.Text = (m_busInfo.Dir == BusDir.go ? "往" : "返");
+            tbDir.Text = (m_busInfo.m_Dir == BusDir.go ? "往" : "返");
             m_orig_group = PhoneApplicationService.Current.State["groupName"] as string;
             tbGroup.Text = m_orig_group;
 
             
             var stpair = Database.AllBuses[tbBusName.Text];
-            if (m_busInfo.Dir == BusDir.go && stpair.stations_go.Length>0)
-            {
+            if (m_busInfo.m_Dir == BusDir.go && stpair.stations_go.Length > 0)
                 tbDir.Text += stpair.stations_go.LastElement();
-            }
-            else if (m_busInfo.Dir == BusDir.back && stpair.stations_back.Length > 0)
-            {
+            else if (m_busInfo.m_Dir == BusDir.back && stpair.stations_back.Length > 0)
                 tbDir.Text += stpair.stations_back.LastElement();
-            }
         }
 
 
@@ -62,16 +58,17 @@ namespace LiveBusTile
             if (tbGroup.Text != m_orig_group)
             {
                 App.m_AppLog.Debug("m_orig_group={0}, tbGroup.Text={1}".Fmt(m_orig_group, tbGroup.Text));
-                BusGroup old_group = Database.FavBusGroups.FirstOrDefault(x => x.GroupName == m_orig_group);
-                BusGroup new_group = Database.FavBusGroups.FirstOrDefault(x => x.GroupName == tbGroup.Text);
+                BusGroup old_group = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == m_orig_group);
+                BusGroup new_group = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == tbGroup.Text);
                 Debug.Assert(old_group != null);
                 if (new_group == null)
-                    Database.FavBusGroups.Add(new BusGroup{ GroupName = tbGroup.Text, Buses = new ObservableCollection<BusInfo> { m_busInfo } });
+                    Database.FavBusGroups.Add(new BusGroup{ m_GroupName = tbGroup.Text, m_Buses = new List<BusInfo> { m_busInfo } });
                 else
-                    new_group.Buses.Add(m_busInfo);
+                    new_group.m_Buses.Add(m_busInfo);
 
-                old_group.Buses.Remove(m_busInfo);
-                if (old_group.Buses.Count == 0)
+                bool bRemoveSuccess = old_group.m_Buses.Remove(m_busInfo);
+                App.m_AppLog.Debug("bRemoveSuccess=" + bRemoveSuccess);
+                if (old_group.m_Buses.Count == 0)
                     Database.FavBusGroups.Remove(old_group);
 
                 Database.SaveFavBusGroups();
@@ -83,15 +80,23 @@ namespace LiveBusTile
 
         private async void AppBar_RefreshBusTime_Click(object sender, EventArgs e)
         {
+            string timeToArrive="";
             try
             {
-                string timeToArrive = await BusTicker.GetBusDueTime(m_busInfo);
-                tbTimeToArrive.Text = timeToArrive;
+                timeToArrive = await BusTicker.GetBusDueTime(m_busInfo);
             }
             catch(Exception ex)
             {
                 App.m_AppLog.Error("ex="+ex.DumpStr());
                 MessageBox.Show(AppResources.NetworkFault );
+                return;
+            }
+
+            if (tbTimeToArrive.Text != timeToArrive)
+            {
+                tbTimeToArrive.Text = timeToArrive;
+                Database.FavBuses.FirstOrDefault(x => x == m_busInfo).m_TimeToArrive = timeToArrive; ;
+                Database.SaveFavBusGroups();
             }
         }
 
@@ -103,14 +108,14 @@ namespace LiveBusTile
             try
             {
                 BusGroup bg = Database.FavBusGroups.FirstOrDefault(x
-                    => x.GroupName == m_orig_group);
+                    => x.m_GroupName == m_orig_group);
 
-                bool bRemoveSuccess = bg.Buses.Remove(m_busInfo);
+                bool bRemoveSuccess = bg.m_Buses.Remove(m_busInfo);
                 if (!bRemoveSuccess) { MessageBox.Show("bg.Remove({0}) failed".Fmt(m_busInfo)); return; }
-                if (bg.Buses.Count == 0)
+                if (bg.m_Buses.Count == 0)
                 {
                     bRemoveSuccess = Database.FavBusGroups.Remove(bg);
-                    if (!bRemoveSuccess) { MessageBox.Show("Database.FavBusGroups.Remove({0}) failed".Fmt(bg.GroupName)); return; }
+                    if (!bRemoveSuccess) { MessageBox.Show("Database.FavBusGroups.Remove({0}) failed".Fmt(bg.m_GroupName)); return; }
                 }
                 App.m_AppLog.Debug("bRemoveSuccess=" + bRemoveSuccess);
                 Database.SaveFavBusGroups();
@@ -132,7 +137,7 @@ namespace LiveBusTile
         {
             get
             {
-                var groups = new HashSet<string>(Database.FavBusGroups.Select(x => x.GroupName));
+                var groups = new HashSet<string>(Database.FavBusGroups.Select(x => x.m_GroupName));
                 groups.Add("上班");
                 groups.Add("回家");
                 

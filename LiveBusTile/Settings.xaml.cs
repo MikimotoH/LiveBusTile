@@ -8,6 +8,7 @@ using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using System.IO.IsolatedStorage;
+using LiveBusTile.Resources;
 
 namespace LiveBusTile
 {
@@ -19,7 +20,7 @@ namespace LiveBusTile
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            bool bWiFiOnly = false;
+            bool bWiFiOnly = Convert.ToBoolean(ScheduledTaskAgent1.Resource1.IsWiFiOnly_Default);
             IsolatedStorageSettings.ApplicationSettings.TryGetValue("WiFiOnly", out bWiFiOnly);
             tgWifiOnly.IsChecked = bWiFiOnly;
             //base.OnNavigatedTo(e);

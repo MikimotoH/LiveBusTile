@@ -102,7 +102,7 @@
             </Grid.ColumnDefinitions>
             
             <TextBox Grid.Column="0" x:Name="tbBusName" InputScope="Text" 
-                     TextWrapping="Wrap" FontSize="48"
+                     TextWrapping="Wrap" FontSize="40"
                      TextChanged="tbBusName_TextChanged" KeyDown="tbBusName_KeyDown"/>
             <Button Grid.Column="2" x:Name="btnEnter" Margin="0,0,4,0" Tap="btnEnter_Tap">
                 <Image Source="Images/Btn.Enter.Png"/>

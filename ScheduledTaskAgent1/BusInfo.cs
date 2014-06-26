@@ -12,66 +12,73 @@ using System.Windows;
 
 namespace ScheduledTaskAgent1
 {
-    public class BusInfo : INotifyPropertyChanged
+    public class BusInfo
     {
-        string m_Name;
-        string m_Station;
-        string m_TimeToArrive;
-
-        public string Name { get { return m_Name; } set { if (m_Name != value) { m_Name = value; NotifyPropertyChanged("Name"); } } }
-        public string Station { get { return m_Station; } set { if (m_Station != value) { m_Station = value; NotifyPropertyChanged("Station"); } } }
-        public BusDir Dir { get; set; }
-        public string TimeToArrive { get { return m_TimeToArrive; } set { if (m_TimeToArrive != value) { m_TimeToArrive = value; NotifyPropertyChanged("TimeToArrive"); } } }
+        public BusInfo(){}
+        //public BusInfo(BusInfo b)
+        //{
+        //    this.m_Name= String.Copy(b.m_Name);
+        //    this.m_Station = String.Copy(b.m_Station);
+        //    this.m_Dir = b.m_Dir;
+        //    this.m_TimeToArrive = b.m_TimeToArrive;
+        //}
+        //public static BusInfo Copy(BusInfo b)
+        //{
+        //    return (BusInfo)b.MemberwiseClone();
+        //}
+        //public BusInfo Copy() { return BusInfo.Copy(this); }
+        
+        
+        public string m_Name;
+        public string m_Station;
+        public BusDir m_Dir;
+        public string m_TimeToArrive;
 
         public override string ToString()
         {
-            return "{{Name=\"{0}\",Station=\"{1}\",Dir={2},TimeToArrive=\"{3}\" }}".Fmt(Name,Station,Dir,TimeToArrive);
+            return "{{m_Name=\"{0}\",m_Station=\"{1}\",m_Dir={2},m_TimeToArrive=\"{3}\" }}".Fmt(m_Name, m_Station, m_Dir, m_TimeToArrive);
         }
 
-        public string DirWithDestStation 
+        public string DirWithDestStation
         {
             get
             {
-                var stats = Database.AllBuses[Name].GetStations(Dir);
-                string pfx="往：";
-                if (Dir == BusDir.back)
+                var stats = Database.AllBuses[m_Name].GetStations(m_Dir);
+                string pfx = "往：";
+                if (m_Dir == BusDir.back)
                     pfx = "返：";
                 if (stats.Length > 0)
                     return pfx + stats.LastElement();
                 else return pfx;
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void NotifyPropertyChanged(String propertyName)
-        {
-            if (null != PropertyChanged)
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 
-    public class BusGroup : INotifyPropertyChanged
-    {
-        string m_GroupName;
-        public string GroupName { get { return m_GroupName; } set { if (m_GroupName != value) { m_GroupName = value; NotifyPropertyChanged("GroupName"); } } }
-        public ObservableCollection<BusInfo> Buses { get; set; }
-        
-        public BusGroup()
+
+
+    public class BusGroup
+    { 
+        public string m_GroupName;
+        public List<BusInfo> m_Buses;
+        public BusGroup() { }
+        public BusGroup(BusGroup bg)
         {
-            Buses = new ObservableCollection<BusInfo>();
+            this.m_GroupName = String.Copy(bg.m_GroupName);
+            this.m_Buses = new List<BusInfo>(bg.m_Buses);
         }
+
+        public static BusGroup Copy(BusGroup bg)
+        {
+            return (BusGroup)bg.MemberwiseClone();
+        }
+        public BusGroup Copy(){return BusGroup.Copy(this);}
+
         public override string ToString()
         {
-            return "GroupName{0}, Buse={1}".Fmt(GroupName, Buses.DumpArray() );
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void NotifyPropertyChanged(String propertyName)
-        {
-            if (null != PropertyChanged)
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            return "m_GroupName={0}, m_Buse={1}".Fmt(m_GroupName, m_Buses.DumpArray());
         }
     }
+
 
     public class StationPair
     {
@@ -87,8 +94,8 @@ namespace ScheduledTaskAgent1
 
     public static class Database
     {
-        static ObservableCollection<BusGroup> m_FavBusGroups;
-        public static ObservableCollection<BusGroup> FavBusGroups
+        private static List<BusGroup> m_FavBusGroups;
+        public static List<BusGroup> FavBusGroups
         {
             get
             {
@@ -100,46 +107,58 @@ namespace ScheduledTaskAgent1
             }
         }
 
+
         public static void SaveFavBusGroups()
         {
-            IsolatedStorageSettings.ApplicationSettings["FavBusGroups"] = FavBusGroups;
+            IsolatedStorageSettings.ApplicationSettings["FavBusGroups"] = m_FavBusGroups;
         }
 
-        public static ObservableCollection<BusGroup> DefaultFavBusGroups
+        public static List<BusGroup> DefaultFavBusGroups
         {
             get
             {
-                return new ObservableCollection<BusGroup>
+                return new List<BusGroup>
                 {
                     new BusGroup
                     {
-                        GroupName = "上班",
-                        Buses = new ObservableCollection<BusInfo>
+                        m_GroupName = "上班",
+                        m_Buses = new List<BusInfo>
                         {
-                            new BusInfo{Name="橘2", Dir=BusDir.go, Station="秀山國小", TimeToArrive="無資料"},
-                            new BusInfo{Name="敦化幹線", Dir=BusDir.back, Station="秀景里", TimeToArrive="無資料"},
+                            new BusInfo{m_Name="橘2", m_Dir=BusDir.go, m_Station="秀山國小", m_TimeToArrive="無資料"},
+                            new BusInfo{m_Name="敦化幹線", m_Dir=BusDir.back, m_Station="秀景里", m_TimeToArrive="無資料"},
                         }
                     },
                     new BusGroup
                     {
-                        GroupName = "回家",
-                        Buses = new ObservableCollection<BusInfo>
+                        m_GroupName = "回家",
+                        m_Buses = new List<BusInfo>
                         { 
-                            new BusInfo{Name="橘2", Dir=BusDir.back, Station="捷運永安市場站", TimeToArrive="無資料"} ,
-                            new BusInfo{Name="275", Dir=BusDir.back, Station="忠孝敦化路口", TimeToArrive="無資料"} ,
+                            new BusInfo{m_Name="橘2", m_Dir=BusDir.back, m_Station="捷運永安市場站", m_TimeToArrive="無資料"} ,
+                            new BusInfo{m_Name="275", m_Dir=BusDir.back, m_Station="忠孝敦化路口", m_TimeToArrive="無資料"} ,
                         }
                     }
                 };
             }
         }
 
-        public static ObservableCollection<BusGroup> LoadFavBusGroups() 
+        public static List<BusGroup> LoadFavBusGroups() 
         {
+            List<BusGroup> ret = null;
             if (!IsolatedStorageSettings.ApplicationSettings.Contains("FavBusGroups"))
             {
-                IsolatedStorageSettings.ApplicationSettings["FavBusGroups"] = DefaultFavBusGroups;
+                ret = DefaultFavBusGroups;
+                IsolatedStorageSettings.ApplicationSettings["FavBusGroups"] = ret;
             }
-            return IsolatedStorageSettings.ApplicationSettings["FavBusGroups"] as ObservableCollection<BusGroup>;
+            else
+            {
+                ret = IsolatedStorageSettings.ApplicationSettings["FavBusGroups"] as List<BusGroup>;
+                if(ret==null)
+                {
+                    ret = DefaultFavBusGroups;
+                    IsolatedStorageSettings.ApplicationSettings["FavBusGroups"] = ret;
+                }
+            }
+            return ret;
         }
 
         #region serialization
@@ -150,37 +169,39 @@ namespace ScheduledTaskAgent1
                 OpenFile(@"Shared\ShellContent\FavBusGroups.txt",FileMode.OpenOrCreate, 
                 FileAccess.Write, FileShare.None)))
             {
-                foreach(var y in FavBusGroups)
+                foreach(var y in m_FavBusGroups)
                 {
-                    sw.WriteLine(y.GroupName + field_separator + y.Buses.Count);
-                    foreach( var x in y.Buses)
+                    sw.WriteLine(y.m_GroupName + field_separator + y.m_Buses.Count);
+                    foreach( var x in y.m_Buses)
                         sw.WriteLine(field_separator +
-                            field_separator.Joyn(new string[] { x.Name, x.Station, x.Dir.ToString(), x.TimeToArrive }));
+                            field_separator.Joyn(new string[] { x.m_Name, x.m_Station, x.m_Dir.ToString(), x.m_TimeToArrive }));
                 }
             }
         }
 
 
-        public static ObservableCollection<BusGroup> ImportFavBusGroups()
+        public static List<BusGroup> ImportFavBusGroups()
         {
             using(StreamReader sr = new StreamReader(IsolatedStorageFile.GetUserStoreForApplication().
                 OpenFile(@"Shared\ShellContent\FavBusGroups.txt",FileMode.Open, FileAccess.Read, FileShare.Read)))
             {
-                ObservableCollection<BusGroup> ret = new ObservableCollection<BusGroup>();
+                var ret = new List<BusGroup>();
                 string groupDecl;
                 while ((groupDecl = sr.ReadLine()) != null)
                 {
                     var groupcomps = groupDecl.Split(new string[] { field_separator }, StringSplitOptions.RemoveEmptyEntries);
                     int busCount = int.Parse(groupcomps[1]);
                     var bg = new BusGroup();
-                    bg.GroupName = groupcomps[0];
-                    bg.Buses = new ObservableCollection<BusInfo>();
+                    bg.m_GroupName = groupcomps[0];
+                    bg.m_Buses = new List<BusInfo>();
                     for(int i=0; i<busCount; ++i)
                     {
                         string busLine = sr.ReadLine();
                         var busComps = busLine.Split(new string[] { field_separator }, StringSplitOptions.RemoveEmptyEntries);
-                        var bi = new BusInfo{Name=busComps[0], Station=busComps[1], Dir=(BusDir)Enum.Parse(typeof(BusDir), busComps[2]), TimeToArrive=busComps[3]};
-                        bg.Buses.Add(bi);
+
+                        bg.m_Buses.Add(new BusInfo { 
+                            m_Name = busComps[0], m_Station = busComps[1], m_Dir = (BusDir)Enum.Parse(typeof(BusDir), busComps[2]), 
+                            m_TimeToArrive = busComps[3] });
                     }
                     ret.Add(bg);
                 }
@@ -224,7 +245,7 @@ namespace ScheduledTaskAgent1
         {
             get
             {                
-                return FavBusGroups.Sum(y => y.Buses.Count);
+                return FavBusGroups.Sum(y => y.m_Buses.Count);
             }
         }
 
@@ -236,7 +257,7 @@ namespace ScheduledTaskAgent1
                 int k=0;
                 foreach (var y in FavBusGroups)
                 {
-                    foreach (var x in y.Buses)
+                    foreach (var x in y.m_Buses)
                         buses[k++] = x;
                 }
                 return buses;

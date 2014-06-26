@@ -20,7 +20,11 @@
         <shell:PhoneApplicationService
             Launching="Application_Launching" Closing="Application_Closing"
             Activated="Application_Activated" Deactivated="Application_Deactivated" 
-            RunningInBackground="PhoneApplicationService_RunningInBackground"/>
+            RunningInBackground="Application_RunningInBackground" 
+            
+            ApplicationIdleDetectionMode="Disabled" 
+            UserIdleDetectionMode="Disabled"
+            />
     </Application.ApplicationLifetimeObjects>
 
 </Application>

@@ -35,7 +35,7 @@ namespace LiveBusTile
             tbStation.Text = m_station;
             tbDir.Text = "到：" + Database.AllBuses[m_busName].GetStations(m_dir).LastElement();
 
-            var groups = new HashSet<string>(Database.FavBusGroups.Select(x => x.GroupName));
+            var groups = new HashSet<string>(Database.FavBusGroups.Select(x => x.m_GroupName));
             groups.Add("上班");
             groups.Add("回家");
             lbGroupNames.ItemsSource = groups.ToList();
@@ -67,20 +67,20 @@ namespace LiveBusTile
                 || tbGroupName.Text.Contains(Database.field_separator ))
             {
             }
-            var busInfo = new BusInfo{Name=m_busName, Station=m_station, Dir=m_dir} ;
-            var existingGroup = Database.FavBusGroups.FirstOrDefault( x=> x.GroupName == tbGroupName.Text);
+            var busInfo = new BusInfo { m_Name = m_busName, m_Station = m_station, m_Dir = m_dir };
+            var existingGroup = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == tbGroupName.Text);
             if (existingGroup == null)
             {
                 Database.FavBusGroups.Add(
                     new BusGroup
                     {
-                        GroupName = tbGroupName.Text,
-                        Buses = new ObservableCollection<BusInfo>{busInfo}
+                        m_GroupName = tbGroupName.Text,
+                        m_Buses = new List<BusInfo> { busInfo }
                     });
             }
             else
             {
-                existingGroup.Buses.Add(busInfo);
+                existingGroup.m_Buses.Add(busInfo);
             }
             PhoneApplicationService.Current.State["Op"] = "Add";
             NavigationService.Navigate(new Uri("/MainPage.xaml", UriKind.Relative));

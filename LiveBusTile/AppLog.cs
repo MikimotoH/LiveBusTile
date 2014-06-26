@@ -25,17 +25,19 @@ namespace LiveBusTile
         {
             System.Diagnostics.Debug.WriteLine("Logger.Logger() ctor");
         }
+        const string logdir = @"Shared\ShellContent";
+        string logFileName;
 
-        public void Create(bool overwrite, string logFileName,
+        public void Create(FileMode fileMode, string logFileName,
             [CallerFilePath] string path = "",
             [CallerMemberName] string func = "",
             [CallerLineNumber] int line = 0            
             )
         {
-            const string logdir = @"Shared\ShellContent";
+            this.logFileName = logFileName;
             System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Create(overwrite={5}) enter m_stm={6}",
                 DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-                , overwrite, m_stm);
+                , fileMode, m_stm);
 
             try
             {
@@ -48,13 +50,13 @@ namespace LiveBusTile
             }
             m_stm = new StreamWriter(
                 IsolatedStorageFile.GetUserStoreForApplication().OpenFile(logdir+"\\"+logFileName,
-                overwrite ? FileMode.OpenOrCreate : FileMode.Append,
+                fileMode,
                 FileAccess.Write, FileShare.Read));
             //Console.SetOut(m_stm);
 
             System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Create(overwrite={5}) exit m_stm={6}",
                 DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-                , overwrite, m_stm);
+                , fileMode, m_stm);
         }
 
         public void Flush
@@ -69,7 +71,10 @@ namespace LiveBusTile
                 System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Flush() enter m_stm={5}",
                     DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
                     , m_stm);
-                m_stm.Flush();
+                m_stm.Close();
+                m_stm = new StreamWriter(IsolatedStorageFile.GetUserStoreForApplication().OpenFile(
+                    logdir+"\\"+logFileName,
+                    FileMode.Append, FileAccess.Write, FileShare.Read));
             }
         }
 

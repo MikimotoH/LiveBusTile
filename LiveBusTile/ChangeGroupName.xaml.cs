@@ -25,7 +25,7 @@ namespace LiveBusTile
             m_orig_groupName = NavigationContext.QueryString["groupName"];
             tbGroupName.Text = m_orig_groupName;
 
-            lbBusInfos.ItemsSource = Database.FavBusGroups.FirstOrDefault(x=>x.GroupName==m_orig_groupName).Buses;
+            lbBusInfos.ItemsSource = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == m_orig_groupName).m_Buses.Select(x => new BusInfoVM(x)).ToList();
         }
 
         protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)
@@ -39,20 +39,12 @@ namespace LiveBusTile
                 return;
             }
 
-            var g = Database.FavBusGroups.FirstOrDefault(x => x.GroupName == m_orig_groupName);
-            g.GroupName = tbGroupName.Text;
+            var g = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == m_orig_groupName);
+            g.m_GroupName = tbGroupName.Text;
             Database.SaveFavBusGroups();
             base.OnBackKeyPress(e);
         }
     }
 
-    public class ExampleBusInfos : ObservableCollection<BusInfo>
-    {
-        public ExampleBusInfos()
-        {
-            Add(new BusInfo { Name = "橘2", Station = "秀山國小", Dir = BusDir.go });
-            Add(new BusInfo { Name = "敦化幹線", Station = "秀景里", Dir = BusDir.back});
-        }
 
-    }
 }

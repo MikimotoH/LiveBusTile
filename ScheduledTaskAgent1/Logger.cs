@@ -20,14 +20,14 @@ namespace ScheduledTaskAgent1
     {
         static StreamWriter m_stm;
         //const string logpath = logdir + @"\log.txt";
-        const string timeFmt = "yyMMdd_HH:mm:ss.fff";
+        public const string timeFmt = "yyMMdd_HH:mm:ss.fff";
 
         static Logger()
         {
             System.Diagnostics.Debug.WriteLine("Logger.Logger() ctor");
         }
 
-        public static void Create(bool overwrite, string logFileName,
+        public static void Create(FileMode fileMode, string logFileName,
             [CallerFilePath] string path = "",
             [CallerMemberName] string func = "",
             [CallerLineNumber] int line = 0            
@@ -35,7 +35,7 @@ namespace ScheduledTaskAgent1
         {
             System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Create(overwrite={5}) enter m_stm={6}",
                 DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-                , overwrite, m_stm);
+                , fileMode, m_stm);
 
             const string logdir = @"Shared\ShellContent";
 
@@ -50,13 +50,13 @@ namespace ScheduledTaskAgent1
             }
             m_stm = new StreamWriter(
                 IsolatedStorageFile.GetUserStoreForApplication().OpenFile(logdir + "\\" + logFileName,
-                overwrite ? FileMode.OpenOrCreate : FileMode.Append,
+                fileMode,
                 FileAccess.Write, FileShare.Read));
             //Console.SetOut(m_stm);
 
             System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Create(overwrite={5}) exit m_stm={6}",
                 DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-                , overwrite, m_stm);
+                , fileMode, m_stm);
         }
 
         public static void Flush

@@ -25,11 +25,6 @@ namespace LiveBusTile
         StationPair m_stationPair;
         BusDir m_dir = BusDir.go;
 
-        //string[] CurStations()
-        //{
-        //    return m_dir == BusDir.go ? m_stationPair.stations_go : m_stationPair.stations_back;
-        //}
-
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             m_busName = NavigationContext.QueryString["busName"];
@@ -39,27 +34,16 @@ namespace LiveBusTile
 
             lbStationsGo.ItemsSource = m_stationPair.stations_go.ToList();
             pivotItemGo.Header = "往：" + m_stationPair.stations_go.LastElement();
-            lbStationsBack.ItemsSource = m_stationPair.stations_back.ToList();
-            pivotItemBack.Header = "返：" + m_stationPair.stations_back.LastElement();
+            if (m_stationPair.stations_back.Length > 0)
+            {
+                lbStationsBack.ItemsSource = m_stationPair.stations_back.ToList();
+                pivotItemBack.Header = "返：" + m_stationPair.stations_back.LastElement();
+            }
+            else
+            {
+                pivot.Items.Remove(pivotItemBack);
+            }
         }
-
-        //private void btnDir_Tap(object sender, System.Windows.Input.GestureEventArgs e)
-        //{
-        //    if( m_dir == BusDir.go)
-        //    {
-        //        if (m_stationPair.stations_back.Length == 0)
-        //            return;
-        //        btnDirText.Text = "返";
-        //        m_dir = BusDir.back;
-        //    }
-        //    else
-        //    {
-        //        btnDirText.Text = "往";
-        //        m_dir = BusDir.go;
-        //    }
-        //    lbStationsGo.ItemsSource = CurStations().ToList();
-        //    tbGoTo.Text = "到：" + CurStations().LastElement();
-        //}
 
         private void tbBusName_KeyDown(object sender, KeyEventArgs e)
         {

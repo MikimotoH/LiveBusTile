@@ -134,12 +134,4 @@ namespace LiveBusTile
         }
     }
 
-    public class ExampleAllBuses: ObservableCollection<KeyedBusVM>
-    {
-        public ExampleAllBuses()
-        {
-            Add(new KeyedBusVM("綠", new string[] { "綠1", "綠2", "綠3", "綠4", "綠5" }));
-            Add(new KeyedBusVM("幹線", new string[]{"敦化幹線", "信義幹線", "仁愛幹線", "信義幹線"}));
-        }
-    }
 }

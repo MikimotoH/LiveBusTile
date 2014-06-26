@@ -12,6 +12,8 @@ using System.ComponentModel;
 using ScheduledTaskAgent1;
 using LiveBusTile.Resources;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace LiveBusTile
 {
@@ -22,26 +24,23 @@ namespace LiveBusTile
             InitializeComponent();
         }
 
-        private ObservableCollection<GroupBusVM> FavGroupBusVM
+        private ObservableCollection<GroupBusVM> GenFavGroupBusVM()
         {
-            get
+            var vm = new ObservableCollection<GroupBusVM>();
+            foreach (var y in Database.FavBusGroups)
             {
-                var vm = new ObservableCollection<GroupBusVM>();
-                foreach (var y in Database.FavBusGroups)
-                {
-                    vm.Add(new GroupBusVM(y.GroupName));
-                    foreach (var x in y.Buses)
-                        vm.Add(new GroupBusVM(x, y.GroupName));
-                }
-                return vm;
+                vm.Add(new GroupBusVM(y.m_GroupName));
+                foreach (var x in y.m_Buses)
+                    vm.Add(new GroupBusVM(x, y.m_GroupName));
             }
+            return vm;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             //App.m_AppLog.Debug("Screen Width = " + Application.Current.RootVisual.RenderSize.Width);
 
-            lbBus.ItemsSource = FavGroupBusVM;
+            lbBus.ItemsSource = GenFavGroupBusVM();
 
             if ((string)PhoneApplicationService.Current.State.GetValue("Op", "") == "Add")
             {
@@ -57,18 +56,18 @@ namespace LiveBusTile
             var gbvm = (sender as MenuItem).DataContext as GroupBusVM;
             BusInfo busInfo = gbvm.BusInfo;
 
-            var group = Database.FavBusGroups.FirstOrDefault(g => g.GroupName==gbvm.GroupName );
+            BusGroup group = Database.FavBusGroups.FirstOrDefault(g => g.m_GroupName == gbvm.GroupName);
             if (group == null)
             {
                 App.m_AppLog.Error("can not find group which contains busInfo=" + busInfo);
                 return;
             }
 
-            group.Buses.Remove(busInfo);
-            if (group.Buses.Count == 0)
+            group.m_Buses.Remove(busInfo);
+            if (group.m_Buses.Count == 0)
                 Database.FavBusGroups.Remove(group);
-            
-            lbBus.ItemsSource = FavGroupBusVM;
+
+            lbBus.ItemsSource = GenFavGroupBusVM();
         }
 
         private void BusItem_Details_Click(object sender, RoutedEventArgs e)
@@ -86,30 +85,11 @@ namespace LiveBusTile
         }
 
 
-        void UpdateTileJpg()
-        {
-            Database.SaveFavBusGroups();
-
-            ScheduledTaskAgent1.ScheduledAgent.GenerateTileJpg(
-                "\n".Joyn(Database.FavBuses.Select(x => x.Name + " " + x.TimeToArrive)));
-
-            ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
-            var tileData = new StandardTileData
-            {
-                Title = DateTime.Now.ToString("HH:mm:ss"),
-                BackgroundImage = new Uri("isostore:/" + @"Shared\ShellContent\Tile.jpg", UriKind.Absolute),
-            };
-            if (tile == null)
-                ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), tileData);
-            else
-                tile.Update(tileData);
-
-        }
-
         private void AppBar_Pin_Click(object sender, EventArgs e)
         {
             App.m_AppLog.Debug("");
-            UpdateTileJpg();
+            Database.SaveFavBusGroups();
+            ScheduledAgent.UpdateTileJpg(true);
         }
 
         private async void AppBar_Refresh_Click(object sender, EventArgs e)
@@ -117,28 +97,52 @@ namespace LiveBusTile
             App.m_AppLog.Debug("enter sender=" + sender.GetType());
             if (Database.FavBuses.Count() == 0)
                 return;
-
+            
             prgbarWaiting.Visibility = Visibility.Visible;
-            foreach (var btn in this.ApplicationBar.Buttons)
-                (btn as ApplicationBarIconButton).IsEnabled = false;
+            this.ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = false);
             this.ApplicationBar.IsMenuEnabled = false;
 
-            bool bIsNetworkOK = await ScheduledAgent.RefreshBusTime(Database.FavBuses);
-            App.m_AppLog.Debug("bIsNetworkOK=" + bIsNetworkOK);
+            Task<string>[] tasks = Database.FavBuses.Select(b => BusTicker.GetBusDueTime(b)).ToArray();
 
-            foreach (var btn in this.ApplicationBar.Buttons)
-                (btn as ApplicationBarIconButton).IsEnabled = true;
+            try
+            {
+                await Task.Run(() =>
+                {
+                    Task.WaitAll(tasks);
+                });
+            }
+            catch (Exception ex)
+            {
+                App.m_AppLog.Error("Task.WaitAll(tasks) failed");
+                App.m_AppLog.Error(ex.DumpStr());
+            }
+
+            int numSucceededTasks = 0;
+            for (int i = 0; i < tasks.Length; ++i)
+            {
+                if (tasks[i].Status == TaskStatus.RanToCompletion)
+                {
+                    Database.FavBuses[i].m_TimeToArrive = tasks[i].Result;
+                    ++numSucceededTasks;
+                }
+            }
+            App.m_AppLog.Debug("numSucceededTasks=" + numSucceededTasks);
+
+            if (numSucceededTasks > 0)
+            {
+                Database.SaveFavBusGroups();
+                lbBus.ItemsSource = GenFavGroupBusVM();
+                ScheduledAgent.UpdateTileJpg(false);
+            }
+            
+            //foreach (var btn in this.ApplicationBar.Buttons)
+            //    (btn as ApplicationBarIconButton).IsEnabled = true;
+            this.ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = true);
             this.ApplicationBar.IsMenuEnabled = true;
             prgbarWaiting.Visibility = Visibility.Collapsed;
-            if (!bIsNetworkOK)
+
+            if (numSucceededTasks == 0)
                 MessageBox.Show(AppResources.NetworkFault);
-            else
-            {
-                lbBus.ItemsSource = FavGroupBusVM;
-                ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
-                if(tile!=null)
-                    UpdateTileJpg();
-            }
 
             App.m_AppLog.Debug("exit");
         }
@@ -191,14 +195,16 @@ namespace LiveBusTile
         public GroupBusVM(BusInfo b, string groupName) { m_BusInfo = b; GroupName = groupName; }
 
         public string GroupName{get;set;}
-        public string BusName { get { return m_BusInfo.Name; } set { if (m_BusInfo.Name != value) { m_BusInfo.Name = value; NotifyPropertyChanged("BusName"); } } }
-        public string Station { get { return m_BusInfo.Station; } set { if (m_BusInfo.Station != value) { m_BusInfo.Station = value; NotifyPropertyChanged("Station"); } } }
 
         BusInfo m_BusInfo;
         public BusInfo BusInfo { get { return m_BusInfo; } }
-        public string TimeToArrive { 
-            get { return m_BusInfo.TimeToArrive; } 
-            set { if (m_BusInfo.TimeToArrive != value) { m_BusInfo.TimeToArrive = value; NotifyPropertyChanged("TimeToArrive"); } } 
+
+        public string BusName { get { return m_BusInfo.m_Name; } set { if (m_BusInfo.m_Name != value) { m_BusInfo.m_Name = value; NotifyPropertyChanged("BusName"); } } }
+        public string Station { get { return m_BusInfo.m_Station; } set { if (m_BusInfo.m_Station != value) { m_BusInfo.m_Station = value; NotifyPropertyChanged("Station"); } } }
+
+        public string TimeToArrive {
+            get { return m_BusInfo.m_TimeToArrive; }
+            set { if (m_BusInfo.m_TimeToArrive != value) { m_BusInfo.m_TimeToArrive = value; NotifyPropertyChanged("TimeToArrive"); } } 
         }
 
         public bool IsGroupHeader { get { return m_BusInfo==null; } }
@@ -216,12 +222,12 @@ namespace LiveBusTile
         public ExampleGroupBusVM()
         {
             Add(new GroupBusVM("上班") );
-            Add(new GroupBusVM(new BusInfo { Name = "橘2", Station = "秀山國小", TimeToArrive = "無資料" }, "上班"));
-            Add(new GroupBusVM(new BusInfo { Name = "敦化幹線", Station = "秀景里", TimeToArrive = "無資料" }, "上班"));
+            Add(new GroupBusVM(new BusInfo { m_Name = "橘2", m_Station = "秀山國小", m_TimeToArrive = "無資料" }, "上班"));
+            Add(new GroupBusVM(new BusInfo { m_Name = "敦化幹線", m_Station = "秀景里", m_TimeToArrive = "無資料" }, "上班"));
 
             Add(new GroupBusVM ("回家") );
-            Add(new GroupBusVM(new BusInfo{Name = "橘2", Station = "捷運永安市場站", TimeToArrive = "無資料"}, "回家"));
-            Add(new GroupBusVM(new BusInfo{Name = "275", Station = "忠孝敦化路口", TimeToArrive = "無資料" }, "回家"));
+            Add(new GroupBusVM(new BusInfo { m_Name = "橘2", m_Station = "捷運永安市場站", m_TimeToArrive = "無資料" }, "回家"));
+            Add(new GroupBusVM(new BusInfo { m_Name = "275", m_Station = "忠孝敦化路口", m_TimeToArrive = "無資料" }, "回家"));
         }
     }
 
