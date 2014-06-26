@@ -184,7 +184,7 @@ namespace LiveBusTile
         // Code to execute on Unhandled Exceptions
         private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
-            m_AppLog.Error("e.ExceptionObject={0}\n Handled={2}".Fmt(
+            m_AppLog.Error("e.ExceptionObject={0}\n Handled={1}".Fmt(
                 e.ExceptionObject.DumpStr(), e.Handled));
             if (Debugger.IsAttached)
             {

@@ -90,13 +90,16 @@ namespace LiveBusTile
             App.m_AppLog.Debug("");
             Database.SaveFavBusGroups();
 
-
-            var tileData = new StandardTileData
+            const string uri = "/MainPage.xaml?DefaultTitle=FromTile";
+            var tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == uri);
+            if(tile==null)
             {
-                Title = DateTime.Now.ToString("HH:mm:ss"),
-            };
-            ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), tileData);
-
+                var tileData = new StandardTileData
+                {
+                    Title = DateTime.Now.ToString("HH:mm:ss"),
+                };
+                ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), tileData);
+            }
             ScheduledAgent.UpdateTileJpg();
         }
 
