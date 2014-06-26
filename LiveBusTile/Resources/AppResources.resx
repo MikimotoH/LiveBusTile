@@ -129,7 +129,7 @@
     <value>台北巴士快速磚</value>
   </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>1.2.0.0</value>
+    <value>1.2.1.0</value>
     <comment>Application Version on Market Place Sumbission</comment>
   </data>
   <data name="NetworkFault" xml:space="preserve">
