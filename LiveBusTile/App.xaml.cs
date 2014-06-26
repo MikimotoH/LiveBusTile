@@ -142,7 +142,7 @@ namespace LiveBusTile
                     {
                         try
                         {
-                            ScheduledAgent.UpdateTileJpg(false);
+                            ScheduledAgent.UpdateTileJpg();
                         }
                         catch (Exception ex)
                         {

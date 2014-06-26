@@ -48,7 +48,7 @@ namespace ScheduledTaskAgent1
         const string m_tileImgPath = @"Shared\ShellContent\Tile.jpg";
 
 
-        public static void UpdateTileJpg(bool createNew, string uri = "/MainPage.xaml?DefaultTitle=FromTile")
+        public static void UpdateTileJpg(string uri = "/MainPage.xaml?DefaultTitle=FromTile")
         {
             Log.Debug("");
 #if DEBUG
@@ -58,27 +58,16 @@ namespace ScheduledTaskAgent1
             }
 #endif
             ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == uri);
+            if (tile == null)
+                return;
 
-            if (tile != null)
+            GenerateTileJpg();
+            var tileData = new StandardTileData
             {
-                GenerateTileJpg();
-                var tileData = new StandardTileData
-                {
-                    Title = DateTime.Now.ToString("HH:mm:ss"),
-                    BackgroundImage = new Uri("isostore:/" + m_tileImgPath, UriKind.Absolute),
-                };
-                tile.Update(tileData);
-            }
-            else if(createNew)
-            {
-                GenerateTileJpg();
-                var tileData = new StandardTileData
-                {
-                    Title = DateTime.Now.ToString("HH:mm:ss"),
-                    BackgroundImage = new Uri("isostore:/" + m_tileImgPath, UriKind.Absolute),
-                };
-                ShellTile.Create(new Uri(uri, UriKind.Relative), tileData);
-            }
+                Title = DateTime.Now.ToString("HH:mm:ss"),
+                BackgroundImage = new Uri("isostore:/" + m_tileImgPath, UriKind.Absolute),
+            };
+            tile.Update(tileData);
         }
 
         //public static void GenerateTileJpgFromUserControl()
@@ -290,7 +279,7 @@ namespace ScheduledTaskAgent1
                     {
                         try
                         {
-                            UpdateTileJpg(false);
+                            UpdateTileJpg();
                             Log.Debug("UpdateTileJpg() - finished");
                         }
                         catch (Exception e)

@@ -89,7 +89,15 @@ namespace LiveBusTile
         {
             App.m_AppLog.Debug("");
             Database.SaveFavBusGroups();
-            ScheduledAgent.UpdateTileJpg(true);
+
+
+            var tileData = new StandardTileData
+            {
+                Title = DateTime.Now.ToString("HH:mm:ss"),
+            };
+            ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), tileData);
+
+            ScheduledAgent.UpdateTileJpg();
         }
 
         private async void AppBar_Refresh_Click(object sender, EventArgs e)
@@ -132,7 +140,7 @@ namespace LiveBusTile
             {
                 Database.SaveFavBusGroups();
                 lbBus.ItemsSource = GenFavGroupBusVM();
-                ScheduledAgent.UpdateTileJpg(false);
+                ScheduledAgent.UpdateTileJpg();
             }
             
             //foreach (var btn in this.ApplicationBar.Buttons)
