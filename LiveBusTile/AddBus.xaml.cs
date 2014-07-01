@@ -131,7 +131,8 @@ namespace LiveBusTile
             if (!tbBusName.Text.IsNone())
             {
                 tbBusName.Text = "";
-                e.Cancel = true;
+                if(e!=null)
+                    e.Cancel = true;
                 return;
             }
             base.OnBackKeyPress(e);

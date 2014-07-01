@@ -70,7 +70,7 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.2.2.0.
+        ///   Looks up a localized string similar to 1.2.2.1.
         /// </summary>
         public static string AppVersion {
             get {
@@ -84,6 +84,15 @@ namespace LiveBusTile.Resources {
         public static string IllegalGroupName {
             get {
                 return ResourceManager.GetString("IllegalGroupName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 上次更新時間.
+        /// </summary>
+        public static string LastUpdatedTime {
+            get {
+                return ResourceManager.GetString("LastUpdatedTime", resourceCulture);
             }
         }
         

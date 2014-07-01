@@ -18,7 +18,7 @@
         
     <ListBox x:Name="lbBuses"  
              FontSize="40" 
-             Width="336" Height="336" Background="Orange"
+             Width="336" Height="336" Background="#FFFDA90F"
              ItemsSource="{StaticResource ExampleTileData}">
         <ListBox.ItemTemplate>
             <DataTemplate>
@@ -27,8 +27,8 @@
                         <ColumnDefinition Width="227.5"/>
                         <ColumnDefinition Width="108.5"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding Name}" Grid.Column="0" Foreground="White"/>
-                    <TextBlock Text="{Binding TimeToArrive}" Grid.Column="1" Foreground="#FF323282"/>
+                    <TextBlock Text="{Binding Name}" Grid.Column="0" Foreground="#FF323282" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding TimeToArrive}" Grid.Column="1" Foreground="Red"/>
                 </Grid>
             </DataTemplate>
         </ListBox.ItemTemplate>

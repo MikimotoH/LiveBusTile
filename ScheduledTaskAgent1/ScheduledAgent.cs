@@ -11,7 +11,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Log = ScheduledTaskAgent1.Logger;
 
 
 namespace ScheduledTaskAgent1
@@ -23,17 +22,20 @@ namespace ScheduledTaskAgent1
         /// </remarks>
         static ScheduledAgent()
         {
+            m_Logger.Create(FileMode.Append, "AgentLog.txt");
+
             // Subscribe to the managed exception handler
             Deployment.Current.Dispatcher.BeginInvoke(delegate
             {
                 Application.Current.UnhandledException += UnhandledException;
             });
-        }        
+        }
+        internal static Logger m_Logger = new Logger();
 
         /// Code to execute on Unhandled Exceptions
         private static void UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
-            Log.Error("ScheduledAgent.UnhandledException()\n e.ExceptionObject={0}\n\n e.Handled={1}"
+            m_Logger.Error("ScheduledAgent.UnhandledException()\n e.ExceptionObject={0}\n\n e.Handled={1}"
                 .Fmt(e.ExceptionObject.DumpStr(), e.Handled));
             if (Debugger.IsAttached)
             {
@@ -44,20 +46,17 @@ namespace ScheduledTaskAgent1
 
         public const string m_taskName = "refreshBusTileTask";
 
-        public static void LaunchIn60sec(string taskName)
+        public static void LaunchIn30sec(string taskName)
         {
 #if ENABLE_LAUNCHFORTEST
             try
             {
-                ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromSeconds(60));
-                Log.Msg("LaunchForTest - finish)");
+                ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromSeconds(30));
+                m_Logger.Msg("LaunchForTest - finish)");
             }
             catch (Exception ex)
             {
-                Log.Error("ScheduledActionService.LaunchForTest() failed, ex=" + ex.DumpStr());
-            }
-            catch{
-                Log.Error("ScheduledActionService.LaunchForTest() failed. Unknown Error.");
+                m_Logger.Error("ScheduledActionService.LaunchForTest() failed, ex=" + ex.DumpStr());
             }
 #endif
         }
@@ -86,8 +85,7 @@ namespace ScheduledTaskAgent1
         {
             try
             {
-                Log.Create(FileMode.Append, "AgentLog.txt");
-                Log.Msg("task="+task.DumpStr());
+                m_Logger.Msg("task="+task.DumpStr());
 
                 bool bWiFiOnly = Convert.ToBoolean(Resource1.IsWiFiOnly_Default);
                 IsolatedStorageSettings.ApplicationSettings.TryGetValue("WiFiOnly", out bWiFiOnly);
@@ -95,9 +93,9 @@ namespace ScheduledTaskAgent1
                     || ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUtil.TileUri("")) == null)
                 {
 #if ENABLE_LAUNCHFORTEST
-                    LaunchIn60sec(task.Name);
+                    LaunchIn30sec(task.Name);
 #endif
-                    Log.Close();
+                    m_Logger.Close();
                     this.NotifyComplete();
                     return;
                 }
@@ -129,23 +127,23 @@ namespace ScheduledTaskAgent1
                                 try
                                 {
                                     TileUtil.UpdateTile(groupName);
-                                    Log.Debug("UpdateTile(groupName=\"{0}\") - finished".Fmt(groupName));
+                                    m_Logger.Debug("UpdateTile(groupName=\"{0}\") - finished".Fmt(groupName));
                                 }
                                 catch (Exception e)
                                 {
-                                    Log.Error("TileUtil.UpdateTile( groupName={0} ) failed\n".Fmt(groupName) + e.DumpStr());
+                                    m_Logger.Error("TileUtil.UpdateTile( groupName={0} ) failed\n".Fmt(groupName) + e.DumpStr());
                                 }
                             }
 
                         }
                         catch (Exception e)
                         {
-                            Log.Error(e.DumpStr());
+                            m_Logger.Error(e.DumpStr());
                         }
                         finally
                         {
-                            LaunchIn60sec(task.Name);
-                            Log.Close();
+                            LaunchIn30sec(task.Name);
+                            m_Logger.Close();
                             this.NotifyComplete();
                         }
                     });
@@ -153,12 +151,12 @@ namespace ScheduledTaskAgent1
             }
             catch (Exception e)
             {
-                Log.Error(e.DumpStr());
+                m_Logger.Error(e.DumpStr());
             }
             finally
             {
-                LaunchIn60sec(task.Name);
-                Log.Close();
+                LaunchIn30sec(task.Name);
+                m_Logger.Close();
                 this.NotifyComplete();
             }
         }

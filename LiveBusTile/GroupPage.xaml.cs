@@ -31,9 +31,23 @@ namespace LiveBusTile
 
             if (m_BusGroup == null)
             {
-                App.m_AppLog.Error("Uri=\"{0}\" doesn't contain \"GroupName\".".Fmt(NavigationContext.ToString()));
-                App.Current.Terminate();
+                if (PhoneApplicationService.Current.State.GetValue("Op", "") as string != ""){
+                    if (NavigationService.CanGoBack)
+                        NavigationService.GoBack();
+                    else
+                        NavigationService.Navigate(new Uri("/MainPage.xaml", UriKind.Relative));
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("不存在的群組「{0}」".Fmt(groupName));
+                    App.m_AppLog.Error("Uri=\"{0}\" doesn't contain \"GroupName\".".Fmt(NavigationContext.ToString()));
+                    App.Current.Terminate();
+                }
             }
+
+            tbLastUpdatedTime.Text = AppResources.LastUpdatedTime + " " +
+                ((DateTime)IsolatedStorageSettings.ApplicationSettings.GetValue("LastUpdatedTime", DateTime.MinValue)).ToString("HH:mm:ss");
 
             tbGroupName.Text = m_BusGroup.m_GroupName;
 
@@ -108,10 +122,14 @@ namespace LiveBusTile
             if (numSucceededTasks > 0)
             {
                 Database.SaveFavBusGroups();
+                IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = DateTime.Now;
 
                 lbBusInfos.ItemsSource = m_BusGroup.m_Buses.Select(x => new BusInfoVM(x)).ToList();
                 TileUtil.UpdateTile(m_BusGroup.m_GroupName);
                 TileUtil.UpdateTile("");
+
+                tbLastUpdatedTime.Text = AppResources.LastUpdatedTime + " " +
+                    ((DateTime)IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"]).ToString("HH:mm:ss");
             }
 
             this.ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = true);
@@ -225,5 +243,21 @@ namespace LiveBusTile
             else
                 NavigationService.GoBack();
         }
+
+        private void lbBusInfos_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            App.m_AppLog.Debug("");
+            BusInfoVM busInfo = (e.OriginalSource as FrameworkElement).DataContext as BusInfoVM;
+            GotoDetailsPage(busInfo.Base, m_BusGroup.m_GroupName);
+        }
+
+        void GotoDetailsPage(BusInfo busInfo, string groupName)
+        {
+            PhoneApplicationService.Current.State["busInfo"] = busInfo;
+            PhoneApplicationService.Current.State["groupName"] = groupName;
+            NavigationService.Navigate(new Uri(
+                "/BusStationDetails.xaml", UriKind.Relative));
+        }
+
     }
 }

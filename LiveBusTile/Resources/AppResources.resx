@@ -129,7 +129,7 @@
     <value>台北巴士快速磚</value>
   </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>1.2.2.0</value>
+    <value>1.2.2.1</value>
     <comment>Application Version on Market Place Sumbission</comment>
   </data>
   <data name="NetworkFault" xml:space="preserve">
@@ -137,5 +137,8 @@
   </data>
   <data name="IllegalGroupName" xml:space="preserve">
     <value>不合法的群組名稱：「{0}」</value>
+  </data>
+  <data name="LastUpdatedTime" xml:space="preserve">
+    <value>上次更新時間</value>
   </data>
 </root>

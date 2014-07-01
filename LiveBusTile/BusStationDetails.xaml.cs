@@ -132,6 +132,7 @@ namespace LiveBusTile
                 }
                 App.m_AppLog.Debug("bRemoveSuccess=" + bRemoveSuccess);
                 Database.SaveFavBusGroups();
+                PhoneApplicationService.Current.State["Op"] = "Deleted";
                 NavigationService.GoBack();
             }
             catch (Exception ex)
@@ -140,6 +141,14 @@ namespace LiveBusTile
                 App.m_AppLog.Error("Database.FavBusGroups=" + Database.FavBusGroups.DumpArray());
                 App.m_AppLog.Error("ex="+ex.DumpStr());
             }
+        }
+
+        private void GotoContextBusTime_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService.Navigate(new Uri(
+                "/ContextBusTime.xaml?BusName={0}&Dir={1}&Station={2}"
+                .Fmt(m_busInfo.m_Name, m_busInfo.m_Dir, m_busInfo.m_Station), 
+                UriKind.Relative));
         }
     }
 

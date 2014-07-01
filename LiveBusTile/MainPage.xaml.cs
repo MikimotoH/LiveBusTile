@@ -14,6 +14,7 @@ using LiveBusTile.Resources;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using System.IO.IsolatedStorage;
 
 namespace LiveBusTile
 {
@@ -40,9 +41,11 @@ namespace LiveBusTile
         {
             //App.m_AppLog.Debug("Screen Width = " + Application.Current.RootVisual.RenderSize.Width);
 
+            tbLastUpdatedTime.Text = AppResources.LastUpdatedTime + " " +
+                ((DateTime)IsolatedStorageSettings.ApplicationSettings.GetValue("LastUpdatedTime", DateTime.MinValue)).ToString("HH:mm:ss");
             lbBus.ItemsSource = GenFavGroupBusVM();
 
-            if ((string)PhoneApplicationService.Current.State.GetValue("Op", "") == "Add")
+            if ((string)PhoneApplicationService.Current.State.GetValue("Op", "") != "")
             {
                 while (NavigationService.CanGoBack)
                     NavigationService.RemoveBackEntry();
@@ -90,29 +93,6 @@ namespace LiveBusTile
             App.m_AppLog.Debug("");
             Database.SaveFavBusGroups();
             GroupPage.CreateTile("");
-            //string uri = TileUtil.TileUri("");
-            //var tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == uri);
-            //if (tile == null)
-            //{
-            //    ShellTile.Create(new Uri(uri, UriKind.Relative),
-            //        new FlipTileData
-            //        {
-            //            Title = DateTime.Now.ToString("HH:mm:ss"),
-            //            BackgroundImage = TileUtil.GenerateTileJpg("", false),
-            //            WideBackgroundImage = TileUtil.GenerateTileJpg("", true),
-            //        },
-            //        true);
-            //}
-            //else
-            //{
-            //    tile.Update(
-            //        new FlipTileData
-            //        {
-            //            Title = DateTime.Now.ToString("HH:mm:ss"),
-            //            BackgroundImage = TileUtil.GenerateTileJpg("", false),
-            //            WideBackgroundImage = TileUtil.GenerateTileJpg("", true),
-            //        });
-            //}
         }
 
         private async void AppBar_Refresh_Click(object sender, EventArgs e)
@@ -155,6 +135,9 @@ namespace LiveBusTile
             {
                 Database.SaveFavBusGroups();
                 lbBus.ItemsSource = GenFavGroupBusVM();
+                IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = DateTime.Now;
+                tbLastUpdatedTime.Text = AppResources.LastUpdatedTime + " " +
+                    ((DateTime)IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"]).ToString("HH:mm:ss");
 
                 List<string> groupNames = Database.FavBusGroups.Select(x => x.m_GroupName).ToList();
                 groupNames.Insert(0, "");

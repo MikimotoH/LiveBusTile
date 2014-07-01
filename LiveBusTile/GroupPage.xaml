@@ -28,10 +28,19 @@
         </Grid.RowDefinitions>
 
         <!--TitlePanel contains the name of the application and page title-->
-        <StackPanel Grid.Row="0" Margin="20,17,0,8" Orientation="Horizontal">
-            <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" Style="{StaticResource PhoneTextNormalStyle}"/>
-            <TextBlock Text="- 群組"/>
-        </StackPanel>
+        <Grid Grid.Row="0" Margin="20,17,0,8" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" 
+                       Grid.Column="0" Style="{StaticResource PhoneTextNormalStyle}"/>
+            <TextBlock Text="- 群組" Grid.Column="1" Style="{StaticResource PhoneTextNormalStyle}"/>
+            <TextBlock Text="{Binding Path=LocalizedResources.LastUpdatedTime, Source={StaticResource LocalizedStrings}}" 
+                       Grid.Column="2" TextAlignment="Right" Style="{StaticResource PhoneTextNormalStyle}"
+                       x:Name="tbLastUpdatedTime"/>
+        </Grid>
 
         <!--ContentPanel - place additional content here-->
         <ProgressBar x:Name="prgbarWaiting" Height="10" 
@@ -70,6 +79,7 @@
             x:Name="lbBusInfos"
             Grid.Row="3" 
             ItemsSource="{StaticResource ExampleBusInfos}" 
+            DoubleTap="lbBusInfos_DoubleTap"
             >
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -81,7 +91,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="ExtraBlack" FontSize="28" Foreground="Orange" Margin="8,8"/>
                         <TextBlock Grid.Column="1" Text="{Binding Station}" FontSize="28" Foreground="#FFFFE4B3" Margin="8,8"/>
-                        <TextBlock Grid.Column="2" Text="{Binding TimeToArrive}" FontSize="28" Foreground="Teal" Margin="8,8"/>
+                        <TextBlock Grid.Column="2" Text="{Binding TimeToArrive}" FontSize="28" Foreground="Red" Margin="8,8"/>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

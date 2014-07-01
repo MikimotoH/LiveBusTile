@@ -27,7 +27,7 @@ namespace LiveBusTile
         /// </summary>
         /// <returns>The root frame of the Phone Application.</returns>
         public static PhoneApplicationFrame RootFrame { get; private set; }
-        public static AppLog m_AppLog;
+        internal static AppLog m_AppLog;
 
 
         /// <summary>
@@ -366,7 +366,7 @@ namespace LiveBusTile
             try
             {
                 ScheduledActionService.Add(refreshBusTileTask);
-                ScheduledAgent.LaunchIn60sec(ScheduledAgent.m_taskName);
+                ScheduledAgent.LaunchIn30sec(ScheduledAgent.m_taskName);
             }
             catch (InvalidOperationException exception)
             {

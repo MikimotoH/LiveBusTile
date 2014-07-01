@@ -38,8 +38,8 @@ namespace ScheduledTaskAgent1
                 "/html/body/center/table/tr[6]/td");
             if (nodes.Count == 0)
             {
-                Log.Debug("nodes.Count == 0");
-                return "網路障礙";
+                ScheduledAgent.m_Logger.Debug("nodes.Count == 0");
+                return "解析錯誤";
             }
             return nodes[0].InnerText;
         }

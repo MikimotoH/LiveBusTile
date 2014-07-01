@@ -44,7 +44,20 @@
                 ItemsSource="{StaticResource words}"/>
             
             <TextBlock Text="時間" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle2Style}"/>
-            <TextBlock x:Name="tbTimeToArrive" Text="20分" Margin="10,10" FontSize="36" Foreground="Orange"  FontWeight="Bold"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="tbTimeToArrive" Text="20分" Margin="10,10" FontSize="36" Foreground="Orange"  FontWeight="Bold"/>
+                <RichTextBox Grid.Column="1" HorizontalAlignment="Right">
+                    <Paragraph >
+                        <Hyperlink Click="GotoContextBusTime_Click">
+                            <Run FontSize="34" >下下一班時間</Run>
+                        </Hyperlink>
+                    </Paragraph>
+                </RichTextBox>
+            </Grid>
         </StackPanel>
     </Grid>
     <phone:PhoneApplicationPage.ApplicationBar>

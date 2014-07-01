@@ -15,18 +15,17 @@ namespace ScheduledTaskAgent1
         Msg = 4,
     };
 
-    public static class Logger
+    public class Logger
     {
-        static StreamWriter m_stm;
-        //const string logpath = logdir + @"\log.txt";
+        StreamWriter m_stm;
         public const string timeFmt = "yyMMdd_HH:mm:ss.fff";
 
-        static Logger()
+        public Logger()
         {
             System.Diagnostics.Debug.WriteLine("Logger.Logger() ctor");
         }
 
-        public static void Create(FileMode fileMode, string logFileName,
+        public void Create(FileMode fileMode, string logFileName,
             [CallerFilePath] string path = "",
             [CallerMemberName] string func = "",
             [CallerLineNumber] int line = 0            
@@ -58,7 +57,7 @@ namespace ScheduledTaskAgent1
                 , fileMode, m_stm);
         }
 
-        public static void Flush
+        public void Flush
             (
             [CallerFilePath] string path = "",
             [CallerMemberName] string func = "",
@@ -76,7 +75,7 @@ namespace ScheduledTaskAgent1
 
         
 
-        static void Log(LogLevel logLevel, string func, string path, int line, string msg)
+        void Log(LogLevel logLevel, string func, string path, int line, string msg)
         {
             string msg1 = "{0}<{1}>{2}:{3}:{4} [{5}] {6}".Fmt( DateTime.Now.ToString("yyMMdd_HH:mm:ss.fff"),
                 logLevel.ToString(), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId, 
@@ -92,7 +91,7 @@ namespace ScheduledTaskAgent1
             }
         }
 
-        public static void Error(string msg, 
+        public void Error(string msg, 
             [CallerMemberName] string func="",
             [CallerFilePath] string path="",
             [CallerLineNumber] int line=0)
@@ -100,7 +99,7 @@ namespace ScheduledTaskAgent1
             Log(LogLevel.Error, func, path, line, msg);
         }
 
-        public static void Msg(string msg,
+        public void Msg(string msg,
             [CallerMemberName] string func = "",
             [CallerFilePath] string path = "",
             [CallerLineNumber] int line = 0)
@@ -110,7 +109,7 @@ namespace ScheduledTaskAgent1
 
         [Conditional("DEBUG")]
         [DebuggerStepThrough]
-        public static void Debug(string msg,
+        public void Debug(string msg,
             [CallerMemberName] string func = "",
             [CallerFilePath] string path = "",
             [CallerLineNumber] int line = 0)
@@ -118,7 +117,7 @@ namespace ScheduledTaskAgent1
             Log(LogLevel.Debug, func, path, line, msg);
         }
 
-        public static void LogRawMsg(string msg)
+        public void LogRawMsg(string msg)
         {
             System.Diagnostics.Debug.WriteLine(msg);
             if (m_stm != null)
@@ -126,7 +125,7 @@ namespace ScheduledTaskAgent1
         }
 
 
-        public static void Close(
+        public void Close(
             [CallerFilePath] string path = "",
             [CallerMemberName] string func = "",
             [CallerLineNumber] int line = 0

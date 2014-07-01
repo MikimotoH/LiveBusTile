@@ -17,7 +17,7 @@ namespace LiveBusTile
             m_base = b;
         }
         BusInfo m_base = new BusInfo();
-        public BusInfo GetBase() { return m_base; }
+        public BusInfo Base { get { return m_base; } }
 
 
         public string Name { get { return m_base.m_Name; } set { if (m_base.m_Name != value) { m_base.m_Name = value; NotifyPropertyChanged("Name"); } } }
@@ -74,11 +74,11 @@ namespace LiveBusTile
 
         public ObservableCollection<BusInfoVM> Buses {
             get { return m_base.m_Buses.Select(x => new BusInfoVM(x)).ToObservableCollection(); }
-            set 
-            {
-                m_base.m_Buses = value.Select(b=>b.GetBase()).ToList();
-                NotifyPropertyChanged("Buses");
-            }
+            //set 
+            //{
+            //    m_base.m_Buses = value.Select(b=>b.Base).ToList();
+            //    NotifyPropertyChanged("Buses");
+            //}
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

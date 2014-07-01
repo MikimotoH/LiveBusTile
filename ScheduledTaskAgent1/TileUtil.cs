@@ -48,7 +48,7 @@ namespace ScheduledTaskAgent1
         /// <returns> Uri(@"isostore:/Shared\ShellContent\GroupTile=回家.jpg", UriKind.Absolute) </returns>
         public static Uri GenerateTileJpg(string groupName, bool isWide)
         {
-            Log.Debug("");
+            ScheduledAgent.m_Logger.Debug("");
             int width = TileWidth(isWide);
             int height = TileHeight;
             int fontSize = Tile_FontSize;
@@ -56,7 +56,7 @@ namespace ScheduledTaskAgent1
             {
                 Width = width,
                 Height = height,
-                Background = new SolidColorBrush(Colors.Orange),
+                Background = new SolidColorBrush(Color.FromArgb(0xFF, 0xFD, 0xA9, 0x0F)),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top,
             };
@@ -87,7 +87,6 @@ namespace ScheduledTaskAgent1
                     Foreground = new SolidColorBrush(Colors.Black),
                     FontSize = fontSize + 4,
                     TextAlignment = TextAlignment.Center,
-                    FontWeight = FontWeights.ExtraBold
                 };
                 Grid.SetRow(tbGroupName, 0);
                 Grid.SetColumn(tbGroupName, 0);
@@ -100,12 +99,12 @@ namespace ScheduledTaskAgent1
             {
                 grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(fontSize) });
                 BusInfo bus = busList[iRow - hasGroupName.ToInt()];
-                Log.Debug("iRow={0}, bus={{ {1},{2},{3} }}".Fmt(iRow, bus.m_Name, bus.m_Station, bus.m_TimeToArrive ));
+                ScheduledAgent.m_Logger.Debug("iRow={0}, bus={{ {1},{2},{3} }}".Fmt(iRow, bus.m_Name, bus.m_Station, bus.m_TimeToArrive));
                 // Column 0
                 var tbBusName = new TextBlock
                 {
                     Text = bus.m_Name,
-                    Foreground = new SolidColorBrush(isWide ? Color.FromArgb(0xFF, 15, 15, 100) : Colors.White),
+                    Foreground = new SolidColorBrush(Color.FromArgb(0xFF, 15, 15, 100)),
                     FontSize = fontSize,
                     TextAlignment = TextAlignment.Left,
                 };
@@ -145,12 +144,12 @@ namespace ScheduledTaskAgent1
             grid.UpdateLayout();
             grid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             grid.Arrange(new Rect(new Point(0, 0), new Size(width, height)));
-            Log.Debug("grid = {{ ActualWidth={0},ActualHeight={1} }}".Fmt(grid.ActualWidth, grid.ActualHeight));
+            ScheduledAgent.m_Logger.Debug("grid = {{ ActualWidth={0},ActualHeight={1} }}".Fmt(grid.ActualWidth, grid.ActualHeight));
 
             try
             {
                 string jpgPath = TileJpgPath(groupName, isWide);
-                Log.Debug("jpgPath="+jpgPath);
+                ScheduledAgent.m_Logger.Debug("jpgPath=" + jpgPath);
                 using (var stream = IsolatedStorageFile.GetUserStoreForApplication()
                     .OpenFile(jpgPath, FileMode.Create))
                 {
@@ -163,14 +162,14 @@ namespace ScheduledTaskAgent1
             }
             catch (Exception ex)
             {
-                Log.Error(ex.DumpStr());
+                ScheduledAgent.m_Logger.Error(ex.DumpStr());
                 return null;
             }
         }
 
         public static void UpdateTile(string groupName)
         {
-            Log.Debug("groupName=" + groupName);
+            ScheduledAgent.m_Logger.Debug("groupName=" + groupName);
             ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUri(groupName));
             if (tile == null)
                 return;

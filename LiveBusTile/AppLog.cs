@@ -6,6 +6,7 @@ using System.IO.IsolatedStorage;
 using System.Runtime.CompilerServices;
 using ScheduledTaskAgent1;
 using System.Windows.Navigation;
+using System.Linq;
 
 namespace LiveBusTile
 {
@@ -108,6 +109,7 @@ namespace LiveBusTile
             Log(LogLevel.Error, func, path, line, msg);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         public void Msg(string msg,
             [CallerMemberName] string func = "",
             [CallerFilePath] string path = "",
@@ -145,7 +147,9 @@ namespace LiveBusTile
                 System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Close() enter",
                     DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
                 m_stm.Close();
+                m_stm.Dispose();
                 m_stm = null;
+                logFileName = null;
                 System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Close() exit",
                     DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
             }
@@ -176,6 +180,10 @@ namespace LiveBusTile
         {
             return String.Format("{{ Uri={0}, NavigationMode={1}, IsNavigationInitiator={2}, e.Content={3} }}",
                 e.Uri, e.NavigationMode, e.IsNavigationInitiator, e.Content);
+        }
+        public static bool IsNullOrEmpty<T>(this IEnumerable<T> ls)
+        {
+            return ls == null || ls.Count() == 0;
         }
 
     }

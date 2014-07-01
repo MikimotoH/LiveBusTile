@@ -41,15 +41,23 @@
 
         <Grid Grid.Row="0">
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" 
+                   Style="{StaticResource PhoneTextNormalStyle}" Grid.Column="0"/>
+                <TextBlock Text="{Binding Path=LocalizedResources.LastUpdatedTime, Source={StaticResource LocalizedStrings}}" Style="{StaticResource PhoneTextNormalStyle}" 
+                           TextAlignment="Right" x:Name="tbLastUpdatedTime"
+                           Grid.Column="1"/>
+            </Grid>
             <ProgressBar x:Name="prgbarWaiting" Height="10" 
-                     IsIndeterminate="True" Foreground="LightBlue" Background="Transparent" Visibility="Collapsed"
-                         Grid.Row="0"/>
-            <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" 
-                   Style="{StaticResource PhoneTextNormalStyle}"
-                   Grid.Row="1"/>
+                IsIndeterminate="True" Foreground="LightBlue" Background="Transparent" Visibility="Collapsed"
+                Grid.Row="1"/>
         </Grid>
 
         <ListBox
