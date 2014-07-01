@@ -76,15 +76,15 @@
                         
                         <data:GroupBusTemplateSelector.GroupHeader>
                             <DataTemplate>
-                                <Grid Background="#FF1A1A1A"
+                                <Grid Background="#FF1A1A1A" 
                                     Width="480">
                                     <toolkit:ContextMenuService.ContextMenu>
                                         <toolkit:ContextMenu x:Name="ctxmenuListName">
                                             <toolkit:MenuItem Header="更名" Click="ListNameMenuItem_Rename_Click"/>
                                         </toolkit:ContextMenu>
                                     </toolkit:ContextMenuService.ContextMenu>
-                                    <TextBlock Text="{Binding GroupName}" FontSize="30" Foreground="Beige" 
-                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding GroupName}" FontSize="38" Foreground="Beige" 
+                                               HorizontalAlignment="Center" FontWeight="ExtraBold" Padding="0,10"/>
                                 </Grid>
                             </DataTemplate>
                         </data:GroupBusTemplateSelector.GroupHeader>
@@ -103,9 +103,12 @@
                                         <ColumnDefinition Width="*"     />
                                         <ColumnDefinition Width="98"    />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding BusName}" FontWeight="ExtraBlack" FontSize="28" Foreground="Orange"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Station}" FontSize="28" Foreground="#FFFFE4B3" Margin="3,0"/>
-                                    <TextBlock Grid.Column="2" Text="{Binding TimeToArrive}" FontSize="28" Foreground="Red"/>
+                                    <TextBlock Grid.Column="0" Text="{Binding BusName}" 
+                                               FontWeight="Bold" FontSize="28" Foreground="Orange" Padding="0,10"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Station}" 
+                                               FontSize="28" Foreground="#FFFFE4B3" Padding="0,10"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding TimeToArrive}" 
+                                               FontSize="28" Foreground="Red" Padding="0,10"/>
                                 </Grid>
                             </DataTemplate>
                         </data:GroupBusTemplateSelector.BusInfo>

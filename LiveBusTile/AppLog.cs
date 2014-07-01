@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Runtime.CompilerServices;
+using ScheduledTaskAgent1;
+using System.Windows.Navigation;
 
 namespace LiveBusTile
 {
@@ -78,7 +80,6 @@ namespace LiveBusTile
             }
         }
 
-        
 
         void Log(LogLevel logLevel, string func, string path, int line, string msg)
         {
@@ -86,6 +87,7 @@ namespace LiveBusTile
                 logLevel.ToString(), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId, 
                 msg);
             System.Diagnostics.Debug.WriteLine(msg1);
+            Console.Out.WriteLine(msg1);
             if (m_stm != null)
                 m_stm.WriteLine(msg1);
             else
@@ -153,6 +155,29 @@ namespace LiveBusTile
         {
             Close();
         }
+    }
+
+    public static class Util
+    {
+        public static void DeleteFileSafely(string filePath)
+        {
+            try
+            {
+                App.m_AppLog.Debug("DeleteFile(\"{0}\")".Fmt(filePath));
+                IsolatedStorageFile.GetUserStoreForApplication().DeleteFile(filePath);
+            }
+            catch (Exception ex)
+            {
+                App.m_AppLog.Error("Failed to DeleteFile(\"{0}\")\n ex={1}".Fmt(filePath, ex.DumpStr()));
+            }
+        }
+
+        public static string DumpStr(this NavigationEventArgs e)
+        {
+            return String.Format("{{ Uri={0}, NavigationMode={1}, IsNavigationInitiator={2}, e.Content={3} }}",
+                e.Uri, e.NavigationMode, e.IsNavigationInitiator, e.Content);
+        }
+
     }
 
 }

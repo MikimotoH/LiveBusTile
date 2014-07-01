@@ -114,8 +114,8 @@ namespace LiveBusTile
     {
         public ExampleBusInfos()
         {
-            Add(new BusInfoVM { Name = "橘2", Station = "秀山國小", Dir = BusDir.go });
-            Add(new BusInfoVM { Name = "敦化幹線", Station = "秀景里", Dir = BusDir.back });
+            Add(new BusInfoVM { Name = "橘2", Station = "秀山國小", Dir = BusDir.go, TimeToArrive="進站中" });
+            Add(new BusInfoVM { Name = "敦化幹線", Station = "秀景里", Dir = BusDir.back, TimeToArrive="12分" });
         }
     }
 

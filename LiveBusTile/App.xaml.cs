@@ -98,6 +98,7 @@ namespace LiveBusTile
             if (m_timer != null)
             {
                 m_timer.Dispose();
+                //m_timer.Stop();
                 m_timer = null;
             }
         }
@@ -109,54 +110,61 @@ namespace LiveBusTile
             m_AppLog.Msg("e.Reason=" + e.Reason);
             Database.SaveFavBusGroups();
             StartPeriodicAgent();
+            //StartTimer();
         }
 
+        //System.Windows.Threading.DispatcherTimer m_timer;
         System.Threading.Timer m_timer;
-        private void StartTimer()
-        {
-            if(m_timer!=null)
-                return;
-            m_timer = new System.Threading.Timer(new System.Threading.TimerCallback(timer_Tick), null, 0, 60 * 1000);
-        }
+        //void StartTimer()
+        //{
+        //    if(m_timer!=null)
+        //        return;
+        //    m_timer = new System.Threading.Timer(new System.Threading.TimerCallback(timer_Tick), null, 3*1000, 60 * 1000);
+        //    //m_timer = new DispatcherTimer();
+        //    //m_timer.Interval = TimeSpan.FromSeconds(60);
+        //    //m_timer.Tick+=timer_Tick;
+        //    //m_timer.Start();
+        //}
 
-        void timer_Tick(object z)
-        {
-            App.m_AppLog.Debug("Database.FavBuses.Count()=" + Database.FavBuses.Count());
-            if (Database.FavBuses.Count() == 0)
-                return;
-            try
-            {
-                Task<string>[] tasks = Database.FavBuses.Select(b => BusTicker.GetBusDueTime(b)).ToArray();
-                Task.WaitAll(tasks);
-                for(int i=0; i<Database.FavBuses.Length; ++i)
-                {
-                    if(tasks[i].Status == TaskStatus.RanToCompletion)
-                        Database.FavBuses[i].m_TimeToArrive = tasks[i].Result;
-                }
-                Database.SaveFavBusGroups();
+        //void timer_Tick(object sender)
+        //{
+        //    App.m_AppLog.Debug("Database.FavBuses.Count()=" + Database.FavBuses.Count());
+        //    if (Database.FavBuses.Count() == 0)
+        //        return;
+        //    try
+        //    {
+        //        Task<string>[] tasks = Database.FavBuses.Select(b => BusTicker.GetBusDueTime(b)).ToArray();
+        //        App.m_AppLog.Debug("tasks.Length=" + tasks.Length);
+        //        Task.WaitAll(tasks);
+        //        for(int i=0; i<Database.FavBuses.Length; ++i)
+        //        {
+        //            if(tasks[i].Status == TaskStatus.RanToCompletion)
+        //                Database.FavBuses[i].m_TimeToArrive = tasks[i].Result;
+        //        }
+        //        Database.SaveFavBusGroups();
 
-                ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("DefaultTitle=FromTile"));
-                if (tile != null)
-                {
-                    Deployment.Current.Dispatcher.BeginInvoke(() =>
-                    {
-                        try
-                        {
-                            ScheduledAgent.UpdateTileJpg();
-                        }
-                        catch (Exception ex)
-                        {
-                            App.m_AppLog.Error(ex.DumpStr());
-                        }
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                App.m_AppLog.Error(ex.DumpStr());
-            }
-            App.m_AppLog.Debug("exit");
-        }
+        //        ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == ScheduledAgent.TileUri(""));
+        //        if (tile != null)
+        //        {
+        //            Deployment.Current.Dispatcher.BeginInvoke(() =>
+        //            {
+        //                try
+        //                {
+        //                    ScheduledAgent.UpdateTile("");
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                    App.m_AppLog.Error(ex.DumpStr());
+        //                }
+        //            });
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        App.m_AppLog.Error(ex.DumpStr());
+        //    }
+        //    App.m_AppLog.Debug("exit");
+        //}
         
 
         // Code to execute when the application is closing (eg, user hit Back)
@@ -323,21 +331,22 @@ namespace LiveBusTile
         {
             m_AppLog.Msg("e=" + e.ToString());
             RunningInBackground = true;
-            StartTimer();
+            StartPeriodicAgent();
+            //StartTimer();
         }
 
 
-        string m_taskName = "refreshBusTileTask";
+        //public const string m_taskName = "refreshBusTileTask";
         public void RemovePeriodicAgent()
         {
-            m_AppLog.Debug("m_taskName=" + m_taskName);
-            PeriodicTask refreshBusTileTask = ScheduledActionService.Find(m_taskName) as PeriodicTask;
+            m_AppLog.Debug("m_taskName=" + ScheduledAgent.m_taskName);
+            PeriodicTask refreshBusTileTask = ScheduledActionService.Find(ScheduledAgent.m_taskName) as PeriodicTask;
             if (refreshBusTileTask == null)
                 return;
             try
             {
-                m_AppLog.Debug("ScheduledActionService.Remove(" + m_taskName + ")");
-                ScheduledActionService.Remove(m_taskName);
+                m_AppLog.Debug("ScheduledActionService.Remove(\"{0}\")".Fmt(ScheduledAgent.m_taskName));
+                ScheduledActionService.Remove(ScheduledAgent.m_taskName);
             }
             catch (Exception e)
             {
@@ -349,7 +358,7 @@ namespace LiveBusTile
         public void StartPeriodicAgent()
         {
             RemovePeriodicAgent();
-            PeriodicTask refreshBusTileTask = new PeriodicTask(m_taskName);
+            PeriodicTask refreshBusTileTask = new PeriodicTask(ScheduledAgent.m_taskName);
             refreshBusTileTask.Description = "Refresh Bus Due Time on Tile at Hub (HomeScreen)";
 
             // Place the call to add a periodic agent. This call must be placed in 
@@ -357,10 +366,7 @@ namespace LiveBusTile
             try
             {
                 ScheduledActionService.Add(refreshBusTileTask);
-#if DEBUG
-                ScheduledActionService.LaunchForTest(m_taskName, TimeSpan.FromSeconds(60));
-                App.m_AppLog.Msg("LaunchForTest - finish)");
-#endif
+                ScheduledAgent.LaunchIn60sec(ScheduledAgent.m_taskName);
             }
             catch (InvalidOperationException exception)
             {

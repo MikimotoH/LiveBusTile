@@ -10,15 +10,16 @@
     xmlns:data="clr-namespace:LiveBusTile"
     d:DesignHeight="336" d:DesignWidth="336">
     
-    <!--
+    
     <UserControl.Resources>
         <data:ExampleTileData x:Key="ExampleTileData"/>
     </UserControl.Resources>
-    -->
+    
         
     <ListBox x:Name="lbBuses"  
              FontSize="40" 
-             Width="336" Height="336" Background="Orange">
+             Width="336" Height="336" Background="Orange"
+             ItemsSource="{StaticResource ExampleTileData}">
         <ListBox.ItemTemplate>
             <DataTemplate>
                 <Grid>
@@ -27,7 +28,7 @@
                         <ColumnDefinition Width="108.5"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="{Binding Name}" Grid.Column="0" Foreground="White"/>
-                    <TextBlock Text="{Binding TimeToArrive}" Grid.Column="1" Foreground="Red"/>
+                    <TextBlock Text="{Binding TimeToArrive}" Grid.Column="1" Foreground="#FF323282"/>
                 </Grid>
             </DataTemplate>
         </ListBox.ItemTemplate>

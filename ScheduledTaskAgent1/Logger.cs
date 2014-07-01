@@ -9,7 +9,6 @@ namespace ScheduledTaskAgent1
 {
     public enum LogLevel
     {
-        Trace = 0,
         Debug = 1,
         Warn = 2,
         Error = 3,
@@ -93,8 +92,6 @@ namespace ScheduledTaskAgent1
             }
         }
 
-        //public delegate void LogFunc(string msg, string func, string path, int line);
-
         public static void Error(string msg, 
             [CallerMemberName] string func="",
             [CallerFilePath] string path="",
@@ -146,22 +143,5 @@ namespace ScheduledTaskAgent1
             }
         }
     }
-
-    public static class ForEachExtensions
-    {
-        public static void ForEachIndex<T>(this IEnumerable<T> enumerable, Action<T, int> handler)
-        {
-            int idx = 0;
-            foreach (T item in enumerable)
-                handler(item, idx++);
-        }
-
-        public static void ForEach<T>(this IEnumerable<T> enumeration, Action<T> action)
-        {
-            foreach (T item in enumeration)
-                action(item);
-        }
-    }
-
 }
 

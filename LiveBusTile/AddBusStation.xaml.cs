@@ -23,11 +23,13 @@ namespace LiveBusTile
 
         string m_busName;
         StationPair m_stationPair;
+        string m_GroupName;
         BusDir m_dir = BusDir.go;
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            m_busName = NavigationContext.QueryString["busName"];
+            m_busName = NavigationContext.QueryString["BusName"];
+            m_GroupName = NavigationContext.QueryString.GetValue("GroupName", "");
             m_stationPair = Database.AllBuses[m_busName];
             m_dir = BusDir.go;
             tbBusName.Text = m_busName;
@@ -58,8 +60,17 @@ namespace LiveBusTile
                 MessageBox.Show("不存在的站牌："+tbStation.Text);
                 return;
             }
+
+            if (Database.IsLegalGroupName( m_GroupName ))
+            {
+                Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == m_GroupName).
+                    m_Buses.Add(new BusInfo { m_Name = m_busName, m_Station = tbStation.Text, m_Dir = m_dir});
+                NavigationService.Navigate(new Uri("/GroupPage.xaml?GroupName="+m_GroupName, UriKind.Relative));
+                PhoneApplicationService.Current.State["Op"] = "Add";
+                return;
+            }
             NavigationService.Navigate(new Uri(
-                "/AddBusStationGroup.xaml?busName={0}&station={1}&dir={2}"
+                "/AddBusStationGroup.xaml?BusName={0}&Station={1}&Dir={2}"
                 .Fmt(m_busName, tbStation.Text, m_dir.ToString()), UriKind.Relative));
         }
 

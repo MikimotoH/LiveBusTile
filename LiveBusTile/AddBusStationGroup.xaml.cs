@@ -28,9 +28,9 @@ namespace LiveBusTile
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            m_busName = NavigationContext.QueryString["busName"];
-            m_station = NavigationContext.QueryString["station"];
-            m_dir =     (BusDir)Enum.Parse(typeof(BusDir), NavigationContext.QueryString["dir"]);
+            m_busName = NavigationContext.QueryString["BusName"];
+            m_station = NavigationContext.QueryString["Station"];
+            m_dir =     (BusDir)Enum.Parse(typeof(BusDir), NavigationContext.QueryString["Dir"]);
             tbBusName.Text = m_busName;
             tbStation.Text = m_station;
             tbDir.Text = "到：" + Database.AllBuses[m_busName].GetStations(m_dir).LastElement();

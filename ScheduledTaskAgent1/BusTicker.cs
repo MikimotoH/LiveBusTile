@@ -18,9 +18,7 @@ namespace ScheduledTaskAgent1
 {
     public class BusTicker
     {
-        const string route_url = @"http://pda.5284.com.tw/MQS/businfo2.jsp?routename=";
-
-
+        //const string route_url = @"http://pda.5284.com.tw/MQS/businfo2.jsp?routename=";
         public static Task<string> GetBusDueTime(BusInfo b)
         {
             return GetBusDueTime(b.m_Name, b.m_Station, b.m_Dir);
@@ -46,8 +44,4 @@ namespace ScheduledTaskAgent1
             return nodes[0].InnerText;
         }
     }
-    public enum BusDir
-    {
-        go, back,
-    };
 }

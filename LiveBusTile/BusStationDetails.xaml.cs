@@ -11,6 +11,7 @@ using ScheduledTaskAgent1;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
 using LiveBusTile.Resources;
+using System.IO.IsolatedStorage;
 
 namespace LiveBusTile
 {
@@ -22,7 +23,7 @@ namespace LiveBusTile
         }
 
         BusInfo m_busInfo;
-        string m_orig_group;
+        string m_GroupName;
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             m_busInfo = PhoneApplicationService.Current.State["busInfo"] as BusInfo;
@@ -31,8 +32,8 @@ namespace LiveBusTile
             tbTimeToArrive.Text = m_busInfo.m_TimeToArrive;
 
             tbDir.Text = (m_busInfo.m_Dir == BusDir.go ? "往" : "返");
-            m_orig_group = PhoneApplicationService.Current.State["groupName"] as string;
-            tbGroup.Text = m_orig_group;
+            m_GroupName = PhoneApplicationService.Current.State["groupName"] as string;
+            tbGroup.Text = m_GroupName;
 
             
             var stpair = Database.AllBuses[tbBusName.Text];
@@ -55,10 +56,10 @@ namespace LiveBusTile
                 return;
             }
 
-            if (tbGroup.Text != m_orig_group)
+            if (tbGroup.Text != m_GroupName)
             {
-                App.m_AppLog.Debug("m_orig_group={0}, tbGroup.Text={1}".Fmt(m_orig_group, tbGroup.Text));
-                BusGroup old_group = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == m_orig_group);
+                App.m_AppLog.Debug("m_GroupName={0}, tbGroup.Text={1}".Fmt(m_GroupName, tbGroup.Text));
+                BusGroup old_group = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == m_GroupName);
                 BusGroup new_group = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == tbGroup.Text);
                 Debug.Assert(old_group != null);
                 if (new_group == null)
@@ -100,6 +101,8 @@ namespace LiveBusTile
             }
         }
 
+
+                    
         private void AppBar_Delete_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("確定要刪除此公車？", "", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
@@ -108,14 +111,24 @@ namespace LiveBusTile
             try
             {
                 BusGroup bg = Database.FavBusGroups.FirstOrDefault(x
-                    => x.m_GroupName == m_orig_group);
+                    => x.m_GroupName == m_GroupName);
 
                 bool bRemoveSuccess = bg.m_Buses.Remove(m_busInfo);
                 if (!bRemoveSuccess) { MessageBox.Show("bg.Remove({0}) failed".Fmt(m_busInfo)); return; }
                 if (bg.m_Buses.Count == 0)
                 {
+                    ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUtil.TileUri(m_GroupName));
+                    if(tile != null)
+                        tile.Delete();
+                    else
+                        App.m_AppLog.Error("Failed to find Tile.NavigationUri==\"{0}\" ".Fmt(TileUtil.TileUri(m_GroupName)));
+                    
+                    Util.DeleteFileSafely(TileUtil.TileJpgPath(m_GroupName, false));
+                    Util.DeleteFileSafely(TileUtil.TileJpgPath(m_GroupName, true));
+                    
                     bRemoveSuccess = Database.FavBusGroups.Remove(bg);
-                    if (!bRemoveSuccess) { MessageBox.Show("Database.FavBusGroups.Remove({0}) failed".Fmt(bg.m_GroupName)); return; }
+                    if (!bRemoveSuccess) 
+                        App.m_AppLog.Error("Database.FavBusGroups.Remove({0}) failed".Fmt(bg.m_GroupName)); 
                 }
                 App.m_AppLog.Debug("bRemoveSuccess=" + bRemoveSuccess);
                 Database.SaveFavBusGroups();
@@ -123,7 +136,7 @@ namespace LiveBusTile
             }
             catch (Exception ex)
             {
-                App.m_AppLog.Error("m_busInfo={0}, m_orig_group={1} cannot be found!".Fmt(m_busInfo, m_orig_group));
+                App.m_AppLog.Error("m_busInfo={0}, m_GroupName={1} cannot be found!".Fmt(m_busInfo, m_GroupName));
                 App.m_AppLog.Error("Database.FavBusGroups=" + Database.FavBusGroups.DumpArray());
                 App.m_AppLog.Error("ex="+ex.DumpStr());
             }

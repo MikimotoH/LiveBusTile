@@ -22,8 +22,11 @@ namespace LiveBusTile
             InitializeComponent();
         }
 
+        string m_GroupName;
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            m_GroupName = NavigationContext.QueryString.GetValue("GroupName", "");
+
             llsAllBuses.ItemsSource = Database.AllBuses.Keys
                 .GroupBy(b => Database.BusKeyName(b))
                 .Select(g => new KeyedBusVM(g))
@@ -57,7 +60,8 @@ namespace LiveBusTile
                 MessageBox.Show("不存在的公車名稱："+tbBusName.Text);
                 return;
             }
-            NavigationService.Navigate(new Uri("/AddBusStation.xaml?busName=" + tbBusName.Text, UriKind.Relative));
+            NavigationService.Navigate(new Uri("/AddBusStation.xaml?BusName={0}&GroupName={1}"
+                .Fmt(tbBusName.Text, m_GroupName), UriKind.Relative));
         }
 
         private void llsAllBuses_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)

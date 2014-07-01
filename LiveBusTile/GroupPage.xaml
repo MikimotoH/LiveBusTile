@@ -1,0 +1,100 @@
+﻿<phone:PhoneApplicationPage
+    x:Class="LiveBusTile.GroupPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    SupportedOrientations="Portrait" Orientation="Portrait"
+    mc:Ignorable="d"
+    xmlns:data="clr-namespace:LiveBusTile"
+    shell:SystemTray.IsVisible="True">
+    
+    <phone:PhoneApplicationPage.Resources>
+        <data:ExampleBusInfos x:Key="ExampleBusInfos"/>
+    </phone:PhoneApplicationPage.Resources>
+
+    <!--LayoutRoot is the root grid where all page content is placed-->
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!--TitlePanel contains the name of the application and page title-->
+        <StackPanel Grid.Row="0" Margin="20,17,0,8" Orientation="Horizontal">
+            <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" Style="{StaticResource PhoneTextNormalStyle}"/>
+            <TextBlock Text="- 群組"/>
+        </StackPanel>
+
+        <!--ContentPanel - place additional content here-->
+        <ProgressBar x:Name="prgbarWaiting" Height="10" 
+                     IsIndeterminate="True" Foreground="LightBlue" Background="Transparent" Visibility="Collapsed"
+                         Grid.Row="1"/>
+
+        <Grid Grid.Row="2" Background="#FF1F1F1F">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" x:Name="btnGoToMainPage" Tap="btnGoToMainPage_Tap">
+                    <TextBlock Text="↑" FontSize="48" FontWeight="ExtraBold"/>
+                </Button>
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="群組名稱" FontSize="56"
+                           x:Name="tbGroupName"
+                           FontWeight="ExtraBold" TextAlignment="Center"
+                           Grid.Row="0"           
+                           Padding="0,12" Visibility="Visible" 
+                               DoubleTap="tbGroupName_DoubleTap"/>
+                    <TextBox Text="群組名稱" FontSize="56"
+                           x:Name="tbGroupNameTextBox"
+                           FontWeight="ExtraBold" TextAlignment="Center"
+                           Grid.Row="1"
+                           Padding="0,0" Visibility="Collapsed"/>
+                </Grid>
+            </Grid>
+        </Grid>
+        <ListBox 
+            x:Name="lbBusInfos"
+            Grid.Row="3" 
+            ItemsSource="{StaticResource ExampleBusInfos}" 
+            >
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid Width="480">
+                        <Grid.ColumnDefinitions >
+                            <ColumnDefinition Width="140" />
+                            <ColumnDefinition Width="*"   />
+                            <ColumnDefinition Width="98"  />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="ExtraBlack" FontSize="28" Foreground="Orange" Margin="8,8"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Station}" FontSize="28" Foreground="#FFFFE4B3" Margin="8,8"/>
+                        <TextBlock Grid.Column="2" Text="{Binding TimeToArrive}" FontSize="28" Foreground="Teal" Margin="8,8"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+    </Grid>
+    
+    <phone:PhoneApplicationPage.ApplicationBar>
+        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True" x:Name="appbar">
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Pin.png" Text="釘至桌面" Click="AppBar_Pin_Click"/>
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Refresh.png" Text="刷新時間" Click="AppBar_Refresh_Click"/>
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddBus.png" Text="新增巴士" Click="AppBar_AddBus_Click"/>
+        </shell:ApplicationBar>
+    </phone:PhoneApplicationPage.ApplicationBar>
+
+</phone:PhoneApplicationPage>

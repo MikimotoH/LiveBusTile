@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Navigation;
 
 namespace ScheduledTaskAgent1
 {
@@ -37,11 +36,6 @@ namespace ScheduledTaskAgent1
         {
             return String.IsNullOrEmpty(s);
         }
-        public static string DumpStr(this NavigationEventArgs e)
-        {
-            return String.Format("{{ Uri={0}, NavigationMode={1}, IsNavigationInitiator={2}, e.Content={3} }}",
-                e.Uri, e.NavigationMode, e.IsNavigationInitiator, e.Content);
-        }
         public static string DumpStr(this Exception ex)
         {
             return String.Format("{{Type={0}, Msg=\"{1}\"\n StackTrace=\n  {2}}}", ex.GetType(), ex.Message, ex.StackTrace);
@@ -52,6 +46,13 @@ namespace ScheduledTaskAgent1
             if (!dict.ContainsKey(key))
                 return defaultValue;
             return dict[key];
+        }
+
+        public static string GetValue(this IDictionary<string,string> dict, string keyName, string defValue)
+        {
+            if (!dict.ContainsKey(keyName))
+                return defValue;
+            return dict[keyName];
         }
 
         public static string DumpStr(this ScheduledTask task)
@@ -72,6 +73,11 @@ namespace ScheduledTaskAgent1
             return "[" + arr.Count() + "]{" + String.Join(", ", arr.Select(x => x.ToString())) + "}"; 
         }
 
+        public static string DumpArray<T>(this IEnumerable<T> arr, Func<T, string> func)
+        {
+            return "[" + arr.Count() + "]{" + String.Join(", ", arr.Select(x=>func(x))) + "}";
+        }
+
         public static String Fmt(this String fmt, params object[] args)
         {
             return String.Format(fmt, args);
@@ -79,6 +85,23 @@ namespace ScheduledTaskAgent1
         public static T LastElement<T>(this T[] arr)
         {
             return arr[arr.Length - 1];
+        }
+
+        public static T FirstElement<T>(this IEnumerable<T> en)
+        {
+            return en.ElementAt(0);
+        }
+        public static T LastElement<T>(this IEnumerable<T> en)
+        {
+            return en.ElementAt( en.Count() - 1);
+        }
+        public static int ToInt(this bool b)
+        {
+            return b ? 1 : 0;
+        }
+        public static bool ToBool(this int i)
+        {
+            return i != 0;
         }
 
         public static String Joyn(this String separator, IEnumerable<object> values)

@@ -89,18 +89,30 @@ namespace LiveBusTile
         {
             App.m_AppLog.Debug("");
             Database.SaveFavBusGroups();
-
-            const string uri = "/MainPage.xaml?DefaultTitle=FromTile";
-            var tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == uri);
-            if(tile==null)
-            {
-                var tileData = new StandardTileData
-                {
-                    Title = DateTime.Now.ToString("HH:mm:ss"),
-                };
-                ShellTile.Create(new Uri("/MainPage.xaml?DefaultTitle=FromTile", UriKind.Relative), tileData);
-            }
-            ScheduledAgent.UpdateTileJpg();
+            GroupPage.CreateTile("");
+            //string uri = TileUtil.TileUri("");
+            //var tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == uri);
+            //if (tile == null)
+            //{
+            //    ShellTile.Create(new Uri(uri, UriKind.Relative),
+            //        new FlipTileData
+            //        {
+            //            Title = DateTime.Now.ToString("HH:mm:ss"),
+            //            BackgroundImage = TileUtil.GenerateTileJpg("", false),
+            //            WideBackgroundImage = TileUtil.GenerateTileJpg("", true),
+            //        },
+            //        true);
+            //}
+            //else
+            //{
+            //    tile.Update(
+            //        new FlipTileData
+            //        {
+            //            Title = DateTime.Now.ToString("HH:mm:ss"),
+            //            BackgroundImage = TileUtil.GenerateTileJpg("", false),
+            //            WideBackgroundImage = TileUtil.GenerateTileJpg("", true),
+            //        });
+            //}
         }
 
         private async void AppBar_Refresh_Click(object sender, EventArgs e)
@@ -143,7 +155,21 @@ namespace LiveBusTile
             {
                 Database.SaveFavBusGroups();
                 lbBus.ItemsSource = GenFavGroupBusVM();
-                ScheduledAgent.UpdateTileJpg();
+
+                List<string> groupNames = Database.FavBusGroups.Select(x => x.m_GroupName).ToList();
+                groupNames.Insert(0, "");
+                foreach (var groupName in groupNames)
+                {
+                    try
+                    {
+                        TileUtil.UpdateTile(groupName);
+                        App.m_AppLog.Debug("UpdateTile(groupName=\"{0}\") - finished".Fmt(groupName));
+                    }
+                    catch (Exception ex)
+                    {
+                        App.m_AppLog.Error("TileUtil.UpdateTile( groupName={0} ) failed\n".Fmt(groupName) + ex.DumpStr());
+                    }
+                }
             }
             
             //foreach (var btn in this.ApplicationBar.Buttons)
@@ -188,7 +214,7 @@ namespace LiveBusTile
             BusInfo busInfo = gbvm.BusInfo;
             if (busInfo == null)
             {
-                NavigationService.Navigate(new Uri("/ChangeGroupName.xaml?groupName=" + gbvm.GroupName, UriKind.Relative));
+                NavigationService.Navigate(new Uri("/GroupPage.xaml?GroupName=" + gbvm.GroupName, UriKind.Relative));
                 return;
             }
             
