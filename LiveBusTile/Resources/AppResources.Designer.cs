@@ -70,11 +70,20 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.2.2.1.
+        ///   Looks up a localized string similar to 1.2.2.2.
         /// </summary>
         public static string AppVersion {
             get {
                 return ResourceManager.GetString("AppVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 群組「{0}」已存在，是否要合併之？.
+        /// </summary>
+        public static string ConfirmMergeExistingGroup {
+            get {
+                return ResourceManager.GetString("ConfirmMergeExistingGroup", resourceCulture);
             }
         }
         

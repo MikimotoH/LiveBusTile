@@ -129,7 +129,7 @@
     <value>台北巴士快速磚</value>
   </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>1.2.2.1</value>
+    <value>1.2.2.2</value>
     <comment>Application Version on Market Place Sumbission</comment>
   </data>
   <data name="NetworkFault" xml:space="preserve">
@@ -140,5 +140,8 @@
   </data>
   <data name="LastUpdatedTime" xml:space="preserve">
     <value>上次更新時間</value>
+  </data>
+  <data name="ConfirmMergeExistingGroup" xml:space="preserve">
+    <value>群組「{0}」已存在，是否要合併之？</value>
   </data>
 </root>

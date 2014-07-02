@@ -48,7 +48,7 @@ namespace ScheduledTaskAgent1
         /// <returns> Uri(@"isostore:/Shared\ShellContent\GroupTile=回家.jpg", UriKind.Absolute) </returns>
         public static Uri GenerateTileJpg(string groupName, bool isWide)
         {
-            ScheduledAgent.m_Logger.Debug("");
+            Logger.Debug("");
             int width = TileWidth(isWide);
             int height = TileHeight;
             int fontSize = Tile_FontSize;
@@ -99,7 +99,7 @@ namespace ScheduledTaskAgent1
             {
                 grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(fontSize) });
                 BusInfo bus = busList[iRow - hasGroupName.ToInt()];
-                ScheduledAgent.m_Logger.Debug("iRow={0}, bus={{ {1},{2},{3} }}".Fmt(iRow, bus.m_Name, bus.m_Station, bus.m_TimeToArrive));
+                Logger.Debug("iRow={0}, bus={{ {1},{2},{3} }}".Fmt(iRow, bus.m_Name, bus.m_Station, bus.m_TimeToArrive));
                 // Column 0
                 var tbBusName = new TextBlock
                 {
@@ -144,12 +144,12 @@ namespace ScheduledTaskAgent1
             grid.UpdateLayout();
             grid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             grid.Arrange(new Rect(new Point(0, 0), new Size(width, height)));
-            ScheduledAgent.m_Logger.Debug("grid = {{ ActualWidth={0},ActualHeight={1} }}".Fmt(grid.ActualWidth, grid.ActualHeight));
+            Logger.Debug("grid = {{ ActualWidth={0},ActualHeight={1} }}".Fmt(grid.ActualWidth, grid.ActualHeight));
 
             try
             {
                 string jpgPath = TileJpgPath(groupName, isWide);
-                ScheduledAgent.m_Logger.Debug("jpgPath=" + jpgPath);
+                Logger.Debug("jpgPath=" + jpgPath);
                 using (var stream = IsolatedStorageFile.GetUserStoreForApplication()
                     .OpenFile(jpgPath, FileMode.Create))
                 {
@@ -162,14 +162,14 @@ namespace ScheduledTaskAgent1
             }
             catch (Exception ex)
             {
-                ScheduledAgent.m_Logger.Error(ex.DumpStr());
+                Logger.Error(ex.DumpStr());
                 return null;
             }
         }
 
         public static void UpdateTile(string groupName)
         {
-            ScheduledAgent.m_Logger.Debug("groupName=" + groupName);
+            Logger.Debug("groupName=" + groupName);
             ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUri(groupName));
             if (tile == null)
                 return;

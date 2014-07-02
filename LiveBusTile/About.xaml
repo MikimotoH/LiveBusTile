@@ -34,8 +34,8 @@
                     <Run>開發網址</Run>
                     <LineBreak/>
                     <Hyperlink Click="github_Click">
-                        <Run FontSize="26" Foreground="#FF6375E6" x:Name="http_github">
-                            http://github.com/MikimotoH/LiveBusTile
+                        <Run FontSize="24" Foreground="#FF6375E6" x:Name="http_github">
+                            https://github.com/MikimotoH/LiveBusTile/tree/ListOfBusList
                         </Run>
                     </Hyperlink>
                     <LineBreak/>
@@ -53,7 +53,7 @@
                 <Paragraph>
                 <Run>作者</Run>
                 <LineBreak/>
-                <Hyperlink FontSize="26" Click="Email_Click">
+                <Hyperlink FontSize="24" Click="Email_Click">
                         <Run x:Name="EMail">MikimotoH@gmail.com
                         </Run>
                     </Hyperlink>
@@ -62,7 +62,7 @@
                 <Paragraph>
                     <Run>版本資訊</Run>
                     <LineBreak/>
-                    <Run FontSize="28" Text="{Binding Path=LocalizedResources.AppVersion, Source={StaticResource LocalizedStrings}}"/>
+                    <Run Foreground="Orange" FontSize="28" Text="{Binding Path=LocalizedResources.AppVersion, Source={StaticResource LocalizedStrings}}"/>
                 </Paragraph>
             </RichTextBox>
         </Grid>

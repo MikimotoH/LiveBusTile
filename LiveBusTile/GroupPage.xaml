@@ -28,19 +28,20 @@
         </Grid.RowDefinitions>
 
         <!--TitlePanel contains the name of the application and page title-->
-        <Grid Grid.Row="0" Margin="20,17,0,8" >
+        <Grid Grid.Row="0" Margin="0,17,0,8" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" 
                        Grid.Column="0" Style="{StaticResource PhoneTextNormalStyle}"/>
-            <TextBlock Text="- 群組" Grid.Column="1" Style="{StaticResource PhoneTextNormalStyle}"/>
+            <TextBlock Text="-群組" Grid.Column="1" Style="{StaticResource PhoneTextNormalStyle}"/>
             <TextBlock Text="{Binding Path=LocalizedResources.LastUpdatedTime, Source={StaticResource LocalizedStrings}}" 
-                       Grid.Column="2" TextAlignment="Right" Style="{StaticResource PhoneTextNormalStyle}"
-                       x:Name="tbLastUpdatedTime"/>
-        </Grid>
+                       Grid.Column="2" TextAlignment="Right" Style="{StaticResource PhoneTextNormalStyle}"/>
+            <TextBlock x:Name="tbLastUpdatedTime" Text="23:59:59" Grid.Column="3" Style="{StaticResource PhoneTextNormalStyle}"/>
+       </Grid>
 
         <!--ContentPanel - place additional content here-->
         <ProgressBar x:Name="prgbarWaiting" Height="10" 

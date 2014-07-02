@@ -48,12 +48,14 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" 
                    Style="{StaticResource PhoneTextNormalStyle}" Grid.Column="0"/>
                 <TextBlock Text="{Binding Path=LocalizedResources.LastUpdatedTime, Source={StaticResource LocalizedStrings}}" Style="{StaticResource PhoneTextNormalStyle}" 
-                           TextAlignment="Right" x:Name="tbLastUpdatedTime"
-                           Grid.Column="1"/>
+                           TextAlignment="Right" Grid.Column="1"/>
+                <TextBlock Text="23:59:59" TextAlignment="Right" x:Name="tbLastUpdatedTime"
+                           Grid.Column="2"/>
             </Grid>
             <ProgressBar x:Name="prgbarWaiting" Height="10" 
                 IsIndeterminate="True" Foreground="LightBlue" Background="Transparent" Visibility="Collapsed"

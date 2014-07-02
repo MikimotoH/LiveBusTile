@@ -35,7 +35,10 @@ namespace LiveBusTile
                     if (NavigationService.CanGoBack)
                         NavigationService.GoBack();
                     else
+                    {
+                        PhoneApplicationService.Current.State["Op"] = "Deleted";
                         NavigationService.Navigate(new Uri("/MainPage.xaml", UriKind.Relative));
+                    }
                     return;
                 }
                 else
@@ -46,8 +49,7 @@ namespace LiveBusTile
                 }
             }
 
-            tbLastUpdatedTime.Text = AppResources.LastUpdatedTime + " " +
-                ((DateTime)IsolatedStorageSettings.ApplicationSettings.GetValue("LastUpdatedTime", DateTime.MinValue)).ToString("HH:mm:ss");
+            tbLastUpdatedTime.Text = IsolatedStorageSettings.ApplicationSettings.GetValue("LastUpdatedTime", DateTime.MinValue).ToString("HH:mm:ss");
 
             tbGroupName.Text = m_BusGroup.m_GroupName;
 
@@ -122,14 +124,14 @@ namespace LiveBusTile
             if (numSucceededTasks > 0)
             {
                 Database.SaveFavBusGroups();
-                IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = DateTime.Now;
 
                 lbBusInfos.ItemsSource = m_BusGroup.m_Buses.Select(x => new BusInfoVM(x)).ToList();
                 TileUtil.UpdateTile(m_BusGroup.m_GroupName);
                 TileUtil.UpdateTile("");
 
-                tbLastUpdatedTime.Text = AppResources.LastUpdatedTime + " " +
-                    ((DateTime)IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"]).ToString("HH:mm:ss");
+                var lastUpdatedTime = DateTime.Now;
+                IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = lastUpdatedTime;
+                tbLastUpdatedTime.Text = lastUpdatedTime.ToString("HH:mm:ss");
             }
 
             this.ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = true);
@@ -185,35 +187,64 @@ namespace LiveBusTile
             App.m_AppLog.Debug("oldGroupName=\"{0}\", newGroupName=\"{1}\"".Fmt(oldGroupName, newGroupName));
 
             ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUtil.TileUri(oldGroupName));
-            if (tile == null)
+            if (tile != null)
             {
-                App.m_AppLog.Error("Can't find TileUri=\"{0}\", ShellTile.ActiveTiles={1}".Fmt(TileUtil.TileUri(oldGroupName), 
-                    ShellTile.ActiveTiles.DumpArray(x => x.NavigationUri.ToString() )));
-                return;
+                //App.m_AppLog.Error("Can't find TileUri=\"{0}\", ShellTile.ActiveTiles={1}".Fmt(TileUtil.TileUri(oldGroupName), 
+                //    ShellTile.ActiveTiles.DumpArray(x => x.NavigationUri.ToString() )));
+                Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, false));
+                Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, true));
+                tile.Delete();
             }
 
-            Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, false));
-            Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, true));           
-            tile.Delete();
+            try
+            {
+                ShellTile.Create(new Uri(TileUtil.TileUri(newGroupName), UriKind.Relative),
+                    new FlipTileData
+                    {
+                        Title = DateTime.Now.ToString("HH:mm:ss"),
+                        BackgroundImage = TileUtil.GenerateTileJpg(newGroupName, false),
+                        WideBackgroundImage = TileUtil.GenerateTileJpg(newGroupName, true),
+                    }, true);
+            }
+            catch (Exception ex)
+            {
+                App.m_AppLog.Error("ShellTile.Create(new FlipTileData{}) failed, ex=" + ex.DumpStr());
+            }
+        }
 
-            ShellTile.Create(new Uri(TileUtil.TileUri(newGroupName), UriKind.Relative),
-                new FlipTileData { 
-                    Title = DateTime.Now.ToString("HH:mm:ss"),
-                    BackgroundImage     = TileUtil.GenerateTileJpg(newGroupName, false),
-                    WideBackgroundImage = TileUtil.GenerateTileJpg(newGroupName, true),//new Uri("isostore:/" + TileUtil.TileJpgPath(newGroupName, true), UriKind.Absolute),
-                }, true);
+        void LostFocus_Epilog()
+        {
+            tbGroupName.Visibility = Visibility.Visible;
+            tbGroupNameTextBox.Visibility = Visibility.Collapsed;
+            tbGroupNameTextBox.LostFocus -= tbGroupNameTextBox_LostFocus;
         }
 
         void tbGroupNameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             string newGroupName = tbGroupNameTextBox.Text.Trim();
+            BusGroup existingGroup;
             if (!Database.IsLegalGroupName(newGroupName))
             {
                 MessageBox.Show(AppResources.IllegalGroupName.Fmt(tbGroupNameTextBox.Text));
             }
-            else if(Database.FavBusGroups.FirstOrDefault(x=>x.m_GroupName == newGroupName) != null)
+            else if ((existingGroup = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == newGroupName)) != null)
             {
-                MessageBox.Show("群組名稱「{0}」已存在".Fmt(tbGroupNameTextBox.Text));
+                var answer = MessageBox.Show(AppResources.ConfirmMergeExistingGroup.Fmt(newGroupName), AppResources.ApplicationTitle,  MessageBoxButton.OKCancel);
+                if (answer == MessageBoxResult.OK)
+                {
+                    //Merge Group
+                    string oldGroupName = m_BusGroup.m_GroupName;
+                    existingGroup.m_Buses.AddRange(m_BusGroup.m_Buses);
+                    Database.FavBusGroups.Remove(m_BusGroup);
+                    m_BusGroup = existingGroup;
+                    tbGroupName.Text = m_BusGroup.m_GroupName;
+                    lbBusInfos.ItemsSource = m_BusGroup.m_Buses.Select(x => new BusInfoVM(x)).ToList();
+
+                    Database.SaveFavBusGroups();
+                    LostFocus_Epilog();
+                    RenameTile(oldGroupName, newGroupName);
+                }
+
             }
             else
             {
@@ -221,19 +252,13 @@ namespace LiveBusTile
                 {
                     string oldGroupName = m_BusGroup.m_GroupName;
                     m_BusGroup.m_GroupName = newGroupName;
+                    tbGroupName.Text = newGroupName;
+
                     Database.SaveFavBusGroups();
-
-                    Deployment.Current.Dispatcher.BeginInvoke(() => 
-                    {
-                        RenameTile(oldGroupName, newGroupName);
-                    });
+                    LostFocus_Epilog();
+                    RenameTile(oldGroupName, newGroupName);
                 }
-                tbGroupName.Text = newGroupName;
             }
-
-            tbGroupName.Visibility = Visibility.Visible;
-            tbGroupNameTextBox.Visibility = Visibility.Collapsed;
-            tbGroupNameTextBox.LostFocus -= tbGroupNameTextBox_LostFocus;
         }
 
         private void btnGoToMainPage_Tap(object sender, System.Windows.Input.GestureEventArgs e)

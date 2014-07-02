@@ -23,12 +23,21 @@
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
+        <Grid Grid.Row="0" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
             <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}"/>
-            <TextBlock Text="-詳請"></TextBlock>
-        </StackPanel>
+            <TextBlock Text="-詳請" Grid.Column="1"/>
+            <TextBlock Text="{Binding LocalizedResources.LastUpdatedTime, Source={StaticResource LocalizedStrings}}" 
+                       TextAlignment="Right" Grid.Column="2"/>
+            <TextBlock Text="23:59:59" TextAlignment="Right" x:Name="tbLastUpdatedTime" Grid.Column="3"/>
+        </Grid>
         <StackPanel Grid.Row="1" Margin="0,10,0,0">
             <TextBlock Text="公車名稱"  Style="{StaticResource PhoneTextTitle2Style}"/>
             <TextBlock x:Name="tbBusName" Text="橘2"  FontSize="36" Margin="10,10" Foreground="Orange" FontWeight="Bold"/>

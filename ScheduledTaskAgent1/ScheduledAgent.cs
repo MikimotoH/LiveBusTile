@@ -6,11 +6,13 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Runtime.CompilerServices;
 
 
 namespace ScheduledTaskAgent1
@@ -22,20 +24,17 @@ namespace ScheduledTaskAgent1
         /// </remarks>
         static ScheduledAgent()
         {
-            m_Logger.Create(FileMode.Append, "AgentLog.txt");
-
             // Subscribe to the managed exception handler
             Deployment.Current.Dispatcher.BeginInvoke(delegate
             {
                 Application.Current.UnhandledException += UnhandledException;
             });
         }
-        internal static Logger m_Logger = new Logger();
 
         /// Code to execute on Unhandled Exceptions
         private static void UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
-            m_Logger.Error("ScheduledAgent.UnhandledException()\n e.ExceptionObject={0}\n\n e.Handled={1}"
+            Logger.Error("ScheduledAgent.UnhandledException()\n e.ExceptionObject={0}\n\n e.Handled={1}"
                 .Fmt(e.ExceptionObject.DumpStr(), e.Handled));
             if (Debugger.IsAttached)
             {
@@ -52,11 +51,11 @@ namespace ScheduledTaskAgent1
             try
             {
                 ScheduledActionService.LaunchForTest(taskName, TimeSpan.FromSeconds(30));
-                m_Logger.Msg("LaunchForTest - finish)");
+                Logger.Msg("LaunchForTest - finish)");
             }
             catch (Exception ex)
             {
-                m_Logger.Error("ScheduledActionService.LaunchForTest() failed, ex=" + ex.DumpStr());
+                Logger.Error("ScheduledActionService.LaunchForTest() failed, ex=" + ex.DumpStr());
             }
 #endif
         }
@@ -80,23 +79,34 @@ namespace ScheduledTaskAgent1
             uint interfaceType = profile.NetworkAdapter.IanaInterfaceType;
             return (interfaceType == (uint)IanaInterfaceType.WiFi || interfaceType == (uint)IanaInterfaceType.LAN);
         }
- 
+
+        void Epilog(ScheduledTask task, 
+            [CallerMemberName] string func = "",
+            [CallerFilePath] string path = "",
+            [CallerLineNumber] int line = 0)
+        {
+            System.Diagnostics.Debug.WriteLine("{0}<{1}>{2}:{3}:{4} [{5}] ScheduledAgent.Epilog() enter", 
+                DateTime.Now.ToString("yyMMdd_HH:mm:ss.fff"), LogLevel.Debug, 
+                Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
+
+#if ENABLE_LAUNCHFORTEST
+            LaunchIn30sec(task.Name);
+#endif
+            Logger.Close();
+            this.NotifyComplete();
+        }
+
         protected override void OnInvoke(ScheduledTask task)
         {
             try
             {
-                m_Logger.Msg("task="+task.DumpStr());
+                Logger.Msg("task="+task.DumpStr());
 
                 bool bWiFiOnly = Convert.ToBoolean(Resource1.IsWiFiOnly_Default);
                 IsolatedStorageSettings.ApplicationSettings.TryGetValue("WiFiOnly", out bWiFiOnly);
                 if ( (bWiFiOnly && !WifiConnected())
                     || ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUtil.TileUri("")) == null)
                 {
-#if ENABLE_LAUNCHFORTEST
-                    LaunchIn30sec(task.Name);
-#endif
-                    m_Logger.Close();
-                    this.NotifyComplete();
                     return;
                 }
 
@@ -112,52 +122,53 @@ namespace ScheduledTaskAgent1
                         ++numCompletedTask;
                     }
                 }
-
-                if (numCompletedTask > 0)
+                if (numCompletedTask == 0)
                 {
-                    Database.SaveFavBusGroups();
-                    Deployment.Current.Dispatcher.BeginInvoke(() =>
-                    {
-                        try
-                        {
-                            List<string> groupNames = Database.FavBusGroups.Select(x => x.m_GroupName).ToList();
-                            groupNames.Insert(0, "");
-                            foreach (var groupName in groupNames)
-                            {
-                                try
-                                {
-                                    TileUtil.UpdateTile(groupName);
-                                    m_Logger.Debug("UpdateTile(groupName=\"{0}\") - finished".Fmt(groupName));
-                                }
-                                catch (Exception e)
-                                {
-                                    m_Logger.Error("TileUtil.UpdateTile( groupName={0} ) failed\n".Fmt(groupName) + e.DumpStr());
-                                }
-                            }
-
-                        }
-                        catch (Exception e)
-                        {
-                            m_Logger.Error(e.DumpStr());
-                        }
-                        finally
-                        {
-                            LaunchIn30sec(task.Name);
-                            m_Logger.Close();
-                            this.NotifyComplete();
-                        }
-                    });
+                    return;
                 }
+
+
+                var uiFinished = new AutoResetEvent(false);
+
+                Database.SaveFavBusGroups();
+                Deployment.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    try
+                    {
+                        List<string> groupNames = Database.FavBusGroups.Select(x => x.m_GroupName).ToList();
+                        groupNames.Insert(0, "");
+                        foreach (var groupName in groupNames)
+                        {
+                            try
+                            {
+                                TileUtil.UpdateTile(groupName);
+                                Logger.Debug("UpdateTile(groupName=\"{0}\") - finished".Fmt(groupName));
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.Error("TileUtil.UpdateTile( groupName={0} ) failed\n".Fmt(groupName) + e.DumpStr());
+                            }
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error(e.DumpStr());
+                    }
+                    finally
+                    {
+                        uiFinished.Set();
+                    }
+                });
+                uiFinished.WaitOne();
             }
             catch (Exception e)
             {
-                m_Logger.Error(e.DumpStr());
+                Logger.Error(e.DumpStr());
             }
             finally
             {
-                LaunchIn30sec(task.Name);
-                m_Logger.Close();
-                this.NotifyComplete();
+                Epilog(task);
             }
         }
 

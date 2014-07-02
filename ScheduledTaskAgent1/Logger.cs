@@ -15,83 +15,55 @@ namespace ScheduledTaskAgent1
         Msg = 4,
     };
 
-    public class Logger
+    public static class Logger
     {
-        StreamWriter m_stm;
+        static Object m_lock = new Object();        
+        static StreamWriter m_stm;
+
+        const string logFileName = "AgentLog.txt";
         public const string timeFmt = "yyMMdd_HH:mm:ss.fff";
+        const string logdir = @"Shared\ShellContent";
 
-        public Logger()
+        static void Log(LogLevel logLevel, string func, string path, int line, string msg)
         {
-            System.Diagnostics.Debug.WriteLine("Logger.Logger() ctor");
-        }
-
-        public void Create(FileMode fileMode, string logFileName,
-            [CallerFilePath] string path = "",
-            [CallerMemberName] string func = "",
-            [CallerLineNumber] int line = 0            
-            )
-        {
-            System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Create(overwrite={5}) enter m_stm={6}",
-                DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-                , fileMode, m_stm);
-
-            const string logdir = @"Shared\ShellContent";
-
-            try
-            {
-                Directory.CreateDirectory(logdir);
-            }
-            catch (Exception e)
-            {
-                System.Diagnostics.Debug.WriteLine("CreateDirectory(\"{0}\") failed, e={1}", logdir, e.Message);
-                return;
-            }
-            m_stm = new StreamWriter(
-                IsolatedStorageFile.GetUserStoreForApplication().OpenFile(logdir + "\\" + logFileName,
-                fileMode,
-                FileAccess.Write, FileShare.Read));
-            //Console.SetOut(m_stm);
-
-            System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Create(overwrite={5}) exit m_stm={6}",
-                DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-                , fileMode, m_stm);
-        }
-
-        public void Flush
-            (
-            [CallerFilePath] string path = "",
-            [CallerMemberName] string func = "",
-            [CallerLineNumber] int line = 0
-            )
-        {
-            if (m_stm != null)
-            {
-                System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Flush() enter m_stm={5}",
-                    DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-                    , m_stm);
-                m_stm.Flush();
-            }
-        }
-
-        
-
-        void Log(LogLevel logLevel, string func, string path, int line, string msg)
-        {
-            string msg1 = "{0}<{1}>{2}:{3}:{4} [{5}] {6}".Fmt( DateTime.Now.ToString("yyMMdd_HH:mm:ss.fff"),
-                logLevel.ToString(), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId, 
+            string msg1 = "{0}<{1}>{2}:{3}:{4} [{5}] {6}".Fmt(DateTime.Now.ToString("yyMMdd_HH:mm:ss.fff"),
+                logLevel.ToString(), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId,
                 msg);
             System.Diagnostics.Debug.WriteLine(msg1);
-            if (m_stm != null)
-                m_stm.WriteLine(msg1);
-            else
+
+            lock (m_lock)
             {
-                //System.Diagnostics.Debug.WriteLine("{0}<Error>{1}:{2}:{3} [{4}] m_stm == NULL!",
-                //    DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
-                //Debugger.Break();
+                if (m_stm == null)
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(logdir);
+                        m_stm = new StreamWriter(
+                            IsolatedStorageFile.GetUserStoreForApplication().OpenFile(logdir + "\\" + logFileName,
+                            FileMode.Append,
+                            FileAccess.Write, FileShare.Read));
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Logger.Log(): OpenFile() failed, ex=" + ex.DumpStr());
+                    }
+                }
+
+                if (m_stm != null)
+                {
+                    try
+                    {
+                        m_stm.WriteLine(msg1);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Logger.Log(): m_stm.WriteLine(msg1) failed, ex=" + ex.DumpStr());
+                    }
+                }
             }
         }
 
-        public void Error(string msg, 
+        public static void Error(string msg, 
             [CallerMemberName] string func="",
             [CallerFilePath] string path="",
             [CallerLineNumber] int line=0)
@@ -99,7 +71,7 @@ namespace ScheduledTaskAgent1
             Log(LogLevel.Error, func, path, line, msg);
         }
 
-        public void Msg(string msg,
+        public static void Msg(string msg,
             [CallerMemberName] string func = "",
             [CallerFilePath] string path = "",
             [CallerLineNumber] int line = 0)
@@ -109,7 +81,7 @@ namespace ScheduledTaskAgent1
 
         [Conditional("DEBUG")]
         [DebuggerStepThrough]
-        public void Debug(string msg,
+        public static void Debug(string msg,
             [CallerMemberName] string func = "",
             [CallerFilePath] string path = "",
             [CallerLineNumber] int line = 0)
@@ -117,30 +89,71 @@ namespace ScheduledTaskAgent1
             Log(LogLevel.Debug, func, path, line, msg);
         }
 
-        public void LogRawMsg(string msg)
+        public static void LogRawMsg(string msg)
         {
             System.Diagnostics.Debug.WriteLine(msg);
-            if (m_stm != null)
-                m_stm.WriteLine(msg);
+            lock (m_lock)
+            {
+                if (m_stm != null)
+                {
+                    try
+                    {
+                        m_stm.WriteLine(msg);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Logger.Log(): m_stm.WriteLine(msg) failed, ex=" + ex.DumpStr());
+                    }
+                }
+            }
         }
 
-
-        public void Close(
+        public static void Flush
+            (
             [CallerFilePath] string path = "",
             [CallerMemberName] string func = "",
             [CallerLineNumber] int line = 0
             )
         {
-            if(m_stm !=null)
+            System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Flush() enter",
+                DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
+
+            lock (m_lock)
             {
-                System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Close() enter",
-                    DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
-                m_stm.Close();
-                m_stm = null;
-                System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Close() exit",
-                    DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
+                if (m_stm != null)
+                {
+                    try
+                    {
+                        m_stm.Flush();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Logger.Flush(): m_stm.Flush() failed");
+                        System.Diagnostics.Debug.WriteLine("ex=" + ex.DumpStr());
+                    }
+                }
             }
         }
+
+        public static void Close(
+            [CallerFilePath] string path = "",
+            [CallerMemberName] string func = "",
+            [CallerLineNumber] int line = 0
+            )
+        {
+            System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Close() enter",
+                DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
+
+            lock (m_lock)
+            {
+                if (m_stm != null)
+                {
+                    m_stm.Close();
+                    m_stm = null;
+                }
+            }
+        }
+
     }
 }
 

@@ -36,16 +36,28 @@ namespace ScheduledTaskAgent1
         {
             return String.IsNullOrEmpty(s);
         }
+
         public static string DumpStr(this Exception ex)
         {
-            return String.Format("{{Type={0}, Msg=\"{1}\"\n StackTrace=\n  {2}}}", ex.GetType(), ex.Message, ex.StackTrace);
+            var sb = new StringBuilder();
+            sb.AppendFormat("{{Type={0}, Msg=\"{1}\"\n StackTrace=\n  {2}}}", ex.GetType(), ex.Message, ex.StackTrace);
+
+            int innerLoop = 1;
+            Exception jx = ex;
+            while ((jx = jx.InnerException) != null)
+            {
+                sb.AppendFormat("[{0}] InnerException: {{Type={1}, Msg=\"{2}\"\n StackTrace=\n  {3}}}", innerLoop, jx.GetType(), jx.Message, jx.StackTrace);
+                innerLoop++;
+            }
+
+            return sb.ToString();
         }
 
-        public static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue defaultValue)
+        public static TValue GetValue<TValue>(this IDictionary<string, object> dict, string key, TValue defValue)
         {
             if (!dict.ContainsKey(key))
-                return defaultValue;
-            return dict[key];
+                return defValue;
+            return (TValue)dict[key];
         }
 
         public static string GetValue(this IDictionary<string,string> dict, string keyName, string defValue)

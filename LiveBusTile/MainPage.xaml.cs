@@ -41,8 +41,7 @@ namespace LiveBusTile
         {
             //App.m_AppLog.Debug("Screen Width = " + Application.Current.RootVisual.RenderSize.Width);
 
-            tbLastUpdatedTime.Text = AppResources.LastUpdatedTime + " " +
-                ((DateTime)IsolatedStorageSettings.ApplicationSettings.GetValue("LastUpdatedTime", DateTime.MinValue)).ToString("HH:mm:ss");
+            tbLastUpdatedTime.Text = IsolatedStorageSettings.ApplicationSettings.GetValue("LastUpdatedTime", DateTime.MinValue).ToString("HH:mm:ss");
             lbBus.ItemsSource = GenFavGroupBusVM();
 
             if ((string)PhoneApplicationService.Current.State.GetValue("Op", "") != "")
@@ -135,9 +134,9 @@ namespace LiveBusTile
             {
                 Database.SaveFavBusGroups();
                 lbBus.ItemsSource = GenFavGroupBusVM();
-                IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = DateTime.Now;
-                tbLastUpdatedTime.Text = AppResources.LastUpdatedTime + " " +
-                    ((DateTime)IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"]).ToString("HH:mm:ss");
+                var lastUpdatedTime = DateTime.Now;
+                IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = lastUpdatedTime;
+                tbLastUpdatedTime.Text = lastUpdatedTime.ToString("HH:mm:ss");
 
                 List<string> groupNames = Database.FavBusGroups.Select(x => x.m_GroupName).ToList();
                 groupNames.Insert(0, "");
