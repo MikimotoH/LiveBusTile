@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 
 namespace LiveBusTile
 {
+
     public partial class AddBus : PhoneApplicationPage
     {
         public AddBus()
@@ -32,6 +33,7 @@ namespace LiveBusTile
                 .Select(g => new KeyedBusVM(g))
                 .ToObservableCollection();
         }
+
 
         bool m_prevent_TextChangeEvent=false;
         private void tbBusName_TextChanged(object sender, TextChangedEventArgs e)
