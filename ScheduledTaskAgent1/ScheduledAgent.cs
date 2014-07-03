@@ -92,7 +92,7 @@ namespace ScheduledTaskAgent1
 #if ENABLE_LAUNCHFORTEST
             LaunchIn30sec(task.Name);
 #endif
-            Logger.Close();
+            //Logger.Close();
             this.NotifyComplete();
         }
 
@@ -127,10 +127,9 @@ namespace ScheduledTaskAgent1
                     return;
                 }
 
-
+                Database.SaveFavBusGroups();
                 var uiFinished = new AutoResetEvent(false);
 
-                Database.SaveFavBusGroups();
                 Deployment.Current.Dispatcher.BeginInvoke(() =>
                 {
                     try
@@ -141,7 +140,7 @@ namespace ScheduledTaskAgent1
                         {
                             try
                             {
-                                TileUtil.UpdateTile(groupName);
+                                TileUtil.UpdateTile2(groupName);
                                 Logger.Debug("UpdateTile(groupName=\"{0}\") - finished".Fmt(groupName));
                             }
                             catch (Exception e)

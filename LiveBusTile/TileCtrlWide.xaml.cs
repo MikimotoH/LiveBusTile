@@ -13,13 +13,11 @@ using System.Collections;
 
 namespace LiveBusTile
 {
-    public partial class TileMediumCtrl : UserControl
+    public partial class TileCtrlWide  : UserControl
     {
-        public TileMediumCtrl()
+        public TileCtrlWide()
         {
             InitializeComponent();
         }
-
-        public IEnumerable ItemsSource { get { return lbBuses.ItemsSource; } set { lbBuses.ItemsSource = value; } }
     }
 }

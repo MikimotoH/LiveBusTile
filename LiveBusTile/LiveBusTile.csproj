@@ -133,11 +133,17 @@
     <Compile Include="Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TileMediumCtrl.xaml.cs">
-      <DependentUpon>TileMediumCtrl.xaml</DependentUpon>
+    <Compile Include="TileCtrlWideWithGroup.xaml.cs">
+      <DependentUpon>TileCtrlWideWithGroup.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TileMediumTest.xaml.cs">
-      <DependentUpon>TileMediumTest.xaml</DependentUpon>
+    <Compile Include="TileCtrlWide.xaml.cs">
+      <DependentUpon>TileCtrlWide.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="TileCtrl.xaml.cs">
+      <DependentUpon>TileCtrl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="TileCtrlWithGroup.xaml.cs">
+      <DependentUpon>TileCtrlWithGroup.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -181,59 +187,29 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="TileMediumCtrl.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="TileCtrlWideWithGroup.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
-    <Page Include="TileMediumTest.xaml">
+    <Page Include="TileCtrlWide.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="TileCtrl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="TileCtrlWithGroup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Images\AppStore-Icon-300x300.png" />
-    <None Include="marketplace_pics\AppBar.AddBus.psd" />
-    <None Include="marketplace_pics\AppBar.AddStation.psd" />
-    <None Include="marketplace_pics\AppBar.Char.Disabled.psd" />
-    <None Include="marketplace_pics\AppBar.Numer.Input.psd" />
-    <None Include="marketplace_pics\AppBar.Pin.psd" />
-    <None Include="marketplace_pics\AppBar.Refresh.psd" />
-    <None Include="marketplace_pics\AppStore-Icon-300x300.psd" />
-    <None Include="marketplace_pics\Btn.Enter.psd" />
-    <None Include="marketplace_pics\Bus-Profiling-flattened-Icon.psd" />
-    <None Include="marketplace_pics\Bus-Profiling-Icon.psd" />
-    <None Include="marketplace_pics\Bus-Profiling.psd" />
-    <None Include="marketplace_pics\AppStore-Icon-1000x800.png" />
-    <None Include="marketplace_pics\AppStore-Icon-300x300.png" />
-    <None Include="marketplace_pics\AppStore-Icon-358-square.png" />
-    <None Include="marketplace_pics\AppStore-Icon-358x173.png" />
-    <None Include="marketplace_pics\wp_ss_20140616_0001.png" />
-    <None Include="marketplace_pics\wp_ss_20140616_0002.png" />
-    <None Include="marketplace_pics\wp_ss_20140616_0003.png" />
-    <None Include="marketplace_pics\wp_ss_20140616_0004.png" />
-    <None Include="marketplace_pics\wp_ss_20140616_0005.png" />
-    <None Include="marketplace_pics\wp_ss_20140616_0006.png" />
-    <None Include="marketplace_pics\wp_ss_20140616_0007.png" />
     <None Include="Toolkit.Content\ApplicationBar.Add.png" />
     <None Include="Toolkit.Content\ApplicationBar.Cancel.png" />
     <None Include="Toolkit.Content\ApplicationBar.Check.png" />
-    <None Include="marketplace_pics\wp_ss_20140617_0001.png" />
-    <None Include="marketplace_pics\720p\screenshot-0.png" />
-    <None Include="marketplace_pics\720p\screenshot-1.png" />
-    <None Include="marketplace_pics\720p\screenshot-2.png" />
-    <None Include="marketplace_pics\720p\screenshot-3.png" />
-    <None Include="marketplace_pics\720p\screenshot-4.5.png" />
-    <None Include="marketplace_pics\720p\screenshot-4.png" />
-    <None Include="marketplace_pics\720p\screenshot-5.png" />
-    <None Include="marketplace_pics\720p\screenshot-6.png" />
-    <None Include="marketplace_pics\wvga\screenshots-0.png" />
-    <None Include="marketplace_pics\wvga\screenshots-1.png" />
-    <None Include="marketplace_pics\wvga\screenshots-2.png" />
-    <None Include="marketplace_pics\wvga\screenshots-3.png" />
-    <None Include="marketplace_pics\wvga\screenshots-4.png" />
-    <None Include="marketplace_pics\wvga\screenshots-5.png" />
-    <None Include="marketplace_pics\wvga\screenshots-6.png" />
-    <None Include="marketplace_pics\wvga\screenshots-7.png" />
+    <Content Include="Images\LargeIcon-691x336.png" />
     <Content Include="Toolkit.Content\ApplicationBar.Delete.png" />
     <None Include="Toolkit.Content\ApplicationBar.Select.png" />
     <None Include="packages.config" />
@@ -256,10 +232,6 @@
     <Content Include="Images\AppBar.AddStation.png" />
     <Content Include="Images\AppBar.Pin.Png" />
     <Content Include="Images\Btn.Enter.Png" />
-    <Content Include="Images\Input.Char.png" />
-    <None Include="Images\AppBar.FindByChar.png" />
-    <None Include="Images\AppBar.FindByNumber.Png" />
-    <Content Include="Images\Input.Number.png" />
     <Content Include="Images\AppBar.Refresh.Png" />
   </ItemGroup>
   <ItemGroup>
@@ -273,9 +245,6 @@
     <Reference Include="HtmlAgilityPack, Version=1.4.6.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\sl4-windowsphone71\HtmlAgilityPack.dll</HintPath>
-    </Reference>
-    <Reference Include="Logging">
-      <HintPath>..\packages\Trace.Logging.1.6.460\lib\Logging.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Expression.Drawing" />
     <Reference Include="Microsoft.Expression.Interactions" />
@@ -292,9 +261,7 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ViewModels\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\ScheduledTaskAgent1\ScheduledTaskAgent1.csproj">
       <Project>{2860527f-8b90-412d-a35a-59cddddccfff}</Project>

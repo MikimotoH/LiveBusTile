@@ -33,6 +33,11 @@ namespace LiveBusTile
             tbBusName.Text = m_BusName;
             m_Dir = (BusDir)Enum.Parse(typeof(BusDir), NavigationContext.QueryString.GetValue("Dir", "go"));
             m_Station = NavigationContext.QueryString.GetValue("Station", "");
+            lbStationsBack.ItemsSource = null;
+            lbStationsGo.ItemsSource = null;
+            lbStationsBack.UpdateLayout();
+            lbStationsGo.UpdateLayout();
+
             InitList();
         }
 
@@ -127,10 +132,6 @@ namespace LiveBusTile
 
         private void UpdateDatabase()
         {
-            var lastUpdatedTime = DateTime.Now;
-            IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = lastUpdatedTime;
-            tbLastUpdatedTime.Text = lastUpdatedTime.ToString("HH:mm:ss");
-
             Database.FavBuses.Where(b => b.m_Name == m_BusName).DoForEach(
                 b => b.m_TimeToArrive = GetStationTime(b.m_Dir, b.m_Station).TimeToArrive
                 );

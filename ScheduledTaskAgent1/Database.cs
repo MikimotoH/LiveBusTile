@@ -26,7 +26,17 @@ namespace ScheduledTaskAgent1
 
         public static void SaveFavBusGroups()
         {
+            IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = DateTime.Now;
             IsolatedStorageSettings.ApplicationSettings["FavBusGroups"] = m_FavBusGroups;
+        }
+
+        public static DateTime LastUpdatedTime
+        {
+            get{
+                if (!IsolatedStorageSettings.ApplicationSettings.Contains("LastUpdatedTime"))
+                    IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = DateTime.MinValue;
+                return (DateTime)IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"];
+            }
         }
 
         public static List<BusGroup> DefaultFavBusGroups

@@ -1,0 +1,68 @@
+﻿<UserControl x:Class="LiveBusTile.TileCtrlWide"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="336" d:DesignWidth="691"
+    >
+
+    <Grid Background="#FFFDA90F" Width="691" Height="336" x:Name="grid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240"/>
+            <ColumnDefinition Width="351"/>
+            <ColumnDefinition Width="100"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="2"
+                   x:Name="tbLastUpdatedTime" FontSize="24" Foreground="White" 
+                   VerticalAlignment="Top" TextAlignment="Right">
+            23:59
+        </TextBlock>
+        
+        <TextBlock Grid.Row="1" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="tbBusName0">信義新幹線0</TextBlock>
+        <TextBlock Grid.Row="1" Grid.Column="1" FontSize="40" TextAlignment="Center" FontWeight="Bold" Foreground="White" x:Name="tbStation0">捷運壹零壹世貿站0</TextBlock>
+        <TextBlock Grid.Row="1" Grid.Column="2" FontSize="40" TextAlignment="Left" Foreground="Red" x:Name="tbTime0">已過站</TextBlock>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="tbBusName1">信義新幹線1</TextBlock>
+        <TextBlock Grid.Row="2" Grid.Column="1" FontSize="40" TextAlignment="Center" FontWeight="Bold" Foreground="White" x:Name="tbStation1">捷運壹零壹世貿站1</TextBlock>
+        <TextBlock Grid.Row="2" Grid.Column="2" FontSize="40" TextAlignment="Left" Foreground="Red" x:Name="tbTime1">已過站</TextBlock>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="tbBusName2">信義新幹線2</TextBlock>
+        <TextBlock Grid.Row="3" Grid.Column="1" FontSize="40" TextAlignment="Center" FontWeight="Bold" Foreground="White" x:Name="tbStation2">捷運壹零壹世貿站2</TextBlock>
+        <TextBlock Grid.Row="3" Grid.Column="2" FontSize="40" TextAlignment="Left" Foreground="Red" x:Name="tbTime2">已過站</TextBlock>
+
+        <TextBlock Grid.Row="4" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="tbBusName3">信義新幹線3</TextBlock>
+        <TextBlock Grid.Row="4" Grid.Column="1" FontSize="40" TextAlignment="Center" FontWeight="Bold" Foreground="White" x:Name="tbStation3">捷運壹零壹世貿站3</TextBlock>
+        <TextBlock Grid.Row="4" Grid.Column="2" FontSize="40" TextAlignment="Left" Foreground="Red" x:Name="tbTime3">已過站</TextBlock>
+
+        <TextBlock Grid.Row="5" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="tbBusName4">信義新幹線4</TextBlock>
+        <TextBlock Grid.Row="5" Grid.Column="1" FontSize="40" TextAlignment="Center" FontWeight="Bold" Foreground="White" x:Name="tbStation4">捷運壹零壹世貿站4</TextBlock>
+        <TextBlock Grid.Row="5" Grid.Column="2" FontSize="40" TextAlignment="Left" Foreground="Red" x:Name="tbTime4">已過站</TextBlock>
+
+        <TextBlock Grid.Row="6" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="tbBusName5">信義新幹線5</TextBlock>
+        <TextBlock Grid.Row="6" Grid.Column="1" FontSize="40" TextAlignment="Center" FontWeight="Bold" Foreground="White" x:Name="tbStation5">捷運壹零壹世貿站5</TextBlock>
+        <TextBlock Grid.Row="6" Grid.Column="2" FontSize="40" TextAlignment="Left" Foreground="Red" x:Name="tbTime5">已過站</TextBlock>
+
+        <TextBlock Grid.Row="7" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="tbBusName6">信義新幹線6</TextBlock>
+        <TextBlock Grid.Row="7" Grid.Column="1" FontSize="40" TextAlignment="Center" FontWeight="Bold" Foreground="White" x:Name="tbStation6">捷運壹零壹世貿站6</TextBlock>
+        <TextBlock Grid.Row="7" Grid.Column="2" FontSize="40" TextAlignment="Left" Foreground="Red" x:Name="tbTime6">已過站</TextBlock>
+
+        <TextBlock Grid.Row="8" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="tbBusName7">信義新幹線7</TextBlock>
+        <TextBlock Grid.Row="8" Grid.Column="1" FontSize="40" TextAlignment="Center" FontWeight="Bold" Foreground="White" x:Name="tbStation7">捷運壹零壹世貿站7</TextBlock>
+        <TextBlock Grid.Row="8" Grid.Column="2" FontSize="40" TextAlignment="Left" Foreground="Red" x:Name="tbTime7">已過站</TextBlock>
+
+    </Grid>
+    
+</UserControl>

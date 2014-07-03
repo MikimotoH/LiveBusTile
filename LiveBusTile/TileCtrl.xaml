@@ -1,0 +1,52 @@
+﻿<UserControl x:Class="LiveBusTile.TileCtrl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="336" d:DesignWidth="336"             
+    >
+
+    <Grid Background="#FFFDA90F" Width="336" Height="336" 
+          x:Name="grid">
+        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="236"/>
+            <ColumnDefinition Width="100"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="1"
+                   x:Name="tbLastUpdatedTime" FontSize="24" Foreground="White" 
+                   VerticalAlignment="Top" TextAlignment="Right">
+            23:59
+        </TextBlock>
+        <TextBlock Grid.Row="1" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="Bus0">橘2</TextBlock>
+        <TextBlock Grid.Row="1" Grid.Column="1" FontSize="40" TextAlignment="Left" Foreground="Red" Margin="0,0,-10,0" x:Name="Time0">已過站</TextBlock>
+        <TextBlock Grid.Row="2" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="Bus1">敦化幹線</TextBlock>
+        <TextBlock Grid.Row="2" Grid.Column="1" FontSize="40" TextAlignment="Left" Foreground="Red" Margin="0,0,-10,0" x:Name="Time1">16分</TextBlock>
+        <TextBlock Grid.Row="3" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="Bus2">275</TextBlock>
+        <TextBlock Grid.Row="3" Grid.Column="1" FontSize="40" TextAlignment="Left" Foreground="Red" Margin="0,0,-10,0" x:Name="Time2">進站中</TextBlock>
+        <TextBlock Grid.Row="4" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="Bus3">信義新幹線3</TextBlock>
+        <TextBlock Grid.Row="4" Grid.Column="1" FontSize="40" TextAlignment="Left" Foreground="Red" Margin="0,0,-10,0" x:Name="Time3">25分</TextBlock>
+        <TextBlock Grid.Row="5" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="Bus4">信義新幹線4</TextBlock>
+        <TextBlock Grid.Row="5" Grid.Column="1" FontSize="40" TextAlignment="Left" Foreground="Red" Margin="0,0,-10,0" x:Name="Time4">25分</TextBlock>
+        <TextBlock Grid.Row="6" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="Bus5">信義新幹線5</TextBlock>
+        <TextBlock Grid.Row="6" Grid.Column="1" FontSize="40" TextAlignment="Left" Foreground="Red" Margin="0,0,-10,0" x:Name="Time5">25分</TextBlock>
+        <TextBlock Grid.Row="7" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="Bus6">信義新幹線6</TextBlock>
+        <TextBlock Grid.Row="7" Grid.Column="1" FontSize="40" TextAlignment="Left" Foreground="Red" Margin="0,0,-10,0" x:Name="Time6">25分</TextBlock>
+        <TextBlock Grid.Row="8" Grid.Column="0" FontSize="40" Foreground="#FF0F0F64" TextAlignment="Left" x:Name="Bus7">信義新幹線7</TextBlock>
+        <TextBlock Grid.Row="8" Grid.Column="1" FontSize="40" TextAlignment="Left" Foreground="Red" Margin="0,0,-10,0" x:Name="Time7">25分</TextBlock>
+    </Grid>
+    
+</UserControl>

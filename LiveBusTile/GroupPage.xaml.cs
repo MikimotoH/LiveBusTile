@@ -49,7 +49,7 @@ namespace LiveBusTile
                 }
             }
 
-            tbLastUpdatedTime.Text = IsolatedStorageSettings.ApplicationSettings.GetValue("LastUpdatedTime", DateTime.MinValue).ToString("HH:mm:ss");
+            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
 
             tbGroupName.Text = m_BusGroup.m_GroupName;
 
@@ -126,12 +126,11 @@ namespace LiveBusTile
                 Database.SaveFavBusGroups();
 
                 lbBusInfos.ItemsSource = m_BusGroup.m_Buses.Select(x => new BusInfoVM(x)).ToList();
-                TileUtil.UpdateTile(m_BusGroup.m_GroupName);
-                TileUtil.UpdateTile("");
 
-                var lastUpdatedTime = DateTime.Now;
-                IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = lastUpdatedTime;
-                tbLastUpdatedTime.Text = lastUpdatedTime.ToString("HH:mm:ss");
+                tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
+
+                TileUtil.UpdateTile2(m_BusGroup.m_GroupName);
+                TileUtil.UpdateTile2("");
             }
 
             this.ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = true);
@@ -164,9 +163,8 @@ namespace LiveBusTile
                 ShellTile.Create(new Uri(uri, UriKind.Relative),
                     new FlipTileData
                     {
-                        Title = DateTime.Now.ToString("HH:mm:ss"),
-                        BackgroundImage = TileUtil.GenerateTileJpg(groupName, false),
-                        WideBackgroundImage = TileUtil.GenerateTileJpg(groupName, true),
+                        BackgroundImage = TileUtil.GenerateTileJpg2(groupName, false),
+                        WideBackgroundImage = TileUtil.GenerateTileJpg2(groupName, true),
                     },
                     true);
             }
@@ -175,9 +173,8 @@ namespace LiveBusTile
                 tile.Update(
                     new FlipTileData
                     {
-                        Title = DateTime.Now.ToString("HH:mm:ss"),
-                        BackgroundImage = TileUtil.GenerateTileJpg(groupName, false),
-                        WideBackgroundImage = TileUtil.GenerateTileJpg(groupName, true),
+                        BackgroundImage = TileUtil.GenerateTileJpg2(groupName, false),
+                        WideBackgroundImage = TileUtil.GenerateTileJpg2(groupName, true),
                     });
             }
         }
@@ -201,9 +198,8 @@ namespace LiveBusTile
                 ShellTile.Create(new Uri(TileUtil.TileUri(newGroupName), UriKind.Relative),
                     new FlipTileData
                     {
-                        Title = DateTime.Now.ToString("HH:mm:ss"),
-                        BackgroundImage = TileUtil.GenerateTileJpg(newGroupName, false),
-                        WideBackgroundImage = TileUtil.GenerateTileJpg(newGroupName, true),
+                        BackgroundImage = TileUtil.GenerateTileJpg2(newGroupName, false),
+                        WideBackgroundImage = TileUtil.GenerateTileJpg2(newGroupName, true),
                     }, true);
             }
             catch (Exception ex)

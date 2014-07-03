@@ -35,7 +35,7 @@ namespace LiveBusTile
             m_GroupName = PhoneApplicationService.Current.State["groupName"] as string;
             tbGroup.Text = m_GroupName;
 
-            tbLastUpdatedTime.Text = IsolatedStorageSettings.ApplicationSettings.GetValue("LastUpdatedTime", DateTime.MinValue).ToString("HH:mm:ss");
+            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
             
             var stpair = Database.AllBuses[tbBusName.Text];
             if (m_busInfo.m_Dir == BusDir.go && stpair.stations_go.Length > 0)
@@ -95,11 +95,9 @@ namespace LiveBusTile
             }
 
             tbTimeToArrive.Text = timeToArrive;
-            var lastUpdatedTime = DateTime.Now;
-            IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = lastUpdatedTime;
-            tbLastUpdatedTime.Text = lastUpdatedTime.ToString("HH:mm:ss");
             Database.FavBuses.FirstOrDefault(x => x == m_busInfo).m_TimeToArrive = timeToArrive; ;
             Database.SaveFavBusGroups();
+            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
         }
 
 

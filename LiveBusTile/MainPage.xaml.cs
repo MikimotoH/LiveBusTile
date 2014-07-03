@@ -39,9 +39,7 @@ namespace LiveBusTile
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            //App.m_AppLog.Debug("Screen Width = " + Application.Current.RootVisual.RenderSize.Width);
-
-            tbLastUpdatedTime.Text = IsolatedStorageSettings.ApplicationSettings.GetValue("LastUpdatedTime", DateTime.MinValue).ToString("HH:mm:ss");
+            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
             lbBus.ItemsSource = GenFavGroupBusVM();
 
             if ((string)PhoneApplicationService.Current.State.GetValue("Op", "") != "")
@@ -134,9 +132,7 @@ namespace LiveBusTile
             {
                 Database.SaveFavBusGroups();
                 lbBus.ItemsSource = GenFavGroupBusVM();
-                var lastUpdatedTime = DateTime.Now;
-                IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = lastUpdatedTime;
-                tbLastUpdatedTime.Text = lastUpdatedTime.ToString("HH:mm:ss");
+                tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
 
                 List<string> groupNames = Database.FavBusGroups.Select(x => x.m_GroupName).ToList();
                 groupNames.Insert(0, "");
@@ -144,7 +140,7 @@ namespace LiveBusTile
                 {
                     try
                     {
-                        TileUtil.UpdateTile(groupName);
+                        TileUtil.UpdateTile2(groupName);
                         App.m_AppLog.Debug("UpdateTile(groupName=\"{0}\") - finished".Fmt(groupName));
                     }
                     catch (Exception ex)

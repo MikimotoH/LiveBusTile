@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,7 +58,16 @@ namespace ScheduledTaskAgent1
         {
             if (!dict.ContainsKey(key))
                 return defValue;
-            return (TValue)dict[key];
+            try
+            {
+                return (TValue)dict[key];
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("dict[key=\"{0}\"].GetType() = {1}", key, dict[key].GetType());
+                Debug.WriteLine(ex.DumpStr());
+                throw;
+            }
         }
 
         public static string GetValue(this IDictionary<string,string> dict, string keyName, string defValue)
@@ -125,5 +135,38 @@ namespace ScheduledTaskAgent1
         {
             return String.Join(separator, values);
         }
+
+        public static IEnumerable<T> SubArray<T>(this IEnumerable<T> src, int begin, int count)
+        {
+            int srcLen = src.Count();
+            if (begin < srcLen && begin >=0)
+            {
+                int dstLen = Math.Min(count, srcLen - begin);
+                Debug.Assert(begin + dstLen <= srcLen);
+                return src.Skip(begin).Take(dstLen);
+            }
+            else
+            {
+                throw new IndexOutOfRangeException(String.Format("src.Count={0} but begin={1}", srcLen, begin));
+            }
+        }
+
+        public static IEnumerable<T> SubArray<T>(this IEnumerable<T> src, int count)
+        {
+            int srcLen = src.Count();
+            int dstLen = Math.Min(count, srcLen);
+            Debug.Assert(dstLen <= srcLen);
+            return src.Take(dstLen);
+        }
+
+        //public static T[] SubArray<T>(this List<T> ls, int begin, int count)
+        //{
+        //    var dstLen = Math.Min(count, ls.Count - begin);
+        //    Debug.Assert(begin + dstLen <= ls.Count);
+        //    var dst = new T[dstLen];
+            
+        //    ls.CopyTo(begin, dst, 0, dstLen);
+        //    return dst;
+        //}
     }
 }
