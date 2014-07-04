@@ -167,6 +167,10 @@ namespace ScheduledTaskAgent1
             return src.Take(dstLen);
         }
 
+        public static bool IsNullOrEmpty<T>(this IEnumerable<T> ls)
+        {
+            return ls == null || ls.Count() == 0;
+        }
 
     }
 }

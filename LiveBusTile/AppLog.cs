@@ -102,10 +102,6 @@ namespace LiveBusTile
             return String.Format("{{ Uri={0}, NavigationMode={1}, IsNavigationInitiator={2}, e.Content={3} }}",
                 e.Uri, e.NavigationMode, e.IsNavigationInitiator, e.Content);
         }
-        public static bool IsNullOrEmpty<T>(this IEnumerable<T> ls)
-        {
-            return ls == null || ls.Count() == 0;
-        }
 
     }
 

@@ -177,7 +177,7 @@ namespace BusStationCrawler
         /// regex test to distinct their area
         /// </summary>
         /// <param name="param"></param>
-        static void Main(string[] param)
+        static void Main_RegexDistinct(string[] param)
         {
             Debug.Assert(Regex.IsMatch("275", @"^\d{1,3}[^\d]*$"));
             Debug.Assert(Regex.IsMatch("275副", @"^\d{1,3}[^\d]*$"));
@@ -430,7 +430,7 @@ namespace BusStationCrawler
         /// <summary>
         /// MainCrawler
         /// </summary>
-        static void MainCrawler()
+        static void Main()
         {
             var client = new WebClient();
             string sHtml = Encoding.UTF8.GetString(client.DownloadData("http://pda.5284.com.tw/MQS/businfo1.jsp"));
@@ -439,13 +439,12 @@ namespace BusStationCrawler
             HtmlNode.ElementsFlags.Remove("option");
             doc.LoadHtml(sHtml);
 
-            List<string> busNames = null;
+            List<string> busNames = new List<string>();
             //List<BusData> buses=null;// = new List<BusData>();
             for (int i = 5; i <= 14; ++i)
             {
                 HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("/html/body/center/table[1]/tr[{0}]/td/select/option".Fmt(i));
-                if(nodes.Count > 1)
-                    busNames.AddRange(nodes.Skip(1).Select(x => x.InnerText));
+                busNames.AddRange(nodes.Skip(1).Select(x => x.InnerText));
 
                 //string regionName = nodes[0].InnerText.Replace("->", "").Replace("選擇", "");
                 //nodes.RemoveAt(0);
@@ -454,6 +453,7 @@ namespace BusStationCrawler
 
             // make unique
             busNames = (new HashSet<string>(busNames)).ToList();
+            Debug.WriteLine("busNames=" + busNames.DumpArray());
 
             Dictionary<string, StationPair> db = new Dictionary<string, StationPair>();
             foreach (string bus in busNames)
@@ -474,6 +474,22 @@ namespace BusStationCrawler
                 }
             }
 
+            using (StreamWriter sw = new StreamWriter(@"all_bus_stations.txt"))
+            {
+                foreach(var kv in db)
+                {
+                    sw.WriteLine(kv.Key);
+                    sw.WriteLine(field_separator + field_separator.Joyn(kv.Value.stations_go));
+                    if (!kv.Value.stations_back.IsNullOrEmpty())
+                        sw.WriteLine(field_separator + field_separator.Joyn(kv.Value.stations_back));
+                    else
+                    {
+                        sw.WriteLine(field_separator);
+                    }
+
+                }
+            }
+
 
             JsonSerializer serializer = new JsonSerializer();
             serializer.NullValueHandling = NullValueHandling.Ignore;
@@ -483,13 +499,17 @@ namespace BusStationCrawler
             {
                 serializer.Serialize(writer, db);
             }
-
         }
     }
 
     public static class ExtensionMethods
     {
-        public static bool IsNone(this String s)
+        public static bool IsNullOrEmpty<T>(this IEnumerable<T> ls)
+        {
+            return ls == null || ls.Count() == 0;
+        }
+
+        public static bool IsNullOrEmpty(this String s)
         {
             return String.IsNullOrEmpty(s);
         }
