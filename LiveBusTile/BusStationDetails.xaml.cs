@@ -47,7 +47,7 @@ namespace LiveBusTile
 
         protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)
         {
-            App.m_AppLog.Debug("e.Cancel=" + e.Cancel);
+            AppLogger.Debug("e.Cancel=" + e.Cancel);
             if(!Database.IsLegalGroupName(tbGroup.Text))
             {
                 MessageBox.Show(AppResources.IllegalGroupName.Fmt(tbGroup.Text));
@@ -59,7 +59,7 @@ namespace LiveBusTile
 
             if (tbGroup.Text != m_GroupName)
             {
-                App.m_AppLog.Debug("m_GroupName={0}, tbGroup.Text={1}".Fmt(m_GroupName, tbGroup.Text));
+                AppLogger.Debug("m_GroupName={0}, tbGroup.Text={1}".Fmt(m_GroupName, tbGroup.Text));
                 BusGroup old_group = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == m_GroupName);
                 BusGroup new_group = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == tbGroup.Text);
                 Debug.Assert(old_group != null);
@@ -69,7 +69,7 @@ namespace LiveBusTile
                     new_group.m_Buses.Add(m_busInfo);
 
                 bool bRemoveSuccess = old_group.m_Buses.Remove(m_busInfo);
-                App.m_AppLog.Debug("bRemoveSuccess=" + bRemoveSuccess);
+                AppLogger.Debug("bRemoveSuccess=" + bRemoveSuccess);
                 if (old_group.m_Buses.Count == 0)
                     Database.FavBusGroups.Remove(old_group);
 
@@ -82,6 +82,18 @@ namespace LiveBusTile
 
         private async void AppBar_RefreshBusTime_Click(object sender, EventArgs e)
         {
+            progbar.Visibility = Visibility.Visible;
+            ApplicationBar.Buttons.Cast<ApplicationBarIconButton>().DoForEach(x =>x.IsEnabled=false);
+            ApplicationBar.IsMenuEnabled = false;
+
+            Action RefreshEpilog = () =>
+            {
+                ApplicationBar.Buttons.Cast<ApplicationBarIconButton>().DoForEach(x => x.IsEnabled = true);
+                ApplicationBar.IsMenuEnabled = true;
+                progbar.Visibility = Visibility.Collapsed;
+            };
+
+
             string timeToArrive="";
             try
             {
@@ -89,8 +101,9 @@ namespace LiveBusTile
             }
             catch(Exception ex)
             {
-                App.m_AppLog.Error("ex="+ex.DumpStr());
+                AppLogger.Error("ex="+ex.DumpStr());
                 MessageBox.Show(AppResources.NetworkFault );
+                RefreshEpilog();
                 return;
             }
 
@@ -98,6 +111,7 @@ namespace LiveBusTile
             Database.FavBuses.FirstOrDefault(x => x == m_busInfo).m_TimeToArrive = timeToArrive; ;
             Database.SaveFavBusGroups();
             tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
+            RefreshEpilog();
         }
 
 
@@ -120,25 +134,25 @@ namespace LiveBusTile
                     if(tile != null)
                         tile.Delete();
                     else
-                        App.m_AppLog.Error("Failed to find Tile.NavigationUri==\"{0}\" ".Fmt(TileUtil.TileUri(m_GroupName)));
+                        AppLogger.Error("Failed to find Tile.NavigationUri==\"{0}\" ".Fmt(TileUtil.TileUri(m_GroupName)));
                     
                     Util.DeleteFileSafely(TileUtil.TileJpgPath(m_GroupName, false));
                     Util.DeleteFileSafely(TileUtil.TileJpgPath(m_GroupName, true));
                     
                     bRemoveSuccess = Database.FavBusGroups.Remove(bg);
                     if (!bRemoveSuccess) 
-                        App.m_AppLog.Error("Database.FavBusGroups.Remove({0}) failed".Fmt(bg.m_GroupName)); 
+                        AppLogger.Error("Database.FavBusGroups.Remove({0}) failed".Fmt(bg.m_GroupName)); 
                 }
-                App.m_AppLog.Debug("bRemoveSuccess=" + bRemoveSuccess);
+                AppLogger.Debug("bRemoveSuccess=" + bRemoveSuccess);
                 Database.SaveFavBusGroups();
                 PhoneApplicationService.Current.State["Op"] = "Deleted";
                 NavigationService.GoBack();
             }
             catch (Exception ex)
             {
-                App.m_AppLog.Error("m_busInfo={0}, m_GroupName={1} cannot be found!".Fmt(m_busInfo, m_GroupName));
-                App.m_AppLog.Error("Database.FavBusGroups=" + Database.FavBusGroups.DumpArray());
-                App.m_AppLog.Error("ex="+ex.DumpStr());
+                AppLogger.Error("m_busInfo={0}, m_GroupName={1} cannot be found!".Fmt(m_busInfo, m_GroupName));
+                AppLogger.Error("Database.FavBusGroups=" + Database.FavBusGroups.DumpArray());
+                AppLogger.Error("ex="+ex.DumpStr());
             }
         }
 

@@ -23,6 +23,7 @@
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" >
@@ -38,7 +39,8 @@
                        TextAlignment="Right" Grid.Column="2"/>
             <TextBlock Text="23:59:59" TextAlignment="Right" x:Name="tbLastUpdatedTime" Grid.Column="3"/>
         </Grid>
-        <StackPanel Grid.Row="1" Margin="0,10,0,0">
+        <ProgressBar x:Name="progbar" Grid.Row="1" Height="10" IsIndeterminate="True" Visibility="Collapsed"/>
+        <StackPanel Grid.Row="2" Margin="0,10,0,0">
             <TextBlock Text="公車名稱"  Style="{StaticResource PhoneTextTitle2Style}"/>
             <TextBlock x:Name="tbBusName" Text="橘2"  FontSize="36" Margin="10,10" Foreground="Orange" FontWeight="Bold"/>
             <TextBlock Text="站牌名稱" Style="{StaticResource PhoneTextTitle2Style}"/>

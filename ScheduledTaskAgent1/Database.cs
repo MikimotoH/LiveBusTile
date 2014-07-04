@@ -23,6 +23,19 @@ namespace ScheduledTaskAgent1
             }
         }
 
+        static Database()
+        {
+            if (!IsolatedStorageSettings.ApplicationSettings.Contains("LastUpdatedTime"))
+                IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = DateTime.MinValue;
+
+            if (!IsolatedStorageSettings.ApplicationSettings.Contains("UseAsyncAwait"))
+                IsolatedStorageSettings.ApplicationSettings["UseAsyncAwait"] = false;
+            
+            if (!IsolatedStorageSettings.ApplicationSettings.Contains("WiFiOnly"))
+                IsolatedStorageSettings.ApplicationSettings["WiFiOnly"] = Convert.ToBoolean(ScheduledTaskAgent1.Resource1.IsWiFiOnly_Default);
+
+        }
+
 
         public static void SaveFavBusGroups()
         {

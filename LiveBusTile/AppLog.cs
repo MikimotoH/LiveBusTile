@@ -12,96 +12,50 @@ namespace LiveBusTile
 {
     public enum LogLevel
     {
-        Trace = 0,
         Debug = 1,
         Warn = 2,
         Error = 3,
         Msg = 4,
     };
 
-    public class AppLog : IDisposable
+    public static class AppLogger
     {
-        StreamWriter m_stm;
-        const string timeFmt = "yyMMdd_HH:mm:ss.fff";
+        static Object m_lock = new Object();
 
-        public AppLog()
-        {
-            System.Diagnostics.Debug.WriteLine("Logger.Logger() ctor");
-        }
+        const string logFileName = "Log.txt";
+        public const string timeFmt = "yyMMdd_HH:mm:ss.fff";
         const string logdir = @"Shared\ShellContent";
-        string logFileName;
 
-        public void Create(FileMode fileMode, string logFileName,
-            [CallerFilePath] string path = "",
-            [CallerMemberName] string func = "",
-            [CallerLineNumber] int line = 0            
-            )
+        static void Log(LogLevel logLevel, string func, string path, int line, string msg)
         {
-            this.logFileName = logFileName;
-            System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Create(overwrite={5}) enter m_stm={6}",
-                DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-                , fileMode, m_stm);
-
-            try
-            {
-                Directory.CreateDirectory(logdir);
-            }
-            catch (Exception e)
-            {
-                System.Diagnostics.Debug.WriteLine("CreateDirectory(\"{0}\") failed, e={1}", logdir, e.Message);
-                return;
-            }
-            m_stm = new StreamWriter(
-                IsolatedStorageFile.GetUserStoreForApplication().OpenFile(logdir+"\\"+logFileName,
-                fileMode,
-                FileAccess.Write, FileShare.Read));
-            //Console.SetOut(m_stm);
-
-            System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Create(overwrite={5}) exit m_stm={6}",
-                DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-                , fileMode, m_stm);
-        }
-
-        public void Flush
-            (
-            [CallerFilePath] string path = "",
-            [CallerMemberName] string func = "",
-            [CallerLineNumber] int line = 0
-            )
-        {
-            if (m_stm != null)
-            {
-                System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Flush() enter m_stm={5}",
-                    DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId
-                    , m_stm);
-                m_stm.Close();
-                m_stm = new StreamWriter(IsolatedStorageFile.GetUserStoreForApplication().OpenFile(
-                    logdir+"\\"+logFileName,
-                    FileMode.Append, FileAccess.Write, FileShare.Read));
-            }
-        }
-
-
-        void Log(LogLevel logLevel, string func, string path, int line, string msg)
-        {
-            string msg1 = String.Format("{0}<{1}>{2}:{3}:{4} [{5}] {6}", DateTime.Now.ToString("yyMMdd_HH:mm:ss.fff"),
-                logLevel.ToString(), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId, 
+            string time = DateTime.Now.ToString("yyMMdd_HH:mm:ss.fff");
+            string msg1 = "{0}<{1}>{2}:{3}:{4} [{5}] {6}".Fmt(time,
+                logLevel.ToString(), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId,
                 msg);
             System.Diagnostics.Debug.WriteLine(msg1);
-            Console.Out.WriteLine(msg1);
-            if (m_stm != null)
-                m_stm.WriteLine(msg1);
-            else
+
+            lock (m_lock)
             {
-                //System.Diagnostics.Debug.WriteLine("{0}<Error>{1}:{2}:{3} [{4}] m_stm == NULL!",
-                //    DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
-                //Debugger.Break();
+                try
+                {
+                    using (IsolatedStorageFileStream stm = IsolatedStorageFile.GetUserStoreForApplication().OpenFile(logdir + "\\" + logFileName,
+                            FileMode.Append, FileAccess.Write, FileShare.Read))
+                    using (StreamWriter sw = new StreamWriter(stm))
+                    {
+
+                        sw.WriteLine(msg1);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Logger.Log(): OpenFile() failed,  {0}<{1}>{2}:{3}:{4} [{5}] msg=\"{6}\" ex={7}",
+                        time, logLevel, Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId,
+                        msg, ex.DumpStr());
+                }
             }
         }
 
-        //public delegate void LogFunc(string msg, string func, string path, int line);
-
-        public void Error(string msg, 
+        public static void Error(string msg, 
             [CallerMemberName] string func="",
             [CallerFilePath] string path="",
             [CallerLineNumber] int line=0)
@@ -109,8 +63,7 @@ namespace LiveBusTile
             Log(LogLevel.Error, func, path, line, msg);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
-        public void Msg(string msg,
+        public static void Msg(string msg,
             [CallerMemberName] string func = "",
             [CallerFilePath] string path = "",
             [CallerLineNumber] int line = 0)
@@ -120,44 +73,12 @@ namespace LiveBusTile
 
         [Conditional("DEBUG")]
         [DebuggerStepThrough]
-        public void Debug(string msg,
+        public static void Debug(string msg,
             [CallerMemberName] string func = "",
             [CallerFilePath] string path = "",
             [CallerLineNumber] int line = 0)
         {
             Log(LogLevel.Debug, func, path, line, msg);
-        }
-
-        public void LogRawMsg(string msg)
-        {
-            System.Diagnostics.Debug.WriteLine(msg);
-            if (m_stm != null)
-                m_stm.WriteLine(msg);
-        }
-
-
-        public void Close(
-            [CallerFilePath] string path = "",
-            [CallerMemberName] string func = "",
-            [CallerLineNumber] int line = 0
-            )
-        {
-            if(m_stm !=null)
-            {
-                System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Close() enter",
-                    DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
-                m_stm.Close();
-                m_stm.Dispose();
-                m_stm = null;
-                logFileName = null;
-                System.Diagnostics.Debug.WriteLine("{0}<Debug>{1}:{2}:{3} [{4}] Logger.Close() exit",
-                    DateTime.Now.ToString(timeFmt), Path.GetFileName(path), func, line, System.Threading.Thread.CurrentThread.ManagedThreadId);
-            }
-        }
-
-        public void Dispose()
-        {
-            Close();
         }
     }
 
@@ -167,12 +88,12 @@ namespace LiveBusTile
         {
             try
             {
-                App.m_AppLog.Debug("DeleteFile(\"{0}\")".Fmt(filePath));
+                AppLogger.Debug("DeleteFile(\"{0}\")".Fmt(filePath));
                 IsolatedStorageFile.GetUserStoreForApplication().DeleteFile(filePath);
             }
             catch (Exception ex)
             {
-                App.m_AppLog.Error("Failed to DeleteFile(\"{0}\")\n ex={1}".Fmt(filePath, ex.DumpStr()));
+                AppLogger.Error("Failed to DeleteFile(\"{0}\")\n ex={1}".Fmt(filePath, ex.DumpStr()));
             }
         }
 

@@ -40,6 +40,17 @@
                     </toolkit:ToggleSwitch.HeaderTemplate>                    
                 </toolkit:ToggleSwitch>
                 <TextBlock Margin="10,0" TextWrapping="Wrap">打開此選項，可以節省電信資費，但動態磚只會在有Wi-Fi連線時才會更新</TextBlock>
+
+                <toolkit:ToggleSwitch Header="UseAsyncAwait" x:Name="tgUseAsyncAwait">
+                    <toolkit:ToggleSwitch.HeaderTemplate>
+                        <DataTemplate>
+                            <ContentControl>
+                                <TextBlock FontSize="42" Foreground="White" TextWrapping="Wrap" Text="{Binding}"/>
+                            </ContentControl>
+                        </DataTemplate>
+                    </toolkit:ToggleSwitch.HeaderTemplate>
+                </toolkit:ToggleSwitch>
+
             </StackPanel>
 
         </Grid>

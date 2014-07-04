@@ -27,18 +27,13 @@ namespace LiveBusTile
         /// </summary>
         /// <returns>The root frame of the Phone Application.</returns>
         public static PhoneApplicationFrame RootFrame { get; private set; }
-        internal static AppLog m_AppLog;
-
 
         /// <summary>
         /// Constructor for the Application object.
         /// </summary>
         public App()
         {
-            m_AppLog = new AppLog();
-            m_AppLog.Create(FileMode.OpenOrCreate, "AppLog.txt");
-
-            m_AppLog.Debug("App ctor()");
+            AppLogger.Debug("App ctor()");
             //Log.Debug("App ctor() m_RecusiveBack=" + m_RecusiveBack);
             //Log.Debug("App ctor() {0} {1}".Fmt(Debugger.IsAttached, Application.Current.ApplicationLifetimeObjects.Count));
             IsolatedStorageFile.GetUserStoreForApplication().CreateDirectory(@"Shared\ShellContent");
@@ -77,21 +72,18 @@ namespace LiveBusTile
             RemovePeriodicAgent();
         }
 
-        //static bool m_RecusiveBack = false;
-        //public static bool RecusiveBack { get { return m_RecusiveBack; } set { m_RecusiveBack = value; } }
-
         // Code to execute when the application is launching (eg, from Start)
         // This code will not execute when the application is reactivated
         private void Application_Launching(object sender, LaunchingEventArgs e)
         {
-            m_AppLog.Msg("e=" + e.ToString());
+            AppLogger.Msg("e=" + e.ToString());
         }
 
         // Code to execute when the application is activated (brought to foreground)
         // This code will not execute when the application is first launched
         private void Application_Activated(object sender, ActivatedEventArgs e)
         {
-            m_AppLog.Msg("e.IsApplicationInstancePreserved=" + e.IsApplicationInstancePreserved);
+            AppLogger.Msg("e.IsApplicationInstancePreserved=" + e.IsApplicationInstancePreserved);
             RunningInBackground = false;
             Database.LoadFavBusGroups();
 
@@ -107,7 +99,7 @@ namespace LiveBusTile
         // This code will not execute when the application is closing
         private void Application_Deactivated(object sender, DeactivatedEventArgs e)
         {
-            m_AppLog.Msg("e.Reason=" + e.Reason);
+            AppLogger.Msg("e.Reason=" + e.Reason);
             Database.SaveFavBusGroups();
             StartPeriodicAgent();
             //StartTimer();
@@ -128,13 +120,13 @@ namespace LiveBusTile
 
         //void timer_Tick(object sender)
         //{
-        //    App.m_AppLog.Debug("Database.FavBuses.Count()=" + Database.FavBuses.Count());
+        //    AppLogger.Debug("Database.FavBuses.Count()=" + Database.FavBuses.Count());
         //    if (Database.FavBuses.Count() == 0)
         //        return;
         //    try
         //    {
         //        Task<string>[] tasks = Database.FavBuses.Select(b => BusTicker.GetBusDueTime(b)).ToArray();
-        //        App.m_AppLog.Debug("tasks.Length=" + tasks.Length);
+        //        AppLogger.Debug("tasks.Length=" + tasks.Length);
         //        Task.WaitAll(tasks);
         //        for(int i=0; i<Database.FavBuses.Length; ++i)
         //        {
@@ -154,16 +146,16 @@ namespace LiveBusTile
         //                }
         //                catch (Exception ex)
         //                {
-        //                    App.m_AppLog.Error(ex.DumpStr());
+        //                    AppLogger.Error(ex.DumpStr());
         //                }
         //            });
         //        }
         //    }
         //    catch (Exception ex)
         //    {
-        //        App.m_AppLog.Error(ex.DumpStr());
+        //        AppLogger.Error(ex.DumpStr());
         //    }
-        //    App.m_AppLog.Debug("exit");
+        //    AppLogger.Debug("exit");
         //}
         
 
@@ -171,17 +163,16 @@ namespace LiveBusTile
         // This code will not execute when the application is deactivated
         private void Application_Closing(object sender, ClosingEventArgs e)
         {
-            m_AppLog.Msg("Application_Closing, e=" + e);
+            AppLogger.Msg("Application_Closing, e=" + e);
             Database.SaveFavBusGroups();
             StartPeriodicAgent();
             // Ensure that required application state is persisted here.
-            m_AppLog.Close();
         }
 
         // Code to execute if a navigation fails
         private void RootFrame_NavigationFailed(object sender, NavigationFailedEventArgs e)
         {
-            m_AppLog.Error("e={{ Exception={0}, e.Handled={1}, e.Uri={2} }}".Fmt(e.Exception, e.Handled, e.Uri));
+            AppLogger.Error("e={{ Exception={0}, e.Handled={1}, e.Uri={2} }}".Fmt(e.Exception, e.Handled, e.Uri));
             if (Debugger.IsAttached)
             {
                 // A navigation has failed; break into the debugger
@@ -192,7 +183,7 @@ namespace LiveBusTile
         // Code to execute on Unhandled Exceptions
         private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
-            m_AppLog.Error("e.ExceptionObject={0}\n Handled={1}".Fmt(
+            AppLogger.Error("e.ExceptionObject={0}\n Handled={1}".Fmt(
                 e.ExceptionObject.DumpStr(), e.Handled));
             if (Debugger.IsAttached)
             {
@@ -209,7 +200,7 @@ namespace LiveBusTile
         // Do not add any additional code to this method
         private void InitializePhoneApplication()
         {
-            //m_AppLog.Debug("phoneApplicationInitialized=" + phoneApplicationInitialized);
+            //AppLogger.Debug("phoneApplicationInitialized=" + phoneApplicationInitialized);
             if (phoneApplicationInitialized)
                 return;
 
@@ -231,7 +222,7 @@ namespace LiveBusTile
         // Do not add any additional code to this method
         private void CompleteInitializePhoneApplication(object sender, NavigationEventArgs e)
         {
-            //m_AppLog.Debug("e=" + e.DumpStr());
+            //AppLogger.Debug("e=" + e.DumpStr());
             // Set the root visual to allow the application to render
             if (RootVisual != RootFrame)
                 RootVisual = RootFrame;
@@ -329,7 +320,7 @@ namespace LiveBusTile
 
         private void Application_RunningInBackground(object sender, RunningInBackgroundEventArgs e)
         {
-            m_AppLog.Msg("e=" + e.ToString());
+            AppLogger.Msg("e=" + e.ToString());
             RunningInBackground = true;
             StartPeriodicAgent();
             //StartTimer();
@@ -339,18 +330,18 @@ namespace LiveBusTile
         //public const string m_taskName = "refreshBusTileTask";
         public void RemovePeriodicAgent()
         {
-            m_AppLog.Debug("m_taskName=" + ScheduledAgent.m_taskName);
+            AppLogger.Debug("m_taskName=" + ScheduledAgent.m_taskName);
             PeriodicTask refreshBusTileTask = ScheduledActionService.Find(ScheduledAgent.m_taskName) as PeriodicTask;
             if (refreshBusTileTask == null)
                 return;
             try
             {
-                m_AppLog.Debug("ScheduledActionService.Remove(\"{0}\")".Fmt(ScheduledAgent.m_taskName));
+                AppLogger.Debug("ScheduledActionService.Remove(\"{0}\")".Fmt(ScheduledAgent.m_taskName));
                 ScheduledActionService.Remove(ScheduledAgent.m_taskName);
             }
             catch (Exception e)
             {
-                m_AppLog.Error(e.ToString());
+                AppLogger.Error(e.ToString());
             }
         }
 
@@ -370,28 +361,28 @@ namespace LiveBusTile
             }
             catch (InvalidOperationException exception)
             {
-                App.m_AppLog.Error(exception.DumpStr());
+                AppLogger.Error(exception.DumpStr());
                 if (exception.Message.Contains("BNS Error: The action is disabled"))
                 {
-                    m_AppLog.Error("Background agents for this application have been disabled by the user.");
+                    AppLogger.Error("Background agents for this application have been disabled by the user.");
                 }
                 else if (exception.Message.Contains("BNS Error: The maximum number of ScheduledActions of this type have already been added."))
                 {
                     // No user action required. The system prompts the user when the hard limit of periodic tasks has been reached.
-                    m_AppLog.Error("BNS Error: The maximum number of ScheduledActions of this type have already been added.");
+                    AppLogger.Error("BNS Error: The maximum number of ScheduledActions of this type have already been added.");
                 }
                 else
                 {
-                    m_AppLog.Error("An InvalidOperationException occurred.\n" + exception.ToString());
+                    AppLogger.Error("An InvalidOperationException occurred.\n" + exception.ToString());
                 }
             }
             catch (SchedulerServiceException e)
             {
-                m_AppLog.Error(e.DumpStr());
+                AppLogger.Error(e.DumpStr());
             }
             catch(Exception e2)
             {
-                m_AppLog.Error(e2.DumpStr());
+                AppLogger.Error(e2.DumpStr());
             }
         }
 

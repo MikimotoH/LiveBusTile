@@ -44,7 +44,7 @@ namespace LiveBusTile
                 else
                 {
                     MessageBox.Show("不存在的群組「{0}」".Fmt(groupName));
-                    App.m_AppLog.Error("Uri=\"{0}\" doesn't contain \"GroupName\".".Fmt(NavigationContext.ToString()));
+                    AppLogger.Error("Uri=\"{0}\" doesn't contain \"GroupName\".".Fmt(NavigationContext.ToString()));
                     App.Current.Terminate();
                 }
             }
@@ -58,7 +58,7 @@ namespace LiveBusTile
             if ((string)PhoneApplicationService.Current.State.GetValue("Op", "") == "Add")
             {
                 int backStackCount = (int)PhoneApplicationService.Current.State["HomeUri.BackStack.Count"];
-                App.m_AppLog.Debug("NavigationService.BackStack=" + 
+                AppLogger.Debug("NavigationService.BackStack=" + 
                     NavigationService.BackStack.DumpArray(x=>x.Source.ToString()));
                 while (true){
                     var jo = NavigationService.RemoveBackEntry();
@@ -72,14 +72,14 @@ namespace LiveBusTile
 
         private void AppBar_Pin_Click(object sender, EventArgs e)
         {
-            App.m_AppLog.Debug("");
+            AppLogger.Debug("");
             Database.SaveFavBusGroups();
             CreateTile(m_BusGroup.m_GroupName);
         }
 
         private void AppBar_AddBus_Click(object sender, EventArgs e)
         {
-            App.m_AppLog.Debug("");
+            AppLogger.Debug("");
             PhoneApplicationService.Current.State["HomeUri.BackStack.Count"] = NavigationService.BackStack.Count();
 
             NavigationService.Navigate(new Uri("/AddBus.xaml?GroupName="+m_BusGroup.m_GroupName, UriKind.Relative));
@@ -87,7 +87,7 @@ namespace LiveBusTile
 
         private async void AppBar_Refresh_Click(object sender, EventArgs e)
         {
-            App.m_AppLog.Debug("enter sender=" + sender.GetType());
+            AppLogger.Debug("enter sender=" + sender.GetType());
             if (Database.FavBuses.Count() == 0)
                 return;
 
@@ -106,8 +106,8 @@ namespace LiveBusTile
             }
             catch (Exception ex)
             {
-                App.m_AppLog.Error("Task.WaitAll(tasks) failed");
-                App.m_AppLog.Error(ex.DumpStr());
+                AppLogger.Error("Task.WaitAll(tasks) failed");
+                AppLogger.Error(ex.DumpStr());
             }
 
             int numSucceededTasks = 0;
@@ -119,7 +119,7 @@ namespace LiveBusTile
                     ++numSucceededTasks;
                 }
             }
-            App.m_AppLog.Debug("numSucceededTasks=" + numSucceededTasks);
+            AppLogger.Debug("m_finHttpReqs=" + numSucceededTasks);
 
             if (numSucceededTasks > 0)
             {
@@ -140,7 +140,7 @@ namespace LiveBusTile
             if (numSucceededTasks == 0)
                 MessageBox.Show(AppResources.NetworkFault);
 
-            App.m_AppLog.Debug("exit");
+            AppLogger.Debug("exit");
         }
 
         private void tbGroupName_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
@@ -181,12 +181,12 @@ namespace LiveBusTile
 
         static void RenameTile(string oldGroupName, string newGroupName)
         {
-            App.m_AppLog.Debug("oldGroupName=\"{0}\", newGroupName=\"{1}\"".Fmt(oldGroupName, newGroupName));
+            AppLogger.Debug("oldGroupName=\"{0}\", newGroupName=\"{1}\"".Fmt(oldGroupName, newGroupName));
 
             ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUtil.TileUri(oldGroupName));
             if (tile != null)
             {
-                //App.m_AppLog.Error("Can't find TileUri=\"{0}\", ShellTile.ActiveTiles={1}".Fmt(TileUtil.TileUri(oldGroupName), 
+                //AppLogger.Error("Can't find TileUri=\"{0}\", ShellTile.ActiveTiles={1}".Fmt(TileUtil.TileUri(oldGroupName), 
                 //    ShellTile.ActiveTiles.DumpArray(x => x.NavigationUri.ToString() )));
                 Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, false));
                 Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, true));
@@ -204,7 +204,7 @@ namespace LiveBusTile
             }
             catch (Exception ex)
             {
-                App.m_AppLog.Error("ShellTile.Create(new FlipTileData{}) failed, ex=" + ex.DumpStr());
+                AppLogger.Error("ShellTile.Create(new FlipTileData{}) failed, ex=" + ex.DumpStr());
             }
         }
 
@@ -267,7 +267,7 @@ namespace LiveBusTile
 
         private void lbBusInfos_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-            App.m_AppLog.Debug("");
+            AppLogger.Debug("");
             BusInfoVM busInfo = (e.OriginalSource as FrameworkElement).DataContext as BusInfoVM;
             GotoDetailsPage(busInfo.Base, m_BusGroup.m_GroupName);
         }

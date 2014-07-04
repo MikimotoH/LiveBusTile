@@ -68,7 +68,7 @@ namespace LiveBusTile
 
         private void llsAllBuses_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-            App.m_AppLog.Debug("");
+            AppLogger.Debug("");
             string s = null;
             try
             {
@@ -76,7 +76,7 @@ namespace LiveBusTile
             }
             catch (Exception ex)
             {
-                App.m_AppLog.Error(ex.DumpStr());
+                AppLogger.Error(ex.DumpStr());
                 return;
             }
             if (s == null)
@@ -92,18 +92,18 @@ namespace LiveBusTile
         private void llsAllBuses_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
             llsAllBuses_DoubleTap(sender, e);
-            //App.m_AppLog.Debug("e.OriginalSource=" + e.OriginalSource);
+            //AppLogger.Debug("e.OriginalSource=" + e.OriginalSource);
             //if (e.OriginalSource == null)
             //    return;
-            //App.m_AppLog.Debug("e.OriginalSource.GetType()=" + e.OriginalSource.GetType());
+            //AppLogger.Debug("e.OriginalSource.GetType()=" + e.OriginalSource.GetType());
             //var fe = e.OriginalSource as FrameworkElement;
             //if (fe == null)
             //    return;
-            //App.m_AppLog.Debug("fe.DataContext=" + fe.DataContext);
+            //AppLogger.Debug("fe.DataContext=" + fe.DataContext);
             //if (fe.DataContext == null)
             //    return;
-            //App.m_AppLog.Debug("fe.DataContext.GetType()=" + fe.DataContext.GetType());
-            //App.m_AppLog.Debug("(e.OriginalSource as FrameworkElement).DataContext.GetType()=" + fe.DataContext.GetType());
+            //AppLogger.Debug("fe.DataContext.GetType()=" + fe.DataContext.GetType());
+            //AppLogger.Debug("(e.OriginalSource as FrameworkElement).DataContext.GetType()=" + fe.DataContext.GetType());
             /*
             string s = null;
             try
@@ -112,12 +112,12 @@ namespace LiveBusTile
             }
             catch (Exception ex)
             {
-                App.m_AppLog.Error(ex.DumpStr());
+                AppLogger.Error(ex.DumpStr());
                 return;
             }
             if (s == null)
                 return;
-            App.m_AppLog.Debug("s=" + s);
+            AppLogger.Debug("s=" + s);
 
             m_prevent_TextChangeEvent = true;
             tbBusName.Text = s;

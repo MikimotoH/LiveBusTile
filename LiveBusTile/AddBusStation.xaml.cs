@@ -77,20 +77,20 @@ namespace LiveBusTile
 
         private void lbStationsGo_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-            App.m_AppLog.Debug("");
+            AppLogger.Debug("");
             if (lbStationsGo.SelectedItem == null)
                 return;
-            App.m_AppLog.Debug("lbStationsGo.SelectedItem=" + (lbStationsGo.SelectedItem as string));
+            AppLogger.Debug("lbStationsGo.SelectedItem=" + (lbStationsGo.SelectedItem as string));
             tbStation.Text = (lbStationsGo.SelectedItem as string);
             m_dir = BusDir.go;
         }
 
         private void lbStationsBack_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-            App.m_AppLog.Debug("");
+            AppLogger.Debug("");
             if (lbStationsBack.SelectedItem == null)
                 return;
-            App.m_AppLog.Debug("lbStationsBack.SelectedItem=" + (lbStationsBack.SelectedItem as string));
+            AppLogger.Debug("lbStationsBack.SelectedItem=" + (lbStationsBack.SelectedItem as string));
             tbStation.Text = (lbStationsBack.SelectedItem as string);
             m_dir = BusDir.back;
         }

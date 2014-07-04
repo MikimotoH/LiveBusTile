@@ -4,8 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScheduledTaskAgent1
@@ -75,6 +77,12 @@ namespace ScheduledTaskAgent1
             if (!dict.ContainsKey(keyName))
                 return defValue;
             return dict[keyName];
+        }
+        public static T GetValue<T>(this IsolatedStorageSettings iss, string keyName, T defValue)
+        {
+            if (!iss.Contains(keyName))
+                return defValue;
+            return (T)iss[keyName];
         }
 
         public static string DumpStr(this ScheduledTask task)
@@ -159,14 +167,6 @@ namespace ScheduledTaskAgent1
             return src.Take(dstLen);
         }
 
-        //public static T[] SubArray<T>(this List<T> ls, int begin, int count)
-        //{
-        //    var dstLen = Math.Min(count, ls.Count - begin);
-        //    Debug.Assert(begin + dstLen <= ls.Count);
-        //    var dst = new T[dstLen];
-            
-        //    ls.CopyTo(begin, dst, 0, dstLen);
-        //    return dst;
-        //}
+
     }
 }

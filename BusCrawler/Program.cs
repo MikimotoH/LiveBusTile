@@ -318,7 +318,7 @@ namespace BusStationCrawler
         /// 
         /// </summary>
         /// <param name="param"></param>
-        static void MainFindDuplicateBus(string[] param)
+        /*static void MainFindDuplicateBus(string[] param)
         {
             JsonSerializer serializer = new JsonSerializer();
             serializer.NullValueHandling = NullValueHandling.Ignore;
@@ -339,6 +339,8 @@ namespace BusStationCrawler
                 if (dict.ContainsKey(bus.busName))
                 {
                     dict[bus.busName].Add(bus.region);
+
+
                     //entry.Item2.Add(bus.region);
                     //var regions = String.Join(",", dict[bus.busName].Item1);
                     //Debug.WriteLine("{0} contains {1}", bus.busName, regions );
@@ -367,7 +369,7 @@ namespace BusStationCrawler
             {
                 serializer.Serialize(writer, dict);
             }
-        }
+        }*/
 
 
         /// <summary>
@@ -479,7 +481,7 @@ namespace BusStationCrawler
             using (StreamWriter sw = new StreamWriter(@"buses.json"))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
-                serializer.Serialize(writer, buses);
+                serializer.Serialize(writer, db);
             }
 
         }

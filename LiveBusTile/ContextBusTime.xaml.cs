@@ -67,7 +67,7 @@ namespace LiveBusTile
             catch (Exception ex)
             {
                 ProgBarEpilog();
-                App.m_AppLog.Error(ex.DumpStr());
+                AppLogger.Error(ex.DumpStr());
                 MessageBox.Show(AppResources.NetworkFault);
                 return;
             }
@@ -127,6 +127,7 @@ namespace LiveBusTile
                 pivotItemGo.Header = "往：" + (lbStationsGo.Items.LastElement() as StationTimeVM).Station;
 
             UpdateDatabase();
+            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
             ProgBarEpilog();
         }
 
@@ -163,7 +164,7 @@ namespace LiveBusTile
             catch (Exception ex)
             {
                 ProgBarEpilog();
-                App.m_AppLog.Error(ex.DumpStr());
+                AppLogger.Error(ex.DumpStr());
                 MessageBox.Show(AppResources.NetworkFault);
                 return;
             }
@@ -190,6 +191,7 @@ namespace LiveBusTile
                 }
             }
             UpdateDatabase();
+            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
             ProgBarEpilog();
         }
 
