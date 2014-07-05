@@ -29,9 +29,9 @@ namespace ScheduledTaskAgent1
         public HttpClient()
             : base()
         {
-
-            Headers[HttpRequestHeader.IfModifiedSince] = DateTime.UtcNow.ToString();
-            Headers["Cache-Control"] = "no-cache";
+            if (Headers == null)
+                Headers = new WebHeaderCollection();
+            Headers["Cache-Control"] = "max-age=0"; 
             Headers["Pragma"] = "no-cache";
         }
 

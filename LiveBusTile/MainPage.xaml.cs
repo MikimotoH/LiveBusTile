@@ -206,8 +206,10 @@ namespace LiveBusTile
             HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(new
                 Uri(@"http://pda.5284.com.tw/MQS/businfo3.jsp?Mode=1&Dir={1}&Route={0}&Stop={2}"
                 .Fmt(Uri.EscapeUriString(bus.m_Name), bus.m_Dir == BusDir.go ? 1 : 0, Uri.EscapeUriString(bus.m_Station))));
-            req.Headers[HttpRequestHeader.IfModifiedSince] = DateTime.UtcNow.ToString();
-            req.Headers["Cache-Control"] = "no-cache";
+            if (req.Headers == null)
+                req.Headers = new WebHeaderCollection();
+
+            req.Headers["Cache-Control"] = "max-age=0";
             req.Headers["Pragma"] = "no-cache";
             req.BeginGetResponse(new AsyncCallback(ReadWebRequestCallback), new HttpData { req = req, finHttpReqs= finHttpReqs, sucHttpResps = sucHttpResps});
         }
