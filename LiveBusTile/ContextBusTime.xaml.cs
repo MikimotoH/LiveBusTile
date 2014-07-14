@@ -127,7 +127,7 @@ namespace LiveBusTile
                 pivotItemGo.Header = "往：" + (lbStationsGo.Items.LastElement() as StationTimeVM).Station;
 
             UpdateDatabase();
-            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
+            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
             ProgBarEpilog();
         }
 
@@ -191,7 +191,7 @@ namespace LiveBusTile
                 }
             }
             UpdateDatabase();
-            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
+            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
             ProgBarEpilog();
         }
 

@@ -49,7 +49,7 @@ namespace LiveBusTile
                 }
             }
 
-            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
+            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
 
             tbGroupName.Text = m_BusGroup.m_GroupName;
 
@@ -83,6 +83,13 @@ namespace LiveBusTile
             PhoneApplicationService.Current.State["HomeUri.BackStack.Count"] = NavigationService.BackStack.Count();
 
             NavigationService.Navigate(new Uri("/AddBus.xaml?GroupName="+m_BusGroup.m_GroupName, UriKind.Relative));
+        }
+        private void AppBar_AddStation_Click(object sender, EventArgs e)
+        {
+            AppLogger.Debug("");
+            PhoneApplicationService.Current.State["HomeUri.BackStack.Count"] = NavigationService.BackStack.Count();
+
+            NavigationService.Navigate(new Uri("/AddStation.xaml?GroupName=" + m_BusGroup.m_GroupName, UriKind.Relative));
         }
 
         private async void AppBar_Refresh_Click(object sender, EventArgs e)
@@ -127,7 +134,7 @@ namespace LiveBusTile
 
                 lbBusInfos.ItemsSource = m_BusGroup.m_Buses.Select(x => new BusInfoVM(x)).ToList();
 
-                tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
+                tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
 
                 TileUtil.UpdateTile2(m_BusGroup.m_GroupName);
                 TileUtil.UpdateTile2("");
@@ -218,6 +225,8 @@ namespace LiveBusTile
         void tbGroupNameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             string newGroupName = tbGroupNameTextBox.Text.Trim();
+            if (newGroupName == this.m_BusGroup.m_GroupName)
+                return;
             BusGroup existingGroup;
             if (!Database.IsLegalGroupName(newGroupName))
             {
@@ -278,6 +287,24 @@ namespace LiveBusTile
             PhoneApplicationService.Current.State["groupName"] = groupName;
             NavigationService.Navigate(new Uri(
                 "/BusStationDetails.xaml", UriKind.Relative));
+        }
+        private void AppBar_DeleteGroup_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("確定要刪除整個群組？", "", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
+                return;
+
+            bool bRemoveOK = Database.FavBusGroups.Remove(m_BusGroup);
+            if (!bRemoveOK)
+                AppLogger.Error("Database.FavBusGroups.Remove(m_BusGroup) failed");
+            
+            Database.SaveFavBusGroups();
+            ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUtil.TileUri(m_BusGroup.m_GroupName));
+            if (tile != null)
+                tile.Delete();
+            TileUtil.UpdateTile2("");
+
+            PhoneApplicationService.Current.State["Op"] = "Deleted";
+            NavigationService.GoBack();
         }
 
     }

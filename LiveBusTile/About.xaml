@@ -29,13 +29,29 @@
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" >
-            <RichTextBox FontSize="30">
+            <RichTextBox FontSize="30" VerticalAlignment="Stretch" VerticalContentAlignment="Top" >
+                <Paragraph>
+                    <Run>版本資訊</Run>
+                    <LineBreak/>
+                    <Run Foreground="Orange" FontSize="28" Text="{Binding Path=LocalizedResources.AppVersion, Source={StaticResource LocalizedStrings}}"/>
+                    <LineBreak/>
+                </Paragraph>
                 <Paragraph>
                     <Run>開發網址</Run>
                     <LineBreak/>
                     <Hyperlink Click="github_Click">
-                        <Run FontSize="24" Foreground="#FF6375E6" x:Name="http_github">
+                        <Run FontSize="20" Foreground="#FF6375E6" x:Name="http_github">
                             https://github.com/MikimotoH/LiveBusTile/tree/ListOfBusList
+                        </Run>
+                    </Hyperlink>
+                </Paragraph>
+                <Paragraph>
+                    <LineBreak/>
+                    <Run>公車動態資料來源</Run>
+                    <LineBreak/>
+                    <Hyperlink Click="pda5284_Click">
+                        <Run FontSize="20" Foreground="#FF6375E6" x:Name="http_pda5284" >
+                            http://pda.5284.com.tw/MQS/
                         </Run>
                     </Hyperlink>
                     <LineBreak/>
@@ -44,7 +60,7 @@
                     <Run>回報問題</Run>
                     <LineBreak/>
                     <Hyperlink Click="hyperReportBug_Click">
-                        <Run FontSize="24" Foreground="#FF6375E6" x:Name="httpReportBug">
+                        <Run FontSize="20" Foreground="#FF6375E6" x:Name="httpReportBug">
                             http://mikimotoh.blogspot.tw/2014/06/livebustile.html
                         </Run>
                     </Hyperlink>
@@ -53,16 +69,11 @@
                 <Paragraph>
                 <Run>作者</Run>
                 <LineBreak/>
-                <Hyperlink FontSize="24" Click="Email_Click">
+                    <Hyperlink FontSize="20" Click="Email_Click">
                         <Run x:Name="EMail">MikimotoH@gmail.com
                         </Run>
                     </Hyperlink>
                 <LineBreak/>
-                </Paragraph>
-                <Paragraph>
-                    <Run>版本資訊</Run>
-                    <LineBreak/>
-                    <Run Foreground="Orange" FontSize="28" Text="{Binding Path=LocalizedResources.AppVersion, Source={StaticResource LocalizedStrings}}"/>
                 </Paragraph>
             </RichTextBox>
         </Grid>

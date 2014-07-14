@@ -18,6 +18,7 @@ using System.IO.IsolatedStorage;
 using HtmlAgilityPack;
 using System.Threading;
 using System.IO;
+using System.Globalization;
 
 namespace LiveBusTile
 {
@@ -40,9 +41,11 @@ namespace LiveBusTile
             return vm;
         }
 
+
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
+            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
             lbBus.ItemsSource = GenFavGroupBusVM();
 
             if ((string)PhoneApplicationService.Current.State.GetValue("Op", "") != "")
@@ -51,7 +54,14 @@ namespace LiveBusTile
                     NavigationService.RemoveBackEntry();
                 PhoneApplicationService.Current.State.Remove("Op");
             }
-
+            string groupName = PhoneApplicationService.Current.State.GetValue("ScrollToGroup", "").Cast<string>();
+            if ( groupName != "")
+            {
+                lbBus.UpdateLayout();
+                object item = lbBus.Items.FirstOrDefault(o => o.Cast<GroupBusVM>().IsGroupHeader && o.Cast<GroupBusVM>().GroupName == groupName);
+                if (item != null)
+                    lbBus.ScrollIntoView(item);
+            }
         }
 
         private void BusItem_Delete_Click(object sender, RoutedEventArgs e)
@@ -100,15 +110,16 @@ namespace LiveBusTile
             if (Database.FavBuses.Count() == 0)
                 return;
 
-            bool bUseAsyncAwait = IsolatedStorageSettings.ApplicationSettings.GetValue("UseAsyncAwait", false);
+            //bool bUseAsyncAwait = IsolatedStorageSettings.ApplicationSettings.GetValue("UseAsyncAwait", true);
 
-            if (bUseAsyncAwait == true)
-                AppBar_Refresh_Click_UseAsyncAwait(sender, e);
-            else
-                AppBar_Refresh_HttpWebRequest();
+            //if (bUseAsyncAwait == true)
+            AppBar_Refresh_Click_UseAsyncAwait(sender, e);
+            //else
+            //    AppBar_Refresh_HttpWebRequest();
         }
 
-        static string ParseHtmlBusTime(string html){
+        public static string ParseHtmlBusTime(string html)
+        {
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
             try
@@ -121,11 +132,12 @@ namespace LiveBusTile
             }
             catch (Exception ex)
             {
-                AppLogger.Error(html);
                 AppLogger.Error(ex.DumpStr());
-                return "解析異常";                
+                AppLogger.Error("HTML=\n" + html);
+                return "解析異常";
             }
         }
+
 
         class HttpData
         {
@@ -179,7 +191,7 @@ namespace LiveBusTile
 
                     if (httpData.sucHttpResps > 0)
                     {
-                        tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
+                        tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
                         List<string> groupNames = Database.FavBusGroups.Select(x => x.m_GroupName).ToList();
                         groupNames.Insert(0, "");
                         foreach (var groupName in groupNames)
@@ -208,8 +220,10 @@ namespace LiveBusTile
                 .Fmt(Uri.EscapeUriString(bus.m_Name), bus.m_Dir == BusDir.go ? 1 : 0, Uri.EscapeUriString(bus.m_Station))));
             if (req.Headers == null)
                 req.Headers = new WebHeaderCollection();
+            req.Headers[HttpRequestHeader.IfModifiedSince] = DateTime.UtcNow.ToString("R");
 
-            req.Headers["Cache-Control"] = "max-age=0";
+            req.Headers[HttpRequestHeader.IfModifiedSince] = DateTime.UtcNow.ToString("R");
+            req.Headers["Cache-Control"] = "no-cache";
             req.Headers["Pragma"] = "no-cache";
             req.BeginGetResponse(new AsyncCallback(ReadWebRequestCallback), new HttpData { req = req, finHttpReqs= finHttpReqs, sucHttpResps = sucHttpResps});
         }
@@ -225,70 +239,177 @@ namespace LiveBusTile
 
 
 
-        private async void AppBar_Refresh_Click_UseAsyncAwait(object sender, EventArgs e)
+
+        int m_CompletedTaskCount = 0;
+        int m_SucceededTaskCount = 0;
+
+        public static string Pda5284Url(BusInfo b)
+        {
+            return @"http://pda.5284.com.tw/MQS/businfo3.jsp?Mode=1&Dir={1}&Route={0}&Stop={2}".Fmt(
+                Uri.EscapeUriString(b.m_Name), b.m_Dir==BusDir.go?1:0, Uri.EscapeUriString(b.m_Station));
+        }
+        class WCVM
+        {
+            public WebClient wc = new WebClient();
+            public GroupBusVM vm;
+            public WCVM(GroupBusVM vm)
+            {
+                this.vm = vm;
+                this.wc.Headers = new WebHeaderCollection();
+                this.wc.Headers[HttpRequestHeader.IfModifiedSince] = DateTime.UtcNow.ToString("R");
+                this.wc.Headers["Cache-Control"] = "no-cache";
+            }
+        }
+
+        WCVM[] m_WCVMs;
+
+        private void AppBar_Refresh_Click_UseAsyncAwait(object sender, EventArgs e)
         {
             AppLogger.Debug("enter sender=" + sender.GetType());
             if (Database.FavBuses.Count() == 0)
                 return;
-            
+
+            if (progbar.Visibility == Visibility.Visible)
+            {
+                // is still under freshing
+                foreach (var wcvm in m_WCVMs)
+                {
+                    wcvm.wc.CancelAsync();
+                }
+                return;
+            }
+
             progbar.Visibility = Visibility.Visible;
             ApplicationBar.Buttons.Cast<ApplicationBarIconButton>().DoForEach(x => x.IsEnabled = false);
-            ApplicationBar.IsMenuEnabled = false;
+            ApplicationBarIconButton btnRefresh = ApplicationBar.Buttons.Cast<ApplicationBarIconButton>().FirstOrDefault(x => x.Text == "刷新時間");
+            btnRefresh.IsEnabled = true;
+            btnRefresh.IconUri = new Uri("/Images/AppBar.StopRefresh.png", UriKind.Relative);
 
-            Task<string>[] tasks = Database.FavBuses.Select(b => BusTicker.GetBusDueTime(b)).ToArray();
+            m_CompletedTaskCount = 0;
+            m_SucceededTaskCount = 0;
+            //var busVMs = lbBus.Items.Cast<GroupBusVM>().Where(gb => !gb.IsGroupHeader);
+            //WebClient[] webClients = busVMs.Select(b => new WebClient()).ToArray();
 
-            try
+            m_WCVMs = lbBus.Items.Cast<GroupBusVM>().Where(gb => !gb.IsGroupHeader).Select(b => new WCVM(b)).ToArray();
+                //Enumerable.Zip(webClients, busVMs, (wc, vm) => new WCVM{ wc = wc, vm = vm }).ToArray();
+
+            foreach (var wcvm in m_WCVMs)
             {
-                await Task.Run(() =>
+                wcvm.wc.DownloadStringCompleted += (s, asyncCompletedEventArgs) =>
                 {
-                    Task.WaitAll(tasks);
-                });
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error("Task.WaitAll(tasks) failed");
-                AppLogger.Error(ex.DumpStr());
-            }
-
-            int numSucceededTasks = 0;
-            for (int i = 0; i < tasks.Length; ++i)
-            {
-                if (tasks[i].Status == TaskStatus.RanToCompletion)
-                {
-                    Database.FavBuses[i].m_TimeToArrive = tasks[i].Result;
-                    ++numSucceededTasks;
-                }
-            }
-            AppLogger.Debug("m_finHttpReqs=" + numSucceededTasks);
-
-            if (numSucceededTasks > 0)
-            {
-                Database.SaveFavBusGroups();
-                lbBus.ItemsSource = GenFavGroupBusVM();
-                tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
-
-                List<string> groupNames = Database.FavBusGroups.Select(x => x.m_GroupName).ToList();
-                groupNames.Insert(0, "");
-                foreach (var groupName in groupNames)
-                {
-                    try
+                    int nCompletedTaskCount = Interlocked.Increment(ref m_CompletedTaskCount);
+                    AppLogger.Debug("nCompletedTaskCount={0}, asyncCompletedEventArgs.Cancelled={1}"
+                        .Fmt(nCompletedTaskCount, asyncCompletedEventArgs.Cancelled));
+                    int nSucceededTaskCount = 0;
+                    if (asyncCompletedEventArgs.Error == null)
                     {
-                        TileUtil.UpdateTile2(groupName);
-                        AppLogger.Debug("UpdateTile(groupName=\"{0}\") - finished".Fmt(groupName));
+                        nSucceededTaskCount = Interlocked.Increment(ref m_SucceededTaskCount);
+                        string timeToArrive = ParseHtmlBusTime(asyncCompletedEventArgs.Result);
+                        Dispatcher.BeginInvoke(() =>
+                        {
+                            GroupBusVM vm = (GroupBusVM)asyncCompletedEventArgs.UserState;
+                            vm.TimeToArrive = timeToArrive;
+                        });
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        AppLogger.Error("TileUtil.UpdateTile( groupName={0} ) failed\n".Fmt(groupName) + ex.DumpStr());
+                        AppLogger.Error(asyncCompletedEventArgs.Error.DumpStr());
                     }
-                }
+                    if(nCompletedTaskCount == m_WCVMs.Length)
+                    {
+                        Dispatcher.BeginInvoke(() =>
+                        {
+                            Database.SaveFavBusGroups();
+
+                            if (nSucceededTaskCount == 0) 
+                            {
+                                MessageBox.Show(AppResources.NetworkFault);
+                            }
+                            else
+                            {
+                                tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
+
+                                List<string> groupNames = Database.FavBusGroups.Select(x => x.m_GroupName).ToList();
+                                groupNames.Insert(0, "");
+                                foreach (var groupName in groupNames)
+                                {
+                                    try
+                                    {
+                                        TileUtil.UpdateTile2(groupName);
+                                        AppLogger.Debug("UpdateTile(groupName=\"{0}\") - finished".Fmt(groupName));
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        AppLogger.Error("TileUtil.UpdateTile( groupName={0} ) failed\n".Fmt(groupName) + ex.DumpStr());
+                                    }
+                                }
+                            }
+                            btnRefresh.IconUri = new Uri("/Images/AppBar.Refresh.png", UriKind.Relative);
+                            ApplicationBar.Buttons.Cast<ApplicationBarIconButton>().DoForEach(x => x.IsEnabled = true);
+                            progbar.Visibility = Visibility.Collapsed;
+                        });
+                    }
+                };
+                wcvm.wc.DownloadStringAsync(new Uri(Pda5284Url(wcvm.vm.BusInfo)), wcvm.vm);
             }
+
             
-            ApplicationBar.Buttons.Cast<ApplicationBarIconButton>().DoForEach(x => x.IsEnabled = true);
-            ApplicationBar.IsMenuEnabled = true;
-            progbar.Visibility = Visibility.Collapsed;
+                       
+            
+            //Task<string>[] tasks = Database.FavBuses.Select(b => BusTicker.GetBusDueTime(b)).ToArray();
 
-            if (numSucceededTasks == 0)
-                MessageBox.Show(AppResources.NetworkFault);
+            //try
+            //{
+            //    await Task.Run(() =>
+            //    {
+            //        Task.WaitAll(tasks);
+            //    });
+            //}
+            //catch (Exception ex)
+            //{
+            //    AppLogger.Error("Task.WaitAll(tasks) failed");
+            //    AppLogger.Error(ex.DumpStr());
+            //}
+
+            //int numSucceededTasks = 0;
+            //for (int i = 0; i < tasks.Length; ++i)
+            //{
+            //    if (tasks[i].Status == TaskStatus.RanToCompletion)
+            //    {
+            //        Database.FavBuses[i].m_TimeToArrive = tasks[i].Result;
+            //        ++numSucceededTasks;
+            //    }
+            //}
+            //AppLogger.Debug("m_finHttpReqs=" + numSucceededTasks);
+
+            //if (numSucceededTasks > 0)
+            //{
+            //    Database.SaveFavBusGroups();
+            //    lbBus.ItemsSource = GenFavGroupBusVM();
+            //    tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString("HH:mm:ss");
+
+            //    List<string> groupNames = Database.FavBusGroups.Select(x => x.m_GroupName).ToList();
+            //    groupNames.Insert(0, "");
+            //    foreach (var groupName in groupNames)
+            //    {
+            //        try
+            //        {
+            //            TileUtil.UpdateTile2(groupName);
+            //            AppLogger.Debug("UpdateTile(groupName=\"{0}\") - finished".Fmt(groupName));
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            AppLogger.Error("TileUtil.UpdateTile( groupName={0} ) failed\n".Fmt(groupName) + ex.DumpStr());
+            //        }
+            //    }
+            //}
+            
+            //ApplicationBar.Buttons.Cast<ApplicationBarIconButton>().DoForEach(x => x.IsEnabled = true);
+            //ApplicationBar.IsMenuEnabled = true;
+            //progbar.Visibility = Visibility.Collapsed;
+
+            //if (numSucceededTasks == 0)
+            //    MessageBox.Show(AppResources.NetworkFault);
 
             AppLogger.Debug("exit");
         }
@@ -297,6 +418,11 @@ namespace LiveBusTile
         {
             AppLogger.Debug("");
             NavigationService.Navigate(new Uri("/AddBus.xaml", UriKind.Relative));
+        }
+        private void AppBar_AddStation_Click(object sender, EventArgs e)
+        {
+            AppLogger.Debug("");
+            NavigationService.Navigate(new Uri("/AddStation.xaml", UriKind.Relative));
         }
 
         private void AppBar_Settings_Click(object sender, EventArgs e)

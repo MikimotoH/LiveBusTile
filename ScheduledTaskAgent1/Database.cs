@@ -29,7 +29,7 @@ namespace ScheduledTaskAgent1
                 IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = DateTime.MinValue;
 
             if (!IsolatedStorageSettings.ApplicationSettings.Contains("UseAsyncAwait"))
-                IsolatedStorageSettings.ApplicationSettings["UseAsyncAwait"] = false;
+                IsolatedStorageSettings.ApplicationSettings["UseAsyncAwait"] = true;
             
             if (!IsolatedStorageSettings.ApplicationSettings.Contains("WiFiOnly"))
                 IsolatedStorageSettings.ApplicationSettings["WiFiOnly"] = Convert.ToBoolean(ScheduledTaskAgent1.Resource1.IsWiFiOnly_Default);
@@ -153,6 +153,30 @@ namespace ScheduledTaskAgent1
         }
         #endregion
 
+        static Dictionary<string, BusAndDir[]> m_all_stations = null;
+        public static void LoadAllStations()
+        {
+            m_all_stations = new Dictionary<string, BusAndDir[]>();
+            var sri = Application.GetResourceStream(new Uri("Data/stationsDb.txt", UriKind.Relative));
+            using (StreamReader sr = new StreamReader(sri.Stream))
+            {
+                string station;
+                while ((station = sr.ReadLine()) != null)
+                {
+                    string[] busdirls = sr.ReadLine().Split("\t".ToArray());
+                    m_all_stations[station] = busdirls.Select(x => new BusAndDir { bus = x.Substring(0, x.Length - 2), dir = (BusDir)int.Parse(x.Substring(x.Length - 1, 1)) }).ToArray();
+                }
+            }
+        }
+        public static Dictionary<string, BusAndDir[]> AllStations
+        {
+            get
+            {
+                if (m_all_stations == null)
+                    LoadAllStations();
+                return m_all_stations;
+            }
+        }
 
         static Dictionary<string, StationPair> m_all_buses = null;
         public static void LoadAllBuses()

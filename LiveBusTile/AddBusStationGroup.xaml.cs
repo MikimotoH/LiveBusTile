@@ -38,6 +38,8 @@ namespace LiveBusTile
             var groups = new HashSet<string>(Database.FavBusGroups.Select(x => x.m_GroupName));
             groups.Add("上班");
             groups.Add("回家");
+            groups.Add("暫時1");
+
             lbGroupNames.ItemsSource = groups.ToList();
         }
 

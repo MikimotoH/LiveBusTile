@@ -18,16 +18,25 @@ namespace LiveBusTile
         {
             InitializeComponent();
         }
-
+        
         private void github_Click(object sender, RoutedEventArgs e)
         {
-            var wbt = new WebBrowserTask { Uri = new Uri(http_github.Text, UriKind.Absolute) };
-            wbt.Show();
+            OpenWebBrowser(http_github.Text);
+        }
+
+                
+        private void pda5284_Click(object sender, RoutedEventArgs e)
+        {
+            OpenWebBrowser(http_pda5284.Text);
         }
 
         private void hyperReportBug_Click(object sender, RoutedEventArgs e)
         {
-            var wbt = new WebBrowserTask { Uri = new Uri(httpReportBug.Text, UriKind.Absolute) };
+            OpenWebBrowser(httpReportBug.Text);
+        }
+        private void OpenWebBrowser(string url)
+        {
+            var wbt = new WebBrowserTask { Uri = new Uri(url, UriKind.Absolute) };
             wbt.Show();
         }
 
@@ -40,5 +49,6 @@ namespace LiveBusTile
             emailComposeTask.To = EMail.Text;
             emailComposeTask.Show();
         }
+
     }
 }

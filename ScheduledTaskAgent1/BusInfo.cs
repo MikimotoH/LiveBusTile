@@ -84,6 +84,11 @@ namespace ScheduledTaskAgent1
         }
     }
 
+    public class BusAndDir
+    {
+        public string bus;
+        public BusDir dir;
+    }
 
     public class StationPair
     {

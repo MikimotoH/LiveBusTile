@@ -70,7 +70,7 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.2.2.5.
+        ///   Looks up a localized string similar to 1.2.3.0.
         /// </summary>
         public static string AppVersion {
             get {
@@ -111,6 +111,15 @@ namespace LiveBusTile.Resources {
         public static string NetworkFault {
             get {
                 return ResourceManager.GetString("NetworkFault", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 1.2.3.0 - 可從站牌中增加多個公車。.
+        /// </summary>
+        public static string NewVersionFeatures {
+            get {
+                return ResourceManager.GetString("NewVersionFeatures", resourceCulture);
             }
         }
         

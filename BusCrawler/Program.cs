@@ -11,13 +11,6 @@ using System.Text.RegularExpressions;
 
 namespace BusStationCrawler
 {
-    public class BusData
-    {
-        public string busName;
-        public string region;
-        public string[] stations_go;
-        public string[] stations_back;
-    }
 
 
     class Program
@@ -97,61 +90,16 @@ namespace BusStationCrawler
             go, back,
         };
 
-        public class BusTag
-        {
-            public string busName { get; set; }
-            public string tag { get; set; }
-            public BusDir dir { get; set; }
-            public string station { get; set; }
-            public string timeToArrive { get; set; }
-        }
 
 
-        static BusTag[] m_busTags = new BusTag[]
-        {
-            new BusTag{busName="橘2", station="秀山國小", dir=BusDir.go, tag="上班", timeToArrive="快來了"}, 
-            new BusTag{busName="275", station="秀景里", dir=BusDir.go, tag="上班", timeToArrive="20分"}, 
-            new BusTag{busName="敦化幹線", station="秀景里", dir=BusDir.back, tag="上班", timeToArrive="未發車"},
-            new BusTag{busName="橘2", station="捷運永安市場站", dir=BusDir.back, tag="回家", timeToArrive="6分"}, 
-            new BusTag{busName="敦化幹線", station="忠孝敦化路口", dir=BusDir.go, tag="回家", timeToArrive="已過站"}, 
-            new BusTag{busName="275", station="忠孝敦化路口", dir=BusDir.back, tag="回家", timeToArrive="未班車"}, 
-        };
-        static void Main_WriteMyBusTags(string[] param)
-        {
-            JsonSerializer serializer = new JsonSerializer();
-            serializer.NullValueHandling = NullValueHandling.Ignore;
-            using (StreamWriter sw = new StreamWriter(@"my_bustags.json"))
-            using (JsonWriter writer = new JsonTextWriter(sw))
-            {
-                serializer.Serialize(writer, m_busTags);
-            }
-        }
+
 
 
         /// <summary>
-        /// Read My bus tags
+        /// ToLineBuses format
         /// </summary>
         /// <param name="param"></param>
-        static void MainReadMyBusTags(string[] param)
-        {
-            BusTag[] busTags = null;
-
-            JsonSerializer serializer = new JsonSerializer();
-            serializer.NullValueHandling = NullValueHandling.Ignore;
-            using (StreamReader sr = new StreamReader(@"my_bustags.json"))
-            using (JsonReader reader = new JsonTextReader(sr))
-            {
-                busTags = serializer.Deserialize(reader, typeof(BusTag[])) as BusTag[];
-            }
-            Debug.Assert(busTags.Length > 0);
-            Debug.WriteLine("busTags[0].dir=" + busTags[0].dir);
-        }
-
-        /// <summary>
-        /// ToLineBuses
-        /// </summary>
-        /// <param name="param"></param>
-        static void MainToLineBuses(string[] param)
+        static void ToLineBuses()
         {
             Dictionary<string, List<string>> all_buses = null;
 
@@ -177,7 +125,7 @@ namespace BusStationCrawler
         /// regex test to distinct their area
         /// </summary>
         /// <param name="param"></param>
-        static void Main_RegexDistinct(string[] param)
+        static void RegexDistinct()
         {
             Debug.Assert(Regex.IsMatch("275", @"^\d{1,3}[^\d]*$"));
             Debug.Assert(Regex.IsMatch("275副", @"^\d{1,3}[^\d]*$"));
@@ -237,7 +185,7 @@ namespace BusStationCrawler
         /// write all_buses.txt
         /// </summary>
         /// <param name="param"></param>
-        static void Main_json_to_txt(string[] param)
+        static void json_to_txt()
         {
             JsonSerializer serializer = new JsonSerializer();
             serializer.NullValueHandling = NullValueHandling.Ignore;
@@ -272,7 +220,7 @@ namespace BusStationCrawler
         /// convert buses.json from list<BusData> to dict[busName] => (statitions_go, stations_back)
         /// </summary>
         /// <param name="param"></param>
-        static void Main_Write_buses_simple(string[] param)
+        static void Write_buses_simple()
         {
             List<BusData> busData = null;
 

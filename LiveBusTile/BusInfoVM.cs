@@ -110,6 +110,8 @@ namespace LiveBusTile
         }
     }
 
+
+
     public class ExampleBusInfos : ObservableCollection<BusInfoVM>
     {
         public ExampleBusInfos()

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Phone.Shell;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
@@ -26,7 +27,12 @@ namespace ScheduledTaskAgent1
                 return @"{0}\{1}GroupTile={2}.jpg".Fmt(m_TileFolder, isWide ? "Wide" : "", groupName);
         }
 
-        public static string TileUri(string groupName)
+        /// <summary>
+        /// empty string for MainPage.
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <returns></returns>
+        public static string TileUri(string groupName="")
         {
             if (groupName == "")
                 return "/MainPage.xaml";
@@ -96,7 +102,7 @@ namespace ScheduledTaskAgent1
 
             var tbLastUpdateTime = new TextBlock
             {
-                Text = Database.LastUpdatedTime.ToString("HH:mm"),
+                Text = Database.LastUpdatedTime.ToString(CurSysTimeFormat),
                 Foreground = new SolidColorBrush(Colors.White),
                 FontSize = updateTimeFontSize,
                 TextAlignment = TextAlignment.Right,
@@ -313,7 +319,11 @@ namespace ScheduledTaskAgent1
         //        });
         //}
 
-        public static void UpdateTile2(string groupName)
+        /// <summary>
+        /// empty string for MainPage, else for group
+        /// </summary>
+        /// <param name="groupName"></param>
+        public static void UpdateTile2(string groupName = "")
         {
             Logger.Debug("groupName=" + groupName);
             ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUri(groupName));
@@ -327,5 +337,26 @@ namespace ScheduledTaskAgent1
                     WideBackgroundImage = GenerateTileJpg2(groupName, true),
                 });
         }
+        static bool Is24HourFormat
+        {
+            get{
+                return DateTimeFormatInfo.CurrentInfo.ShortTimePattern.Contains("H");
+            }
+        }
+
+        public static string CurSysTimeFormat
+        {
+            get{
+                return Is24HourFormat ? "HH:mm" : "h:mm";
+            }
+        }
+        public static string CurSysTimeFormatWithSecs
+        {
+            get
+            {
+                return Is24HourFormat ? "HH:mm:ss" : "h:mm:ss";
+            }
+        }
+
     }
 }

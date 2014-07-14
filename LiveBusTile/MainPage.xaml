@@ -134,7 +134,8 @@
         <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True" x:Name="appbar">
             <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Pin.png" Text="釘至桌面" Click="AppBar_Pin_Click"/>
             <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Refresh.png" Text="刷新時間" Click="AppBar_Refresh_Click"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddBus.png" Text="新增巴士" Click="AppBar_AddBus_Click"/>
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddBus2.png" Text="新增巴士" Click="AppBar_AddBus_Click"/>
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddStation2.png" Text="新增站牌" Click="AppBar_AddStation_Click"/>
             <shell:ApplicationBar.MenuItems>
                 <shell:ApplicationBarMenuItem Text="設定" Click="AppBar_Settings_Click"/>
                 <shell:ApplicationBarMenuItem Text="關於…" Click="AppBar_About_Click"/>

@@ -51,9 +51,29 @@ namespace LiveBusTile
         }
 
         public KeyedBusVM(string key, IEnumerable<string> buses)
-            : base(Enumerable.OrderBy<string, string>(buses, x => x))
+            : base( buses.OrderBy(x=>x, new StrNumComparer()))
         {
             this.Key = key;
         }
+    }
+
+    
+
+    public class KeyedStationVM : ObservableCollection<string>
+    {
+        public string Key { get; set; }
+        public KeyedStationVM() { }
+        public KeyedStationVM(IGrouping<string,string> group)
+            :base(group.OrderBy(x=>x, new StrNumComparer()))
+        {
+            this.Key = group.Key;
+        }
+
+        public KeyedStationVM(string key, IEnumerable<string> stations)
+            : base(stations.OrderBy(x=>x, new StrNumComparer()))
+        {
+            this.Key = key;
+        }
+
     }
 }

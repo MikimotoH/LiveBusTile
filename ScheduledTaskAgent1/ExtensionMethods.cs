@@ -56,7 +56,7 @@ namespace ScheduledTaskAgent1
             return sb.ToString();
         }
 
-        public static TValue GetValue<TValue>(this IDictionary<string, object> dict, string key, TValue defValue)
+        public static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue defValue)
         {
             if (!dict.ContainsKey(key))
                 return defValue;
@@ -66,7 +66,7 @@ namespace ScheduledTaskAgent1
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("dict[key=\"{0}\"].GetType() = {1}", key, dict[key].GetType());
+                Debug.WriteLine("dict[key=\"{0}\"].GetType() = {1}, cannot cast to `{2}`", key.ToString(), dict[key].GetType(), typeof(TValue).GetType());
                 Debug.WriteLine(ex.DumpStr());
                 throw;
             }
@@ -170,6 +170,19 @@ namespace ScheduledTaskAgent1
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> ls)
         {
             return ls == null || ls.Count() == 0;
+        }
+        public static T Cast<T>(this object me)
+        {
+            return (T)me;
+        }
+
+        public static bool DoesNotHave<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            return source.FirstOrDefault(predicate) == null;
+        }
+        public static bool Has<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            return source.FirstOrDefault(predicate) != null;
         }
 
     }

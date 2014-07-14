@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.IO.IsolatedStorage;
 using ScheduledTaskAgent1;
 using System.Collections.ObjectModel;
+using HtmlAgilityPack;
 
 namespace LiveBusTile
 {
@@ -24,6 +25,39 @@ namespace LiveBusTile
         }
 
         string m_GroupName;
+
+        async void InitBusList()
+        {
+            progbar.Visibility = Visibility.Visible;
+
+            HttpClient hc = new HttpClient();
+            string sHtml = await hc.GetStringAsync(new Uri("http://pda.5284.com.tw/MQS/businfo1.jsp"));
+            HtmlDocument doc = new HtmlDocument();
+            HtmlNode.ElementsFlags.Remove("option");
+            doc.LoadHtml(sHtml);
+            List<string> busNames = new List<string>();
+
+            for (int i = 5; ; ++i)
+            {
+                HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("/html/body/center/table[1]/tr[{0}]/td/select/option".Fmt(i));
+                if(nodes==null)
+                    break;
+                busNames.AddRange(nodes.Skip(1).Select(x => x.InnerText));
+            }
+            // remove duplicate items, make List items Unique
+            busNames = (new HashSet<string>(busNames)).ToList();
+
+            Dispatcher.BeginInvoke(() => 
+            {
+                llsAllBuses.ItemsSource = busNames
+                    .GroupBy(b => Database.BusKeyName(b))
+                    .Select(g => new KeyedBusVM(g))
+                    .OrderBy(g => g.Key)
+                    .ToObservableCollection();            
+            });
+            progbar.Visibility = Visibility.Collapsed;
+        }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             m_GroupName = NavigationContext.QueryString.GetValue("GroupName", "");
@@ -31,7 +65,9 @@ namespace LiveBusTile
             llsAllBuses.ItemsSource = Database.AllBuses.Keys
                 .GroupBy(b => Database.BusKeyName(b))
                 .Select(g => new KeyedBusVM(g))
+                .OrderBy(g => g.Key)
                 .ToObservableCollection();
+            //InitBusList();
         }
 
 

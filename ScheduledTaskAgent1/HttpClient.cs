@@ -31,16 +31,16 @@ namespace ScheduledTaskAgent1
         {
             if (Headers == null)
                 Headers = new WebHeaderCollection();
-            Headers["Cache-Control"] = "max-age=0"; 
-            Headers["Pragma"] = "no-cache";
-        }
-
-
-        public string GetStringSync(Uri requestUri)
-        {
-            Task<string> task = GetStringAsync(requestUri);
-            task.Wait();
-            return task.Result;
+            try
+            {
+                Headers[HttpRequestHeader.IfModifiedSince] = DateTime.UtcNow.ToString("R");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.DumpStr());
+            }
+            Headers["Cache-Control"] = "no-cache"; 
+            Headers["Pragma"] = "no-cache";            
         }
 
         /// <summary>
@@ -63,6 +63,7 @@ namespace ScheduledTaskAgent1
                     else
                     {
                         tcs.TrySetException(e.Error);
+                        Logger.Error(e.Error.DumpStr());
                     }
                 };
 
@@ -72,6 +73,7 @@ namespace ScheduledTaskAgent1
             catch (Exception ex)
             {
                 tcs.TrySetException(ex);
+                Logger.Error(ex.DumpStr());
             }
 
             if (tcs.Task.Exception != null)
