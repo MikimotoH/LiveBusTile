@@ -24,14 +24,11 @@ namespace LiveBusTile
             bool bWiFiOnly = IsolatedStorageSettings.ApplicationSettings.GetValue(
                 "WiFiOnly", Convert.ToBoolean(ScheduledTaskAgent1.Resource1.IsWiFiOnly_Default));
             tgWifiOnly.IsChecked = bWiFiOnly;
-
-            tgUseAsyncAwait.IsChecked = IsolatedStorageSettings.ApplicationSettings.GetValue("UseAsyncAwait", false);
         }
+
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             IsolatedStorageSettings.ApplicationSettings["WiFiOnly"] = tgWifiOnly.IsChecked;
-            IsolatedStorageSettings.ApplicationSettings["UseAsyncAwait"] = tgUseAsyncAwait.IsChecked;
-            //base.OnNavigatedFrom(e);
         }
     }
 }

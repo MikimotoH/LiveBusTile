@@ -27,9 +27,6 @@ namespace ScheduledTaskAgent1
         {
             if (!IsolatedStorageSettings.ApplicationSettings.Contains("LastUpdatedTime"))
                 IsolatedStorageSettings.ApplicationSettings["LastUpdatedTime"] = DateTime.MinValue;
-
-            if (!IsolatedStorageSettings.ApplicationSettings.Contains("UseAsyncAwait"))
-                IsolatedStorageSettings.ApplicationSettings["UseAsyncAwait"] = true;
             
             if (!IsolatedStorageSettings.ApplicationSettings.Contains("WiFiOnly"))
                 IsolatedStorageSettings.ApplicationSettings["WiFiOnly"] = Convert.ToBoolean(ScheduledTaskAgent1.Resource1.IsWiFiOnly_Default);

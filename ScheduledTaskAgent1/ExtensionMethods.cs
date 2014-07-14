@@ -22,6 +22,10 @@ namespace ScheduledTaskAgent1
                 act(x);
             }
         }
+        public static IEnumerable<T> RemoveDuplicate<T>(this IEnumerable<T> ls)
+        {
+            return (new HashSet<T>(ls));
+        }
 
         public static void DoForEach<T>(this IList ls, Action<T> act)
         {

@@ -13,6 +13,8 @@ using System.IO.IsolatedStorage;
 using ScheduledTaskAgent1;
 using System.Collections.ObjectModel;
 using HtmlAgilityPack;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace LiveBusTile
 {
@@ -35,18 +37,21 @@ namespace LiveBusTile
         }
 
 
-        private void btnEnter_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        private async void btnEnter_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
             if (lbBuses.SelectedItems == null || lbBuses.SelectedItems.Count == 0)
             {
                 MessageBox.Show("未選擇任何站牌");
                 return;
             }
+            string newGroupName = this.m_GroupName;
+            if (newGroupName == "")
+                newGroupName = await PromptForGroupName();
 
-            BusGroup bg = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == this.m_GroupName);
+            BusGroup bg = Database.FavBusGroups.FirstOrDefault(x => x.m_GroupName == newGroupName);
             if (bg == null)
             {
-                bg = new BusGroup { m_GroupName = m_GroupName.IsNullOrEmpty() ? GenTempGroupName() : m_GroupName, m_Buses = new List<BusInfo>() };
+                bg = new BusGroup { m_GroupName = newGroupName, m_Buses = new List<BusInfo>() };
                 Database.FavBusGroups.Add(bg);
             }
             bg.m_Buses.AddRange( lbBuses.SelectedItems.Cast<BusAndDirVM>()
@@ -68,12 +73,63 @@ namespace LiveBusTile
         private string GenTempGroupName()
         {
             int i = 1;
-            for(; ; ++i)
+            for (; ; ++i)
             {
                 string ret = "暫時" + i;
-                if (Database.FavBusGroups.DoesNotHave(x => x.m_GroupName == ret) )
+                if (Database.FavBusGroups.DoesNotHave(x => x.m_GroupName == ret))
                     return ret;
-            }            
+            }
+        }
+
+        Task<string> PromptForGroupName()
+        {
+            var tcs = new TaskCompletionSource<string>();
+
+            IEnumerable<string> lsGroups = Database.FavBusGroups.Select(g => g.m_GroupName)
+                .Concat(new string[] { "上班", "回家", GenTempGroupName() }).RemoveDuplicate();
+
+            ListPicker listPicker = new ListPicker()
+            {
+                //Header = "Snooze for:",
+                ItemsSource = lsGroups,
+                //Margin = new Thickness(12, 42, 24, 18)
+            };
+            listPicker.UpdateLayout();
+            listPicker.SelectedItem = listPicker.Items.FirstElement();
+            
+
+            CustomMessageBox messageBox = new CustomMessageBox()
+            {
+                //Title = "Title",
+                //Caption = "Caption",
+                Message = "選擇群組名稱：",
+                Content = listPicker,
+                //LeftButtonContent = "snooze",
+                RightButtonContent = "確定",
+                IsFullScreen = false
+            };
+
+            messageBox.Dismissing += (s1, e1) =>
+            {
+                if (listPicker.ListPickerMode == ListPickerMode.Expanded)
+                {
+                    e1.Cancel = true;
+                }
+            };
+                        
+            messageBox.Dismissed += (s2, e2) =>
+            {
+                switch (e2.Result)
+                {
+                    case CustomMessageBoxResult.RightButton:
+                        tcs.SetResult(listPicker.SelectedItem.Cast<string>());
+                        break;
+                }
+            };
+
+            messageBox.Show();
+            
+            return tcs.Task;
         }
     }
 

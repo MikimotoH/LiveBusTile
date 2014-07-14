@@ -124,6 +124,15 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 刷新時間.
+        /// </summary>
+        public static string RefreshBusTime {
+            get {
+                return ResourceManager.GetString("RefreshBusTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to LeftToRight.
         /// </summary>
         public static string ResourceFlowDirection {

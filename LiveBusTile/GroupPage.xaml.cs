@@ -13,6 +13,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO.IsolatedStorage;
+using System.Threading;
 
 namespace LiveBusTile
 {
@@ -92,62 +93,132 @@ namespace LiveBusTile
             NavigationService.Navigate(new Uri("/AddStation.xaml?GroupName=" + m_BusGroup.m_GroupName, UriKind.Relative));
         }
 
-        private async void AppBar_Refresh_Click(object sender, EventArgs e)
+        class WCVM
         {
-            AppLogger.Debug("enter sender=" + sender.GetType());
-            if (Database.FavBuses.Count() == 0)
+            public WebClient wc = new WebClient();
+            public BusInfoVM vm;
+            public WCVM(BusInfoVM vm)
+            {
+                this.vm = vm;
+                this.wc.Headers = new WebHeaderCollection();
+                this.wc.Headers[HttpRequestHeader.IfModifiedSince] = DateTime.UtcNow.ToString("R");
+                this.wc.Headers["Cache-Control"] = "no-cache";
+            }
+        }
+
+        WCVM[] m_WCVMs;
+
+        private void AppBar_Refresh_Click(object sender, EventArgs e)
+        {
+            if (m_BusGroup.m_Buses.Count==0)
                 return;
+            if (prgbarWaiting.Visibility == Visibility.Visible)
+            {
+                m_WCVMs.DoForEach(wcvm => wcvm.wc.CancelAsync());
+                return;
+            }
 
             prgbarWaiting.Visibility = Visibility.Visible;
-            this.ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = false);
-            this.ApplicationBar.IsMenuEnabled = false;
+            ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = false);
+            ApplicationBarIconButton btnRefresh = sender as ApplicationBarIconButton;
+            btnRefresh.IsEnabled = true;
+            btnRefresh.IconUri = new Uri("/Images/AppBar.StopRefresh.png", UriKind.Relative);
 
+            m_WCVMs = lbBusInfos.Items.Cast<BusInfoVM>().Select(b => new WCVM(b)).ToArray();
+            int m_CompletedWCs = 0;
+            int m_CancelledWCs = 0;
+            int m_SucceededWCs = 0;
+
+            foreach (var wcvm in m_WCVMs)
+            {
+                wcvm.wc.DownloadStringCompleted += (s, asyncCompletedEventArgs) =>
+                {
+                    int completedWCs = Interlocked.Increment(ref m_CompletedWCs);
+                    int succeededWCs = Interlocked.Add(ref m_SucceededWCs, asyncCompletedEventArgs.Error == null ? 1 : 0);
+                    int cancelledWCs = Interlocked.Add(ref m_CancelledWCs, asyncCompletedEventArgs.Cancelled ? 1 : 0);
+                    AppLogger.Debug("completedWCs={0}, succeededWCs={1}, cancelledWCs={2}"
+                        .Fmt(completedWCs, succeededWCs, cancelledWCs));
+
+                    if (asyncCompletedEventArgs.Error == null)
+                    {
+                        Dispatcher.BeginInvoke(() =>
+                        {
+                            BusInfoVM vm = asyncCompletedEventArgs.UserState as BusInfoVM;
+                            vm.TimeToArrive = MainPage.ParseHtmlBusTime(asyncCompletedEventArgs.Result);
+                            tbLastUpdatedTime.Text = DateTime.Now.ToString(TileUtil.CurSysTimeFormat);
+                        });
+                    }
+                    else
+                        AppLogger.Error(asyncCompletedEventArgs.Error.DumpStr());
+
+                    if (completedWCs == m_WCVMs.Length)
+                    {
+                        Dispatcher.BeginInvoke(() =>
+                        {
+                            if (succeededWCs > 0)
+                            {
+                                Database.SaveFavBusGroups();                                
+                                TileUtil.UpdateTile2(this.m_BusGroup.m_GroupName);
+                                TileUtil.UpdateTile2("");
+                            }
+                            else if (cancelledWCs == 0)
+                                MessageBox.Show(AppResources.NetworkFault);
+                            
+
+                            btnRefresh.IconUri = new Uri("/Images/AppBar.Refresh.png", UriKind.Relative);
+                            ApplicationBar.Buttons.Cast<ApplicationBarIconButton>().DoForEach(x => x.IsEnabled = true);
+                            prgbarWaiting.Visibility = Visibility.Collapsed;
+                        });
+                    }
+                };
+                wcvm.wc.DownloadStringAsync(new Uri(MainPage.Pda5284Url(wcvm.vm.Base)), wcvm.vm);
+            }
             
-            Task<string>[] tasks = m_BusGroup.m_Buses.Select(b => BusTicker.GetBusDueTime(b)).ToArray();
-            try
-            {
-                await Task.Run(() =>
-                {
-                    Task.WaitAll(tasks);
-                });
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error("Task.WaitAll(tasks) failed");
-                AppLogger.Error(ex.DumpStr());
-            }
+            //Task<string>[] tasks = m_BusGroup.m_Buses.Select(b => BusTicker.GetBusDueTime(b)).ToArray();
+            //try
+            //{
+            //    await Task.Run(() =>
+            //    {
+            //        Task.WaitAll(tasks);
+            //    });
+            //}
+            //catch (Exception ex)
+            //{
+            //    AppLogger.Error("Task.WaitAll(tasks) failed");
+            //    AppLogger.Error(ex.DumpStr());
+            //}
 
-            int numSucceededTasks = 0;
-            for (int i = 0; i < tasks.Length; ++i)
-            {
-                if (tasks[i].Status == TaskStatus.RanToCompletion)
-                {
-                    m_BusGroup.m_Buses[i].m_TimeToArrive = tasks[i].Result;
-                    ++numSucceededTasks;
-                }
-            }
-            AppLogger.Debug("m_finHttpReqs=" + numSucceededTasks);
+            //int numSucceededTasks = 0;
+            //for (int i = 0; i < tasks.Length; ++i)
+            //{
+            //    if (tasks[i].Status == TaskStatus.RanToCompletion)
+            //    {
+            //        m_BusGroup.m_Buses[i].m_TimeToArrive = tasks[i].Result;
+            //        ++numSucceededTasks;
+            //    }
+            //}
+            //AppLogger.Debug("m_finHttpReqs=" + numSucceededTasks);
 
-            if (numSucceededTasks > 0)
-            {
-                Database.SaveFavBusGroups();
+            //if (numSucceededTasks > 0)
+            //{
+            //    Database.SaveFavBusGroups();
 
-                lbBusInfos.ItemsSource = m_BusGroup.m_Buses.Select(x => new BusInfoVM(x)).ToList();
+            //    lbBusInfos.ItemsSource = m_BusGroup.m_Buses.Select(x => new BusInfoVM(x)).ToList();
 
-                tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
+            //    tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
 
-                TileUtil.UpdateTile2(m_BusGroup.m_GroupName);
-                TileUtil.UpdateTile2("");
-            }
+            //    TileUtil.UpdateTile2(m_BusGroup.m_GroupName);
+            //    TileUtil.UpdateTile2("");
+            //}
 
-            this.ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = true);
-            this.ApplicationBar.IsMenuEnabled = true;
-            prgbarWaiting.Visibility = Visibility.Collapsed;
+            //this.ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = true);
+            //this.ApplicationBar.IsMenuEnabled = true;
+            //prgbarWaiting.Visibility = Visibility.Collapsed;
 
-            if (numSucceededTasks == 0)
-                MessageBox.Show(AppResources.NetworkFault);
+            //if (numSucceededTasks == 0)
+            //    MessageBox.Show(AppResources.NetworkFault);
 
-            AppLogger.Debug("exit");
+            //AppLogger.Debug("exit");
         }
 
         private void tbGroupName_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
@@ -191,28 +262,31 @@ namespace LiveBusTile
             AppLogger.Debug("oldGroupName=\"{0}\", newGroupName=\"{1}\"".Fmt(oldGroupName, newGroupName));
 
             ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUtil.TileUri(oldGroupName));
-            if (tile != null)
-            {
-                //AppLogger.Error("Can't find TileUri=\"{0}\", ShellTile.ActiveTiles={1}".Fmt(TileUtil.TileUri(oldGroupName), 
-                //    ShellTile.ActiveTiles.DumpArray(x => x.NavigationUri.ToString() )));
-                Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, false));
-                Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, true));
-                tile.Delete();
-            }
+            if (tile == null)
+                return;
+            //AppLogger.Error("Can't find TileUri=\"{0}\", ShellTile.ActiveTiles={1}".Fmt(TileUtil.TileUri(oldGroupName), 
+            //    ShellTile.ActiveTiles.DumpArray(x => x.NavigationUri.ToString() )));
+            tile.Update(new FlipTileData
+                {
+                    BackgroundImage = TileUtil.GenerateTileJpg2(newGroupName, false),
+                    WideBackgroundImage = TileUtil.GenerateTileJpg2(newGroupName, true),
+                });
+            Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, false));
+            Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, true));
 
-            try
-            {
-                ShellTile.Create(new Uri(TileUtil.TileUri(newGroupName), UriKind.Relative),
-                    new FlipTileData
-                    {
-                        BackgroundImage = TileUtil.GenerateTileJpg2(newGroupName, false),
-                        WideBackgroundImage = TileUtil.GenerateTileJpg2(newGroupName, true),
-                    }, true);
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error("ShellTile.Create(new FlipTileData{}) failed, ex=" + ex.DumpStr());
-            }
+            //try
+            //{
+            //    ShellTile.Create(new Uri(TileUtil.TileUri(newGroupName), UriKind.Relative),
+            //        new FlipTileData
+            //        {
+            //            BackgroundImage = TileUtil.GenerateTileJpg2(newGroupName, false),
+            //            WideBackgroundImage = TileUtil.GenerateTileJpg2(newGroupName, true),
+            //        }, true);
+            //}
+            //catch (Exception ex)
+            //{
+            //    AppLogger.Error("ShellTile.Create(new FlipTileData{}) failed, ex=" + ex.DumpStr());
+            //}
         }
 
         void LostFocus_Epilog()

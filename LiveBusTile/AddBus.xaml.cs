@@ -45,7 +45,7 @@ namespace LiveBusTile
                 busNames.AddRange(nodes.Skip(1).Select(x => x.InnerText));
             }
             // remove duplicate items, make List items Unique
-            busNames = (new HashSet<string>(busNames)).ToList();
+            busNames = busNames.RemoveDuplicate().ToList();
 
             Dispatcher.BeginInvoke(() => 
             {

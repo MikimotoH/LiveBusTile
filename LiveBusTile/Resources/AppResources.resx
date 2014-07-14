@@ -147,4 +147,7 @@
   <data name="NewVersionFeatures" xml:space="preserve">
     <value>1.2.3.0 - 可從站牌中增加多個公車。</value>
   </data>
+  <data name="RefreshBusTime" xml:space="preserve">
+    <value>刷新時間</value>
+  </data>
 </root>
