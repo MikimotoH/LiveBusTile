@@ -300,7 +300,10 @@ namespace LiveBusTile
         {
             string newGroupName = tbGroupNameTextBox.Text.Trim();
             if (newGroupName == this.m_BusGroup.m_GroupName)
+            {
+                LostFocus_Epilog();
                 return;
+            }
             BusGroup existingGroup;
             if (!Database.IsLegalGroupName(newGroupName))
             {

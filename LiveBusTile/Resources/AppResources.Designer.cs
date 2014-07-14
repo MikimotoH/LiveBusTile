@@ -115,7 +115,7 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.2.3.0 - 可從站牌中增加多個公車。.
+        ///   Looks up a localized string similar to 1.2.3.1 - 可從站牌中增加多個公車。.
         /// </summary>
         public static string NewVersionFeatures {
             get {

@@ -145,7 +145,7 @@
     <value>群組「{0}」已存在，是否要合併之？</value>
   </data>
   <data name="NewVersionFeatures" xml:space="preserve">
-    <value>1.2.3.0 - 可從站牌中增加多個公車。</value>
+    <value>1.2.3.1 - 可從站牌中增加多個公車。</value>
   </data>
   <data name="RefreshBusTime" xml:space="preserve">
     <value>刷新時間</value>
