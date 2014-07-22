@@ -13,6 +13,9 @@ using System.IO.IsolatedStorage;
 using ScheduledTaskAgent1;
 using System.Collections.ObjectModel;
 using HtmlAgilityPack;
+using Windows.Devices.Geolocation;
+using System.Device.Location;
+using System.Diagnostics;
 
 namespace LiveBusTile
 {
@@ -99,6 +102,61 @@ namespace LiveBusTile
                 return;
             }
             base.OnBackKeyPress(e);
+        }
+        class StatDist : IComparable
+        {
+            public string station;
+            /// <summary>
+            /// distance in meters
+            /// </summary>
+            public double dist;
+
+            public StatDist(string station, double dist)
+            {
+                this.station = station;
+                this.dist = dist;
+            }
+
+            public int CompareTo(object obj)
+            {
+                StatDist b = (StatDist)obj;
+                return dist.CompareTo(b.dist);
+            }
+        }
+
+        private async void AppBar_OrderByMyLocation(object sender, EventArgs e)
+        {
+            progbar.Visibility = System.Windows.Visibility.Visible;
+            Geolocator geolocator = new Geolocator();
+            geolocator.DesiredAccuracyInMeters = 5;
+
+            try
+            {
+                Geoposition geoposition = await geolocator.GetGeopositionAsync();
+                Debug.WriteLine("geoposition.Coordinate = " + geoposition.Coordinate.ToString());
+                GeoCoordinate myGeo = geoposition.Coordinate.ToGeoCoordinate();
+                Debug.WriteLine("myGeo = " +  myGeo.ToString() );
+                TWD97Coord myCoord = TWD97Coord.FromLatLng(myGeo);
+                List<StatDist> sttdsts = Database.AllStationCoords.Select(t => new StatDist(t.station, t.twd97coord.DistanceFrom2(myCoord)) ).ToList();
+                sttdsts.Sort();
+
+                lbAllStations.ItemsSource = sttdsts.Select(k => k.station).ToList();
+                
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex.DumpStr());
+            }
+            progbar.Visibility = System.Windows.Visibility.Collapsed;
+        }
+
+        private void ListBoxItem_Map_Click(object sender, RoutedEventArgs e)
+        {
+            string station  = (sender as MenuItem).DataContext as string;
+            if (station.IsNullOrEmpty())
+                return;
+            NavigationService.Navigate(new Uri(
+                "/StationMap.xaml?Station={0}".Fmt(station),UriKind.Relative));
         }
     }
     public class ExampleAllStations : List<string>

@@ -33,7 +33,8 @@ namespace LiveBusTile
         {
             m_GroupName = NavigationContext.QueryString.GetValue("GroupName", "");
             tbStation.Text = NavigationContext.QueryString["Station"];
-            lbBuses.ItemsSource = Database.AllStations[tbStation.Text].OrderBy(b => b.bus, new StrNumComparer()).Select(x => new BusAndDirVM(x)).ToList();
+            lbBuses.ItemsSource = Database.AllStations[tbStation.Text]
+                .OrderBy(b => b.bus, new StrNumComparer()).Select(x => new BusAndDirVM(x)).ToList();
         }
 
 
@@ -130,6 +131,22 @@ namespace LiveBusTile
             messageBox.Show();
             
             return tcs.Task;
+        }
+
+        private void tbSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            lbBuses.ItemsSource = Database.AllStations[tbStation.Text]
+                .Where( x => x.bus.Contains(tbSearch.Text))
+                .OrderBy(b => b.bus, new StrNumComparer()).Select(x => new BusAndDirVM(x)).ToList();
+        }
+
+        private void btnSearch_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            if(tbSearch.Visibility == Visibility.Visible)
+                tbSearch.Visibility = Visibility.Collapsed;
+            else
+                tbSearch.Visibility = Visibility.Visible;
+
         }
     }
 

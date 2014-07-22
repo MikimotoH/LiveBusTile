@@ -72,8 +72,12 @@ namespace LiveBusTile
                 return;
             }
 
-            HtmlNodeCollection goNodes = doc.DocumentNode.SelectNodes("/html/body/center/table/tr[5]/td/table/tr[2]/td[1]/table");
-            if (goNodes.Count > 0)
+            HtmlNodeCollection 
+                goNodes = doc.DocumentNode.SelectNodes("/html/body/center/table/tr[5]/td/table/tr[2]/td[1]/table");
+            //                                         "/html/body/center/table/tr[5]/td/table/tr/td/table/tr[1]/td[1]"
+            if (goNodes.IsNullOrEmpty())
+                goNodes = doc.DocumentNode.SelectNodes("/html/body/center/table/tr[5]/td/table/tr/td/table");
+            if (!goNodes.IsNullOrEmpty())
             {
                 ObservableCollection<StationTimeVM> goStatVM = new ObservableCollection<StationTimeVM>();
                 for (int i = 1; i < goNodes[0].ChildNodes.Count; i += 2)
@@ -84,7 +88,7 @@ namespace LiveBusTile
             }
 
             HtmlNodeCollection backNodes = doc.DocumentNode.SelectNodes("/html/body/center/table/tr[5]/td/table/tr[2]/td[2]/table");
-            if (backNodes.Count > 0)
+            if (!backNodes.IsNullOrEmpty())
             {
                 ObservableCollection<StationTimeVM> backStatVM = new ObservableCollection<StationTimeVM>();
                 for (int i = 1; i < backNodes[0].ChildNodes.Count; i += 2)

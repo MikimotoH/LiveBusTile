@@ -23,6 +23,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -30,21 +31,24 @@
             <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" Style="{StaticResource PhoneTextNormalStyle}"/>
             <TextBlock Text="-選擇公車(2/2)" Style="{StaticResource PhoneTextNormalStyle}"/>
         </StackPanel>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Margin="0,10,0,20">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
+            <Image Source="Images/AppBar.Search.Png" Tap="btnSearch_Tap" Width="36" Height="36"/>
             <TextBlock x:Name="tbStation" 
                        Text="臺大醫院" TextAlignment="Center"
-                       Grid.Column="0" 
-                       FontSize="45" Margin="0,0,0,20"/>
-            <Button Grid.Column="1" Tap="btnEnter_Tap">
+                       Grid.Column="1" 
+                       FontSize="45" />
+            <Button Grid.Column="2" Tap="btnEnter_Tap">
                 <Image Source="Images/Btn.Enter.Png"></Image>
             </Button>
         </Grid>
+        <TextBox Grid.Row="2" x:Name="tbSearch" TextChanged="tbSearch_TextChanged" Visibility="Collapsed"/>
         <ListBox
-            Grid.Row="2"
+            Grid.Row="3"
             x:Name="lbBuses"
             ItemsSource="{StaticResource ExampleBusAndDirList}"
             SelectionMode="Multiple"
@@ -108,12 +112,12 @@
                                             <ContentControl.Content>
                                                 <Grid >
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition MaxWidth="180"/>
+                                                        <ColumnDefinition Width="26"/>
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock FontSize="36" Foreground="Orange" Text="{Binding Bus}" 
-                                                    FontWeight="Bold"  Grid.Column="0" TextAlignment="Right"/>
+                                                    FontWeight="Bold"  Grid.Column="0" TextAlignment="Left" HorizontalAlignment="Left" TextWrapping="Wrap"/>
                                                     <TextBlock FontSize="26" Foreground="#FF7C487C" Text="往" 
                                                     Grid.Column="1"/>
                                                     <TextBlock FontSize="26" Foreground="#FF7C487C" Text="{Binding Destination}" 

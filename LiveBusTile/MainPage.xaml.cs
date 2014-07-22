@@ -244,10 +244,6 @@ namespace LiveBusTile
             NavigationService.Navigate(new Uri("/About.xaml", UriKind.Relative));
         }
 
-        private void ListNameMenuItem_Rename_Click(object sender, RoutedEventArgs e)
-        {
-            AppLogger.Debug("");
-        }
 
         private void lbBus_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
         {

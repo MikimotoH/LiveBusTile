@@ -170,6 +170,10 @@ namespace ScheduledTaskAgent1
             Debug.Assert(dstLen <= srcLen);
             return src.Take(dstLen);
         }
+        public static bool IsNullOrEmpty(this string s)
+        {
+            return String.IsNullOrEmpty(s);
+        }
 
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> ls)
         {

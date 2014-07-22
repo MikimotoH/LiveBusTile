@@ -103,6 +103,27 @@ namespace LiveBusTile
             }
         }
 
+        private void AllBusesInThisStation_Click(object sender, RoutedEventArgs e)
+        {
+            string station = ((MenuItem)sender).DataContext as string;
+
+            if (station.IsNullOrEmpty())
+                return;
+            NavigationService.Navigate(new Uri("/AddStationBuses.xaml?Station={0}&GroupName={1}".Fmt(station, this.m_GroupName), 
+                UriKind.Relative));
+        }
+
+        private void StationMap_Click(object sender, RoutedEventArgs e)
+        {
+            string station = ((MenuItem)sender).DataContext as string;
+            if (station.IsNullOrEmpty())
+                return;
+            NavigationService.Navigate(new Uri(
+                "/StationMap.xaml?Station={0}"
+                .Fmt(station),
+                UriKind.Relative));            
+        }
+
 
     }
 

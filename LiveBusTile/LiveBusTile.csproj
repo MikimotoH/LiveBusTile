@@ -140,6 +140,9 @@
     <Compile Include="Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StationMap.xaml.cs">
+      <DependentUpon>StationMap.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TileCtrlWideWithGroup.xaml.cs">
       <DependentUpon>TileCtrlWideWithGroup.xaml</DependentUpon>
     </Compile>
@@ -202,6 +205,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="StationMap.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TileCtrlWideWithGroup.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -223,6 +230,8 @@
     <Content Include="Images\AppBar.AddBus.png" />
     <Content Include="Images\AppBar.AddStation.png" />
     <Content Include="Images\AppBar.Delete.png" />
+    <Content Include="Images\AppBar.Map.Png" />
+    <Content Include="Images\AppBar.Search.png" />
     <Content Include="Images\AppBar.StopRefresh.png" />
     <None Include="packages.config" />
     <None Include="Properties\AppManifest.xml" />
@@ -235,6 +244,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\AppBar.Pin.Png" />
+    <Content Include="Images\app_bar_me_icon.png" />
     <Content Include="Images\Btn.Enter.Png" />
     <Content Include="Images\AppBar.Refresh.Png" />
   </ItemGroup>

@@ -12,6 +12,7 @@
     SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d"
     xmlns:data="clr-namespace:LiveBusTile"
+    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
     shell:SystemTray.IsVisible="True">
 
     <phone:PhoneApplicationPage.Resources>
@@ -23,7 +24,14 @@
                     <ControlTemplate>
                         <TextBlock FontSize="36" Foreground="Magenta" Text="{Binding}" 
                                    FontWeight="Bold"
-                                   HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                                   HorizontalAlignment="Center" TextWrapping="Wrap">
+                            <toolkit:ContextMenuService.ContextMenu>
+                                <toolkit:ContextMenu>
+                                    <toolkit:MenuItem Click="AllBusesInThisStation_Click" Header="此站的所有公車"/>
+                                    <toolkit:MenuItem Click="StationMap_Click" Header="地圖"/>
+                                </toolkit:ContextMenu>
+                            </toolkit:ContextMenuService.ContextMenu>
+                        </TextBlock>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>

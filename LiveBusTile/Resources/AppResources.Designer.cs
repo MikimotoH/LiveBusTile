@@ -70,7 +70,7 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.2.3.0.
+        ///   Looks up a localized string similar to 1.2.3.2.
         /// </summary>
         public static string AppVersion {
             get {

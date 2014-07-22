@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Device.Location;
+using System.Diagnostics;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
@@ -150,6 +152,58 @@ namespace ScheduledTaskAgent1
         }
         #endregion
 
+        public class StationCoord
+        {
+            public string station;
+            public TWD97Coord twd97coord;
+            public GeoCoordinate geocoord;
+        }
+        static List<StationCoord> m_all_stations_coords = null;
+
+        public static void LoadAllStationCoordinates()
+        {
+            m_all_stations_coords = new List<StationCoord>();
+
+            var sri = Application.GetResourceStream(new Uri("Data/stations_TWD97_sub250km.txt", UriKind.Relative));
+            using (StreamReader sr = new StreamReader(sri.Stream))
+            {
+                string line = sr.ReadLine(); // consume first line
+                
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (line.StartsWith("#"))
+                        continue;// this is comment
+                    string[] comps = line.Split("\t".ToArray(), StringSplitOptions.RemoveEmptyEntries);
+                    var stco = new StationCoord { station = comps[0] };
+                    if (comps.Length == 3)
+                    {
+                        string[] coords = comps[1].Split(",".ToArray());
+                        string[] latlng = comps[2].Split(",".ToArray());
+                        stco.twd97coord = new TWD97Coord(double.Parse(coords[0]), double.Parse(coords[1]));
+                        stco.geocoord = new GeoCoordinate(double.Parse(latlng[0]), double.Parse(latlng[1]));
+                    }
+                    else
+                    {
+                        string[] latlng = comps[1].Split(",".ToArray());
+                        stco.geocoord = new GeoCoordinate(double.Parse(latlng[0]), double.Parse(latlng[1]));
+                        stco.twd97coord = TWD97Coord.FromLatLng(stco.geocoord);
+                    }
+
+                    m_all_stations_coords.Add(stco);
+                }
+            }
+        }
+        public static List<StationCoord> AllStationCoords
+        {
+            get
+            {
+                if (m_all_stations_coords == null)
+                    LoadAllStationCoordinates();
+                return m_all_stations_coords;
+            }
+        }
+
+
         static Dictionary<string, BusAndDir[]> m_all_stations = null;
         public static void LoadAllStations()
         {
@@ -165,6 +219,7 @@ namespace ScheduledTaskAgent1
                 }
             }
         }
+
         public static Dictionary<string, BusAndDir[]> AllStations
         {
             get

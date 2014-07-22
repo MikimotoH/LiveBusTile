@@ -163,6 +163,14 @@ namespace LiveBusTile
                 .Fmt(m_busInfo.m_Name, m_busInfo.m_Dir, m_busInfo.m_Station), 
                 UriKind.Relative));
         }
+
+        private void AppBar_Map_Click(object sender, EventArgs e)
+        {
+            NavigationService.Navigate(new Uri(
+                "/StationMap.xaml?Station={0}"
+                .Fmt(m_busInfo.m_Station),
+                UriKind.Relative));
+        }
     }
 
 

@@ -88,11 +88,6 @@
                             <DataTemplate>
                                 <Grid Background="#FF1A1A1A" 
                                     Width="480">
-                                    <toolkit:ContextMenuService.ContextMenu>
-                                        <toolkit:ContextMenu x:Name="ctxmenuListName">
-                                            <toolkit:MenuItem Header="更名" Click="ListNameMenuItem_Rename_Click"/>
-                                        </toolkit:ContextMenu>
-                                    </toolkit:ContextMenuService.ContextMenu>
                                     <TextBlock Text="{Binding GroupName}" FontSize="38" Foreground="Beige" 
                                                HorizontalAlignment="Center" FontWeight="ExtraBold" Padding="0,10"/>
                                 </Grid>
