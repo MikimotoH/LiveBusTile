@@ -70,7 +70,7 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.2.3.4.
+        ///   Looks up a localized string similar to 1.2.3.5.
         /// </summary>
         public static string AppVersion {
             get {
@@ -115,7 +115,7 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.2.3.4 版- 「群組」中可刪除站牌、取得詳情.
+        ///   Looks up a localized string similar to 1.2.3.5 版- .
         /// </summary>
         public static string NewVersionFeatures {
             get {
