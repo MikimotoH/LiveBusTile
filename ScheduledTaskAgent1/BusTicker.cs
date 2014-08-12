@@ -18,30 +18,37 @@ namespace ScheduledTaskAgent1
 {
     public class BusTicker
     {
-        //const string route_url = @"http://pda.5284.com.tw/MQS/businfo2.jsp?routename=";
-        public static Task<string> GetBusDueTime(BusInfo b)
+        public static string Pda5284Url(BusInfo b)
         {
-            return GetBusDueTime(b.m_Name, b.m_Station, b.m_Dir);
+            return @"http://pda.5284.com.tw/MQS/businfo3.jsp?Mode=1&Dir={1}&Route={0}&Stop={2}".Fmt(
+                Uri.EscapeUriString(b.m_Name), b.m_Dir == BusDir.go ? 1 : 0, Uri.EscapeUriString(b.m_Station));
         }
 
-        public static async Task<string> GetBusDueTime(string busName, string stationName, BusDir busDir)
+        public static async Task<string> GetBusDueTime(BusInfo b)
         {
-            string url = @"http://pda.5284.com.tw/MQS/businfo3.jsp?Mode=1&Dir={1}&Route={0}&Stop={2}".Fmt(
-                Uri.EscapeUriString(busName), busDir==BusDir.go?1:0, Uri.EscapeUriString(stationName));
-
             var client = new HttpClient();
-            string strResult = await client.GetStringAsync(new Uri(url));
-            var doc = new HtmlDocument();
-            doc.LoadHtml(strResult);
+            return ParseHtmlBusTime(await client.GetStringAsync(new Uri(Pda5284Url(b))));
+        }
 
-            HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes(
-                "/html/body/center/table/tr[6]/td");
-            if (nodes.Count == 0)
+
+        public static string ParseHtmlBusTime(string html)
+        {
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(html);
+            try
             {
-                Logger.Debug("nodes.Count == 0");
-                return "解析錯誤";
+                HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes(
+                    "/html/body/center/table/tr[6]/td");
+                if (nodes.Count == 0)
+                    return "節點找不到";
+                return nodes[0].InnerText;
             }
-            return nodes[0].InnerText;
+            catch (Exception ex)
+            {
+                Logger.Error(ex.DumpStr());
+                Logger.Error("HTML=\n" + html);
+                return "解析異常";
+            }
         }
     }
 }

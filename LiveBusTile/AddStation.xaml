@@ -76,7 +76,7 @@
     
     <phone:PhoneApplicationPage.ApplicationBar>
         <shell:ApplicationBar IsVisible="True" IsMenuEnabled="False" x:Name="appbar">
-            <shell:ApplicationBarIconButton IconUri="/Images/app_bar_me_icon.png" Text="最近位置" Click="AppBar_OrderByMyLocation"/>
+            <shell:ApplicationBarIconButton IconUri="/Images/app_bar_me_icon.png" Text="最近站牌" Click="AppBar_OrderByMyLocation"/>
         </shell:ApplicationBar>
     </phone:PhoneApplicationPage.ApplicationBar>
 

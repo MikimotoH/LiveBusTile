@@ -118,10 +118,7 @@ namespace LiveBusTile
             string station = ((MenuItem)sender).DataContext as string;
             if (station.IsNullOrEmpty())
                 return;
-            NavigationService.Navigate(new Uri(
-                "/StationMap.xaml?Station={0}"
-                .Fmt(station),
-                UriKind.Relative));            
+            NavigationService.Navigate(new Uri("/StationMap.xaml?Station="+station,UriKind.Relative));            
         }
 
 

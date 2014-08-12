@@ -57,6 +57,7 @@ namespace BusStationCrawler
                 {
                     nodes = doc.DocumentNode.SelectNodes(
                         "/html/body/center/table/tr[5]/td/table/tr[2]/td[1]/table/tr[" + s + "]/td[1]");
+                    //  "/html/body/center/table/tr[5]/td/table/tr[2]/td[1]/table/tr[1]/td[1]"
                     st.stations_go[s - 1] = nodes[0].InnerText;
                 }
 
@@ -114,7 +115,7 @@ namespace BusStationCrawler
             all_buses.Keys.CopyTo(bus_names, 0);
             Array.Sort(bus_names);
 
-            using (var wr = File.CreateText(@"all_buses.txt"))
+            using (var wr = File.CreateText(@"db.txt"))
             {
                 foreach (string b in bus_names)
                     wr.WriteLine(b);
@@ -130,7 +131,7 @@ namespace BusStationCrawler
             Debug.Assert(Regex.IsMatch("275", @"^\d{1,3}[^\d]*$"));
             Debug.Assert(Regex.IsMatch("275副", @"^\d{1,3}[^\d]*$"));
             var m_all_buses = new Dictionary<string, StationPair>();
-            using (StreamReader sr = new StreamReader(@"all_buses.txt"))
+            using (StreamReader sr = new StreamReader(@"db.txt"))
             {
                 string busName;
                 while ((busName = sr.ReadLine()) != null)
@@ -182,7 +183,7 @@ namespace BusStationCrawler
         const string field_separator = "   ";
         /// <summary>
         /// read buses_simple.json and convert to simple txt, which separate by triple-whitespace
-        /// write all_buses.txt
+        /// write db.txt
         /// </summary>
         /// <param name="param"></param>
         static void json_to_txt()
@@ -197,7 +198,7 @@ namespace BusStationCrawler
                 busStatDict = serializer.Deserialize(reader, typeof(Dictionary<string, StationPair>)) as Dictionary<string, StationPair>;
             }
 
-            using (StreamWriter sw = new StreamWriter(@"all_buses.txt"))
+            using (StreamWriter sw = new StreamWriter(@"db.txt"))
             {
                 foreach (var kv in busStatDict)
                 {
@@ -211,7 +212,7 @@ namespace BusStationCrawler
             }
         }
 
-        class StationPair
+        public class StationPair
         {
             public string[] stations_go;
             public string[] stations_back;
@@ -374,11 +375,83 @@ namespace BusStationCrawler
                 serializer.Serialize(writer, stations);
             }
         }
+        /// <summary>
+        /// Manually Crawl specific bus
+        /// </summary>
+        static void Main_Manually_Crawl_SpecBus()
+        {
+            var client = new WebClient();
+            Console.WriteLine("Enter Bus Name:");
+            string bus = Console.ReadLine();
+            try
+            {
+                var st = CrawlStations(client, bus);
+                Debug.WriteLine(bus);
+                Debug.WriteLine(field_separator + String.Join(field_separator, st.stations_go));
+                Debug.WriteLine(field_separator + String.Join(field_separator, st.stations_back)); 
+            }
+            catch (WebException wex)
+            {
+                Debug.WriteLine(wex);
+            }
+            catch (Exception x)
+            {
+                Debug.WriteLine(x);
+            }
+        }
+
+        /// <summary>
+        /// In-place crawl empty station bus routes
+        /// </summary>
+        static void Main()
+        {
+            var client = new WebClient();
+
+            var db = LoadAllBuses("all_bus_stations.txt");
+            var buses = db.Keys.ToArray();
+            foreach( var bus in buses)
+            {
+                var st = db[bus];
+                if( st.stations_go.IsNullOrEmpty() && st.stations_back.IsNullOrEmpty() )
+                {
+                    try
+                    {
+                        db[bus] = CrawlStations(client, bus);
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+                }
+            }
+
+            SaveAllBuses(db, "all_bus_stations_out.txt");
+
+        }
+
+        public static Dictionary<string, StationPair> LoadAllBuses(string fileName)
+        {
+            var all_buses = new Dictionary<string, StationPair>();
+            using( var sr = File.OpenText(fileName))
+            {
+                string busName;
+                while ((busName = sr.ReadLine()) != null)
+                {
+                    var stp = new StationPair();
+                    string stations_go_line = sr.ReadLine();
+                    stp.stations_go = stations_go_line.Split(new string[] { field_separator }, StringSplitOptions.RemoveEmptyEntries);
+                    string stations_back_line = sr.ReadLine();
+                    stp.stations_back = stations_back_line.Split(new string[] { field_separator }, StringSplitOptions.RemoveEmptyEntries);
+                    all_buses[busName] = stp;
+                }
+            }
+            return all_buses;
+        }
 
         /// <summary>
         /// MainCrawler
         /// </summary>
-        static void Main()
+        static void Main_MainCrawler()
         {
             var client = new WebClient();
             string sHtml = Encoding.UTF8.GetString(client.DownloadData("http://pda.5284.com.tw/MQS/businfo1.jsp"));
@@ -422,9 +495,24 @@ namespace BusStationCrawler
                 }
             }
 
-            using (StreamWriter sw = new StreamWriter(@"all_bus_stations.txt"))
+            SaveAllBuses(db, "all_bus_stations.txt");
+            
+
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.NullValueHandling = NullValueHandling.Ignore;
+
+            using (StreamWriter sw = new StreamWriter(@"buses.json"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
             {
-                foreach(var kv in db)
+                serializer.Serialize(writer, db);
+            }
+        }
+
+        private static void SaveAllBuses(Dictionary<string, StationPair> db, string fileName)
+        {
+            using (StreamWriter sw = new StreamWriter(fileName))
+            {
+                foreach (var kv in db)
                 {
                     sw.WriteLine(kv.Key);
                     sw.WriteLine(field_separator + field_separator.Joyn(kv.Value.stations_go));
@@ -434,18 +522,7 @@ namespace BusStationCrawler
                     {
                         sw.WriteLine(field_separator);
                     }
-
                 }
-            }
-
-
-            JsonSerializer serializer = new JsonSerializer();
-            serializer.NullValueHandling = NullValueHandling.Ignore;
-
-            using (StreamWriter sw = new StreamWriter(@"buses.json"))
-            using (JsonWriter writer = new JsonTextWriter(sw))
-            {
-                serializer.Serialize(writer, db);
             }
         }
     }

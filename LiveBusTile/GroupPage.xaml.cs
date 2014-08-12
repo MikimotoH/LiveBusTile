@@ -144,7 +144,7 @@ namespace LiveBusTile
                         Dispatcher.BeginInvoke(() =>
                         {
                             BusInfoVM vm = asyncCompletedEventArgs.UserState as BusInfoVM;
-                            vm.TimeToArrive = MainPage.ParseHtmlBusTime(asyncCompletedEventArgs.Result);
+                            vm.TimeToArrive = BusTicker.ParseHtmlBusTime(asyncCompletedEventArgs.Result);
                             tbLastUpdatedTime.Text = DateTime.Now.ToString(TileUtil.CurSysTimeFormat);
                         });
                     }
@@ -171,54 +171,8 @@ namespace LiveBusTile
                         });
                     }
                 };
-                wcvm.wc.DownloadStringAsync(new Uri(MainPage.Pda5284Url(wcvm.vm.Base)), wcvm.vm);
+                wcvm.wc.DownloadStringAsync(new Uri(BusTicker.Pda5284Url(wcvm.vm.Base)), wcvm.vm);
             }
-            
-            //Task<string>[] tasks = m_BusGroup.m_Buses.Select(b => BusTicker.GetBusDueTime(b)).ToArray();
-            //try
-            //{
-            //    await Task.Run(() =>
-            //    {
-            //        Task.WaitAll(tasks);
-            //    });
-            //}
-            //catch (Exception ex)
-            //{
-            //    AppLogger.Error("Task.WaitAll(tasks) failed");
-            //    AppLogger.Error(ex.DumpStr());
-            //}
-
-            //int numSucceededTasks = 0;
-            //for (int i = 0; i < tasks.Length; ++i)
-            //{
-            //    if (tasks[i].Status == TaskStatus.RanToCompletion)
-            //    {
-            //        m_BusGroup.m_Buses[i].m_TimeToArrive = tasks[i].Result;
-            //        ++numSucceededTasks;
-            //    }
-            //}
-            //AppLogger.Debug("m_finHttpReqs=" + numSucceededTasks);
-
-            //if (numSucceededTasks > 0)
-            //{
-            //    Database.SaveFavBusGroups();
-
-            //    lbBusInfos.ItemsSource = m_BusGroup.m_Buses.Select(x => new BusInfoVM(x)).ToList();
-
-            //    tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
-
-            //    TileUtil.UpdateTile2(m_BusGroup.m_GroupName);
-            //    TileUtil.UpdateTile2("");
-            //}
-
-            //this.ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = true);
-            //this.ApplicationBar.IsMenuEnabled = true;
-            //prgbarWaiting.Visibility = Visibility.Collapsed;
-
-            //if (numSucceededTasks == 0)
-            //    MessageBox.Show(AppResources.NetworkFault);
-
-            //AppLogger.Debug("exit");
         }
 
         private void tbGroupName_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
@@ -273,20 +227,6 @@ namespace LiveBusTile
                 });
             Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, false));
             Util.DeleteFileSafely(TileUtil.TileJpgPath(oldGroupName, true));
-
-            //try
-            //{
-            //    ShellTile.Create(new Uri(TileUtil.TileUri(newGroupName), UriKind.Relative),
-            //        new FlipTileData
-            //        {
-            //            BackgroundImage = TileUtil.GenerateTileJpg2(newGroupName, false),
-            //            WideBackgroundImage = TileUtil.GenerateTileJpg2(newGroupName, true),
-            //        }, true);
-            //}
-            //catch (Exception ex)
-            //{
-            //    AppLogger.Error("ShellTile.Create(new FlipTileData{}) failed, ex=" + ex.DumpStr());
-            //}
         }
 
         void LostFocus_Epilog()
@@ -365,15 +305,13 @@ namespace LiveBusTile
             NavigationService.Navigate(new Uri(
                 "/BusStationDetails.xaml", UriKind.Relative));
         }
-        private void AppBar_DeleteGroup_Click(object sender, EventArgs e)
-        {
-            if (MessageBox.Show("確定要刪除整個群組？", "", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
-                return;
 
+        void DeleteThisGroup()
+        {
             bool bRemoveOK = Database.FavBusGroups.Remove(m_BusGroup);
             if (!bRemoveOK)
                 AppLogger.Error("Database.FavBusGroups.Remove(m_BusGroup) failed");
-            
+
             Database.SaveFavBusGroups();
             ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUtil.TileUri(m_BusGroup.m_GroupName));
             if (tile != null)
@@ -382,6 +320,37 @@ namespace LiveBusTile
 
             PhoneApplicationService.Current.State["Op"] = "Deleted";
             NavigationService.GoBack();
+        }
+        private void AppBar_DeleteGroup_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("確定要刪除整個群組？", "", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
+                return;
+            DeleteThisGroup();
+        }
+
+        private void BusItem_Delete_Click(object sender, RoutedEventArgs e)
+        {
+            var bivm = (sender as MenuItem).DataContext as BusInfoVM;
+            bool bRemoveOK = m_BusGroup.m_Buses.Remove(bivm.Base);
+            if(!bRemoveOK)
+                AppLogger.Error("m_BusGroup.m_Buses.Remove(bivm.Base={0}) failed".Fmt(bivm.Base));
+            
+            if (m_BusGroup.m_Buses.Count == 0)
+            {
+                DeleteThisGroup();
+                return;
+            }
+
+            Database.SaveFavBusGroups();
+
+            lbBusInfos.ItemsSource = m_BusGroup.m_Buses.Select(x => new BusInfoVM(x)).ToList();
+            TileUtil.UpdateTile2(m_BusGroup.m_GroupName);
+        }
+
+        private void BusItem_Details_Click(object sender, RoutedEventArgs e)
+        {
+            var bivm = (sender as MenuItem).DataContext as BusInfoVM;
+            GotoDetailsPage(bivm.Base, m_BusGroup.m_GroupName);
         }
 
     }

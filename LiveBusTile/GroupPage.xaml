@@ -12,6 +12,7 @@
     SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d"
     xmlns:data="clr-namespace:LiveBusTile"
+    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
     shell:SystemTray.IsVisible="True">
     
     <phone:PhoneApplicationPage.Resources>
@@ -90,6 +91,12 @@
                             <ColumnDefinition Width="*"   />
                             <ColumnDefinition Width="98"  />
                         </Grid.ColumnDefinitions>
+                        <toolkit:ContextMenuService.ContextMenu>
+                            <toolkit:ContextMenu>
+                                <toolkit:MenuItem Click="BusItem_Delete_Click" Header="刪除"/>
+                                <toolkit:MenuItem Click="BusItem_Details_Click" Header="詳情"/>
+                            </toolkit:ContextMenu>
+                        </toolkit:ContextMenuService.ContextMenu>
                         <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="ExtraBlack" FontSize="28" Foreground="Orange" Margin="8,8"/>
                         <TextBlock Grid.Column="1" Text="{Binding Station}" FontSize="28" Foreground="#FFFFE4B3" Margin="8,8"/>
                         <TextBlock Grid.Column="2" Text="{Binding TimeToArrive}" FontSize="28" Foreground="Red" Margin="8,8"/>

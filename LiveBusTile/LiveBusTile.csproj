@@ -230,7 +230,7 @@
     <Content Include="Images\AppBar.AddBus.png" />
     <Content Include="Images\AppBar.AddStation.png" />
     <Content Include="Images\AppBar.Delete.png" />
-    <Content Include="Images\AppBar.Map.Png" />
+    <Content Include="Images\AppBar.MapPin.png" />
     <Content Include="Images\AppBar.Search.png" />
     <Content Include="Images\AppBar.StopRefresh.png" />
     <None Include="packages.config" />

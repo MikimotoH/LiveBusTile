@@ -88,6 +88,11 @@
                             <DataTemplate>
                                 <Grid Background="#FF1A1A1A" 
                                     Width="480">
+                                    <toolkit:ContextMenuService.ContextMenu>
+                                        <toolkit:ContextMenu>
+                                            <toolkit:MenuItem Click="GroupHeader_Delete_Click" Header="刪除"/>
+                                        </toolkit:ContextMenu>
+                                    </toolkit:ContextMenuService.ContextMenu>
                                     <TextBlock Text="{Binding GroupName}" FontSize="38" Foreground="Beige" 
                                                HorizontalAlignment="Center" FontWeight="ExtraBold" Padding="0,10"/>
                                 </Grid>

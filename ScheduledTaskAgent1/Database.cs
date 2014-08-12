@@ -245,7 +245,8 @@ namespace ScheduledTaskAgent1
                     stp.stations_go = stations_go_line.Split(new string[] { field_separator }, StringSplitOptions.RemoveEmptyEntries);
                     string stations_back_line = sr.ReadLine();
                     stp.stations_back = stations_back_line.Split(new string[] { field_separator }, StringSplitOptions.RemoveEmptyEntries);
-                    m_all_buses[busName] = stp;
+                    if(stp.stations_go.Length > 0 || stp.stations_back.Length > 0)
+                        m_all_buses[busName] = stp;
                 }
             }
         }

@@ -128,11 +128,13 @@ namespace LiveBusTile
         {
             progbar.Visibility = System.Windows.Visibility.Visible;
             Geolocator geolocator = new Geolocator();
-            geolocator.DesiredAccuracyInMeters = 5;
+            geolocator.DesiredAccuracyInMeters = 50;
 
             try
             {
-                Geoposition geoposition = await geolocator.GetGeopositionAsync();
+                Geoposition geoposition = await geolocator.GetGeopositionAsync(
+                    maximumAge: TimeSpan.FromMinutes(5), 
+                    timeout: TimeSpan.FromSeconds(10.0));
                 Debug.WriteLine("geoposition.Coordinate = " + geoposition.Coordinate.ToString());
                 GeoCoordinate myGeo = geoposition.Coordinate.ToGeoCoordinate();
                 Debug.WriteLine("myGeo = " +  myGeo.ToString() );
@@ -155,8 +157,7 @@ namespace LiveBusTile
             string station  = (sender as MenuItem).DataContext as string;
             if (station.IsNullOrEmpty())
                 return;
-            NavigationService.Navigate(new Uri(
-                "/StationMap.xaml?Station={0}".Fmt(station),UriKind.Relative));
+            NavigationService.Navigate(new Uri("/StationMap.xaml?Station=" + station, UriKind.Relative));
         }
     }
     public class ExampleAllStations : List<string>

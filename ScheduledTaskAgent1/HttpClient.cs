@@ -31,14 +31,8 @@ namespace ScheduledTaskAgent1
         {
             if (Headers == null)
                 Headers = new WebHeaderCollection();
-            try
-            {
-                Headers[HttpRequestHeader.IfModifiedSince] = DateTime.UtcNow.ToString("R");
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex.DumpStr());
-            }
+
+            Headers[HttpRequestHeader.IfModifiedSince] = DateTime.UtcNow.ToString("R");
             Headers["Cache-Control"] = "no-cache"; 
             Headers["Pragma"] = "no-cache";            
         }

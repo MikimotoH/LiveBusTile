@@ -48,7 +48,7 @@
             <TextBlock x:Name="tbStation" Text="秀山國小" FontSize="36" Margin="10,10" Foreground="Orange" 
                     TextWrapping="Wrap" FontWeight="Bold"/>
             <TextBlock Text="方向"  Style="{StaticResource PhoneTextTitle2Style}"/>
-            <TextBlock x:Name="tbDir" Text="往" FontSize="36" Margin="10,10" Foreground="Orange" FontWeight="Bold" />
+            <TextBlock x:Name="tbDir" Text="往:秀山站" FontSize="36" Margin="10,10" Foreground="Orange" FontWeight="Bold" />
             <TextBlock Text="群組" Style="{StaticResource PhoneTextTitle2Style}"/>
             
             <toolkit:AutoCompleteBox 
@@ -56,24 +56,17 @@
                 Text="上班" FontSize="36" 
                 ItemsSource="{StaticResource words}"/>
             
-            <TextBlock Text="時間" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle2Style}"/>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="tbTimeToArrive" Text="20分" Margin="10,10" FontSize="36" Foreground="Orange"  FontWeight="Bold"/>
-                <RichTextBox Grid.Column="1" HorizontalAlignment="Right">
-                    <Paragraph >
-                        <Hyperlink Click="GotoContextBusTime_Click">
-                            <Run FontSize="34" >下下一班時間</Run>
-                        </Hyperlink>
-                    </Paragraph>
-                </RichTextBox>
+                <TextBlock Grid.Column="0" Text="時間" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle2Style}"/>
+                <TextBlock x:Name="tbTimeToArrive" Grid.Column="1" Text="20分" HorizontalAlignment="Right" FontSize="36" Foreground="Orange"  FontWeight="Bold"/>
             </Grid>
             <Button Click="GotoContextBusTime_Click">
                 <TextBlock FontSize="34" Foreground="Cyan">
-                    <Bold><Underline>下下一班時間</Underline></Bold>
+                    <Bold><Underline>全部站牌時間</Underline></Bold>
                 </TextBlock>
             </Button>
         </StackPanel>
@@ -82,7 +75,7 @@
         <shell:ApplicationBar IsVisible="True" IsMenuEnabled="False">
             <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Delete.png" Text="刪除" Click="AppBar_Delete_Click"/>
             <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Refresh.Png" Text="刷新時間" Click="AppBar_RefreshBusTime_Click"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Map.Png" Text="地圖" Click="AppBar_Map_Click"/>
+            <shell:ApplicationBarIconButton IconUri="/Images/AppBar.MapPin.Png" Text="地圖" Click="AppBar_Map_Click"/>
         </shell:ApplicationBar>
     </phone:PhoneApplicationPage.ApplicationBar>
 

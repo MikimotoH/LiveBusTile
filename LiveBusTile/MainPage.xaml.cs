@@ -115,6 +115,7 @@ namespace LiveBusTile
                 this.wc.Headers = new WebHeaderCollection();
                 this.wc.Headers[HttpRequestHeader.IfModifiedSince] = DateTime.UtcNow.ToString("R");
                 this.wc.Headers["Cache-Control"] = "no-cache";
+                this.wc.Headers["Pragma"] = "no-cache";
             }
         }
         
@@ -157,7 +158,7 @@ namespace LiveBusTile
                         Dispatcher.BeginInvoke(() =>
                         {
                             GroupBusVM vm = asyncCompletedEventArgs.UserState as GroupBusVM;
-                            vm.TimeToArrive = ParseHtmlBusTime(asyncCompletedEventArgs.Result);
+                            vm.TimeToArrive = BusTicker.ParseHtmlBusTime(asyncCompletedEventArgs.Result);
                             tbLastUpdatedTime.Text = DateTime.Now.ToString(TileUtil.CurSysTimeFormat);
                         });
                     }
@@ -188,36 +189,8 @@ namespace LiveBusTile
                         });
                     }
                 };
-                wcvm.wc.DownloadStringAsync(new Uri(Pda5284Url(wcvm.vm.BusInfo)), wcvm.vm);
+                wcvm.wc.DownloadStringAsync(new Uri(BusTicker.Pda5284Url(wcvm.vm.BusInfo)), wcvm.vm);
             }
-        }
-
-        public static string ParseHtmlBusTime(string html)
-        {
-            HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(html);
-            try
-            {
-                HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes(
-                    "/html/body/center/table/tr[6]/td");
-                if (nodes.Count == 0)
-                    return "節點找不到";
-                return nodes[0].InnerText;
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex.DumpStr());
-                AppLogger.Error("HTML=\n" + html);
-                return "解析異常";
-            }
-        }
-
-
-
-        public static string Pda5284Url(BusInfo b)
-        {
-            return @"http://pda.5284.com.tw/MQS/businfo3.jsp?Mode=1&Dir={1}&Route={0}&Stop={2}".Fmt(
-                Uri.EscapeUriString(b.m_Name), b.m_Dir==BusDir.go?1:0, Uri.EscapeUriString(b.m_Station));
         }
 
 
@@ -257,6 +230,26 @@ namespace LiveBusTile
             }
             
             GotoDetailsPage(busInfo, gbvm.GroupName);
+        }
+
+        private void GroupHeader_Delete_Click(object sender, RoutedEventArgs e)
+        {
+            var gbvm = (sender as MenuItem).DataContext as GroupBusVM;
+            string groupName = gbvm.GroupName;
+
+            bool bRemoveOK = Database.FavBusGroups.Remove(Database.FavBusGroups.FirstOrDefault(g=>g.m_GroupName==groupName));
+            if (!bRemoveOK)
+                AppLogger.Error("Database.FavBusGroups.Remove(m_BusGroup) failed");
+
+
+            Database.SaveFavBusGroups();
+            lbBus.ItemsSource = GenFavGroupBusVM();
+
+            ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString() == TileUtil.TileUri(groupName));
+            if (tile != null)
+                tile.Delete();
+            TileUtil.UpdateTile2("");
+
         }
 
 
