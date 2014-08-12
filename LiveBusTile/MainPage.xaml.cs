@@ -222,6 +222,8 @@ namespace LiveBusTile
         {
             AppLogger.Debug("");
             var gbvm = (e.OriginalSource as FrameworkElement).DataContext as GroupBusVM;
+            if (gbvm == null) 
+                return;
             BusInfo busInfo = gbvm.BusInfo;
             if (busInfo == null)
             {

@@ -137,9 +137,13 @@ namespace LiveBusTile
 
         private void UpdateDatabase()
         {
-            Database.FavBuses.Where(b => b.m_Name == m_BusName).DoForEach(
-                b => b.m_TimeToArrive = GetStationTime(b.m_Dir, b.m_Station).TimeToArrive
-                );
+            var buses = Database.FavBuses.Where(b => b.m_Name == m_BusName);
+            foreach(var bus in buses)
+            {
+                var sttimevm = GetStationTime(bus.m_Dir, bus.m_Station);
+                if(sttimevm != null)
+                    bus.m_TimeToArrive = sttimevm.TimeToArrive;
+            }
             Database.SaveFavBusGroups();
         }
 

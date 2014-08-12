@@ -40,36 +40,38 @@
             <TextBlock Text="23:59:59" TextAlignment="Right" x:Name="tbLastUpdatedTime" Grid.Column="3"/>
         </Grid>
         <ProgressBar x:Name="progbar" Grid.Row="1" Height="10" IsIndeterminate="True" Visibility="Collapsed"/>
-        <StackPanel Grid.Row="2" Margin="0,10,0,0">
-            <TextBlock Text="公車名稱"  Style="{StaticResource PhoneTextTitle2Style}"/>
-            <TextBlock x:Name="tbBusName" Text="橘2"  FontSize="36" Margin="10,10" Foreground="Orange" 
+        <ScrollViewer Grid.Row="2" Margin="0,10,0,0" >
+            <StackPanel VerticalAlignment="Stretch">
+                <TextBlock Text="公車名稱"  Style="{StaticResource PhoneTextTitle2Style}"/>
+                <TextBlock x:Name="tbBusName" Text="橘2"  FontSize="36" Margin="10,10" Foreground="Orange" 
                     TextWrapping="Wrap" FontWeight="Bold"/>
-            <TextBlock Text="站牌名稱" Style="{StaticResource PhoneTextTitle2Style}"/>
-            <TextBlock x:Name="tbStation" Text="秀山國小" FontSize="36" Margin="10,10" Foreground="Orange" 
+                <TextBlock Text="站牌名稱" Style="{StaticResource PhoneTextTitle2Style}"/>
+                <TextBlock x:Name="tbStation" Text="秀山國小" FontSize="36" Margin="10,10" Foreground="Orange" 
                     TextWrapping="Wrap" FontWeight="Bold"/>
-            <TextBlock Text="方向"  Style="{StaticResource PhoneTextTitle2Style}"/>
-            <TextBlock x:Name="tbDir" Text="往:秀山站" FontSize="36" Margin="10,10" Foreground="Orange" FontWeight="Bold" />
-            <TextBlock Text="群組" Style="{StaticResource PhoneTextTitle2Style}"/>
-            
-            <toolkit:AutoCompleteBox 
+                <TextBlock Text="方向"  Style="{StaticResource PhoneTextTitle2Style}"/>
+                <TextBlock x:Name="tbDir" Text="往:秀山站" FontSize="36" Margin="10,10" Foreground="Orange" FontWeight="Bold" />
+                <TextBlock Text="群組" Style="{StaticResource PhoneTextTitle2Style}"/>
+
+                <toolkit:AutoCompleteBox 
                 x:Name="tbGroup" 
                 Text="上班" FontSize="36" 
                 ItemsSource="{StaticResource words}"/>
-            
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="時間" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle2Style}"/>
-                <TextBlock x:Name="tbTimeToArrive" Grid.Column="1" Text="20分" HorizontalAlignment="Right" FontSize="36" Foreground="Orange"  FontWeight="Bold"/>
-            </Grid>
-            <Button Click="GotoContextBusTime_Click">
-                <TextBlock FontSize="34" Foreground="Cyan">
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="時間" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle2Style}"/>
+                    <TextBlock x:Name="tbTimeToArrive" Grid.Column="1" Text="20分" HorizontalAlignment="Right" FontSize="36" Foreground="Orange"  FontWeight="Bold"/>
+                </Grid>
+                <Button Click="GotoContextBusTime_Click">
+                    <TextBlock FontSize="34" Foreground="Cyan">
                     <Bold><Underline>全部站牌時間</Underline></Bold>
-                </TextBlock>
-            </Button>
-        </StackPanel>
+                    </TextBlock>
+                </Button>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
     <phone:PhoneApplicationPage.ApplicationBar>
         <shell:ApplicationBar IsVisible="True" IsMenuEnabled="False">

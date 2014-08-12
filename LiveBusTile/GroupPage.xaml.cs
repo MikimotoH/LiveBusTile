@@ -295,6 +295,9 @@ namespace LiveBusTile
         {
             AppLogger.Debug("");
             BusInfoVM busInfo = (e.OriginalSource as FrameworkElement).DataContext as BusInfoVM;
+            if (busInfo== null) 
+                return;
+            
             GotoDetailsPage(busInfo.Base, m_BusGroup.m_GroupName);
         }
 
