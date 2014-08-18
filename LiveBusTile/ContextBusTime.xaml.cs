@@ -33,6 +33,8 @@ namespace LiveBusTile
             tbBusName.Text = m_BusName;
             m_Dir = (BusDir)Enum.Parse(typeof(BusDir), NavigationContext.QueryString.GetValue("Dir", "go"));
             m_Station = NavigationContext.QueryString.GetValue("Station", "");
+            pivotItemGo.Header = "";
+            pivotItemBack.Header = "";
             lbStationsBack.ItemsSource = null;
             lbStationsGo.ItemsSource = null;
             lbStationsBack.UpdateLayout();
@@ -120,15 +122,22 @@ namespace LiveBusTile
             }
 
             if (lbStationsBack.Items.IsNullOrEmpty())
-                pivot.Items.Remove(pivotItemBack);
+                pivotItemBack.Visibility = Visibility.Collapsed;
             else
+            {
                 pivotItemBack.Header = "往：" + (lbStationsBack.Items.LastElement() as StationTimeVM).Station;
-            
+                pivotItemBack.Visibility = Visibility.Visible;
+            }
+
 
             if (lbStationsGo.Items.IsNullOrEmpty())
-                pivot.Items.Remove(pivotItemGo);
+                pivotItemGo.Visibility = Visibility.Collapsed;
             else
+            {
                 pivotItemGo.Header = "往：" + (lbStationsGo.Items.LastElement() as StationTimeVM).Station;
+                pivotItemGo.Visibility = Visibility.Visible;
+
+            }
 
             UpdateDatabase();
             tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
@@ -155,52 +164,9 @@ namespace LiveBusTile
             progbar.Visibility = Visibility.Collapsed;
         }
 
-        private async void AppBar_Refresh_Click(object sender, EventArgs e)
+        private void AppBar_Refresh_Click(object sender, EventArgs e)
         {
-            progbar.Visibility = Visibility.Visible;
-            ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = false);
-            ApplicationBar.IsMenuEnabled = false;
-
-            
-            HtmlDocument doc = new HtmlDocument();
-            try
-            {
-                HttpClient client = new HttpClient();
-                string strHtml = await client.GetStringAsync(new Uri(m_BusInfoUrl.Fmt(Uri.EscapeUriString(tbBusName.Text))));
-                doc.LoadHtml(strHtml);
-            }
-            catch (Exception ex)
-            {
-                ProgBarEpilog();
-                AppLogger.Error(ex.DumpStr());
-                MessageBox.Show(AppResources.NetworkFault);
-                return;
-            }
-
-            HtmlNodeCollection goNodes = doc.DocumentNode.SelectNodes("/html/body/center/table/tr[5]/td/table/tr[2]/td[1]/table");
-            if (goNodes.Count > 0)
-            {
-                for (int i = 1; i < goNodes[0].ChildNodes.Count; i += 2)
-                {
-                    string st = goNodes[0].ChildNodes[i].ChildNodes[0].InnerText;
-                    string tm = goNodes[0].ChildNodes[i].ChildNodes[1].InnerText;
-                    lbStationsGo.Items.Cast<StationTimeVM>().FirstOrDefault(x => x.Station == st).TimeToArrive = tm;
-                }
-            }
-
-            HtmlNodeCollection backNodes = doc.DocumentNode.SelectNodes("/html/body/center/table/tr[5]/td/table/tr[2]/td[2]/table");
-            if (backNodes.Count > 0)
-            {
-                for (int i = 1; i < backNodes[0].ChildNodes.Count; i += 2)
-                {
-                    string st = backNodes[0].ChildNodes[i].ChildNodes[0].InnerText;
-                    string tm = backNodes[0].ChildNodes[i].ChildNodes[1].InnerText;
-                    lbStationsBack.Items.Cast<StationTimeVM>().FirstOrDefault(x => x.Station == st).TimeToArrive = tm;
-                }
-            }
-            UpdateDatabase();
-            tbLastUpdatedTime.Text = Database.LastUpdatedTime.ToString(TileUtil.CurSysTimeFormat);
-            ProgBarEpilog();
+            InitList();
         }
 
     }

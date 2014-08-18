@@ -43,6 +43,33 @@ namespace ScheduledTaskAgent1
         {
             return "{{m_Name=\"{0}\",m_Station=\"{1}\",m_Dir={2},m_TimeToArrive=\"{3}\" }}".Fmt(m_Name, m_Station, m_Dir, m_TimeToArrive);
         }
+        public override bool Equals(object obj)
+        {
+            var b = obj as BusInfo;
+            if (b == null)
+                return false;
+            if (m_TimeToArrive == null )
+                return m_Name.Equals(b.m_Name)
+                    && m_Station.Equals(b.m_Station)
+                    && m_Dir.Equals(b.m_Dir);
+            else 
+                return m_Name.Equals(b.m_Name) 
+                    && m_Station.Equals(b.m_Station) 
+                    && m_Dir.Equals(b.m_Dir) 
+                    && m_TimeToArrive.Equals(b.m_TimeToArrive);
+        }
+        public override int GetHashCode()
+        {
+            if (m_TimeToArrive == null)
+                return m_Name.GetHashCode()
+                    ^ m_Station.GetHashCode()
+                    ^ m_Dir.GetHashCode();
+            else
+                return m_Name.GetHashCode()
+                    ^ m_Station.GetHashCode()
+                    ^ m_Dir.GetHashCode()
+                    ^ m_TimeToArrive.GetHashCode();
+        }
 
         public string DirWithDestStation
         {

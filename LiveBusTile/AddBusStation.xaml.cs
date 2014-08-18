@@ -91,8 +91,13 @@ namespace LiveBusTile
             if (lbStationsBack.SelectedItem == null)
                 return;
             AppLogger.Debug("lbStationsBack.SelectedItem=" + (lbStationsBack.SelectedItem as string));
+            m_bPrevent_TextChanged = true;
             tbStation.Text = (lbStationsBack.SelectedItem as string);
             m_dir = BusDir.back;
+
+            Dispatcher.BeginInvoke(() => {
+                m_bPrevent_TextChanged = false;
+            });
         }
 
         private void tbStation_KeyDown(object sender, KeyEventArgs e)
@@ -119,6 +124,18 @@ namespace LiveBusTile
             if (station.IsNullOrEmpty())
                 return;
             NavigationService.Navigate(new Uri("/StationMap.xaml?Station="+station,UriKind.Relative));            
+        }
+
+        bool m_bPrevent_TextChanged = false;
+        private void tbStation_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (m_bPrevent_TextChanged)
+                return;
+            string text = tbStation.Text;
+
+            lbStationsGo.ItemsSource = m_stationPair.stations_go.Where(s => s.Contains(text)).ToList();
+            lbStationsBack.ItemsSource = m_stationPair.stations_go.Where(s => s.Contains(text)).ToList();
+
         }
 
 

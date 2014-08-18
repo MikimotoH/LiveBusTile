@@ -145,7 +145,7 @@
     <value>群組「{0}」已存在，是否要合併之？</value>
   </data>
   <data name="NewVersionFeatures" xml:space="preserve">
-    <value>1.2.3.5 版- </value>
+    <value>1.2.3.6 版- Move Up Down Bus Station</value>
   </data>
   <data name="RefreshBusTime" xml:space="preserve">
     <value>刷新時間</value>

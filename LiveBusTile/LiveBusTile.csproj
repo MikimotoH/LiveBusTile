@@ -230,6 +230,7 @@
     <Content Include="Images\AppBar.AddBus.png" />
     <Content Include="Images\AppBar.AddStation.png" />
     <Content Include="Images\AppBar.Delete.png" />
+    <Content Include="Images\AppBar.ExitMode.Png" />
     <Content Include="Images\AppBar.MapPin.png" />
     <Content Include="Images\AppBar.Search.png" />
     <Content Include="Images\AppBar.StopRefresh.png" />
@@ -244,7 +245,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\AppBar.Pin.Png" />
+    <Content Include="Images\ApplicationBar.Select.png" />
     <Content Include="Images\app_bar_me_icon.png" />
+    <Content Include="Images\Btn-Move-Down.png" />
+    <Content Include="Images\Btn-Move-Up.png" />
     <Content Include="Images\Btn.Enter.Png" />
     <Content Include="Images\AppBar.Refresh.Png" />
   </ItemGroup>

@@ -115,7 +115,7 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.2.3.5 版- .
+        ///   Looks up a localized string similar to 1.2.3.6 版- Move Up Down Bus Station.
         /// </summary>
         public static string NewVersionFeatures {
             get {

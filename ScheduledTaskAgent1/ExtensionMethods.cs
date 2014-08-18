@@ -137,6 +137,12 @@ namespace ScheduledTaskAgent1
         {
             return i != 0;
         }
+        public static void SwapByIndex<T>(this List<T> ls, int indexA, int indexB)
+        {
+            T objTemp = ls[indexA];
+            ls[indexA] = ls[indexB];
+            ls[indexB] = objTemp;
+        }
 
         public static String Joyn(this String separator, IEnumerable<object> values)
         {

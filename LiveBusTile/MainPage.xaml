@@ -11,25 +11,14 @@
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d"
-    xmlns:data="clr-namespace:LiveBusTile"    
+    xmlns:local="clr-namespace:LiveBusTile"    
     xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
     shell:SystemTray.IsVisible="True">
-    
-    <phone:PhoneApplicationPage.Resources>
-        <data:ExampleGroupBusVM x:Key="ExampleGroupBusVM"/>
 
-        <Style x:Key="StretchedListBoxItemStyle" TargetType="ListBoxItem" >
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <Border VerticalAlignment="Center">
-                            <ContentPresenter HorizontalAlignment="Left"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
+    <phone:PhoneApplicationPage.Resources>
+        <local:ExampleGroupBusVM x:Key="ExampleGroupBusVM"/>
+        <local:BooleanToThicknessConverter x:Key="BooleanToThicknessConverter"/>
+        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </phone:PhoneApplicationPage.Resources>
 
     <!--LayoutRoot is the root grid where all page content is placed-->
@@ -54,7 +43,7 @@
                    Style="{StaticResource PhoneTextNormalStyle}" Grid.Column="0"/>
                 <TextBlock Text="{Binding Path=LocalizedResources.LastUpdatedTime, Source={StaticResource LocalizedStrings}}" Style="{StaticResource PhoneTextNormalStyle}" 
                            TextAlignment="Right" Grid.Column="1"/>
-                <TextBlock Text="23:59:59" TextAlignment="Right" x:Name="tbLastUpdatedTime"
+                <TextBlock Text="11:59" TextAlignment="Right" x:Name="tbLastUpdatedTime"
                            Grid.Column="2"/>
             </Grid>
             <ProgressBar x:Name="progbar" Height="10" 
@@ -67,77 +56,80 @@
             x:Name="lbBus"
             ItemsSource="{StaticResource ExampleGroupBusVM}"
             DoubleTap="lbBus_DoubleTap"
-            >
+            SelectionChanged="lbBus_SelectionChanged"
+            SelectionMode="Multiple">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
                     <Setter Property="Template">
                         <Setter.Value>
-                            <ControlTemplate>
-                                <ContentPresenter HorizontalAlignment="Stretch"/>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <Border BorderBrush="Chartreuse" 
+                                        BorderThickness="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsSelected, Converter={StaticResource BooleanToThicknessConverter}, Mode=TwoWay}">
+                                    <ContentPresenter HorizontalAlignment="Stretch"  />
+                                </Border>
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
                 </Style>
             </ListBox.ItemContainerStyle>
-                        
+
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <data:GroupBusTemplateSelector Content="{Binding }">
-                        
-                        <data:GroupBusTemplateSelector.GroupHeader>
+                    <local:GroupBusTemplateSelector Content="{Binding}">
+                        <local:GroupBusTemplateSelector.GroupHeader>
                             <DataTemplate>
-                                <Grid Background="#FF1A1A1A" 
-                                    Width="480">
+                                <Grid Background="#FF271515" Width="480">
                                     <toolkit:ContextMenuService.ContextMenu>
                                         <toolkit:ContextMenu>
                                             <toolkit:MenuItem Click="GroupHeader_Delete_Click" Header="刪除"/>
                                         </toolkit:ContextMenu>
                                     </toolkit:ContextMenuService.ContextMenu>
                                     <TextBlock Text="{Binding GroupName}" FontSize="38" Foreground="Beige" 
-                                               HorizontalAlignment="Center" FontWeight="ExtraBold" Padding="0,10"/>
+                                            HorizontalAlignment="Center" FontWeight="ExtraBold" Padding="0,10"/>
                                 </Grid>
                             </DataTemplate>
-                        </data:GroupBusTemplateSelector.GroupHeader>
-                        
-                        <data:GroupBusTemplateSelector.BusInfo>
+                        </local:GroupBusTemplateSelector.GroupHeader>
+
+                        <local:GroupBusTemplateSelector.BusInfo>
                             <DataTemplate>
-                                <Grid Width="480">
-                                    <toolkit:ContextMenuService.ContextMenu>
-                                        <toolkit:ContextMenu>
-                                            <toolkit:MenuItem Click="BusItem_Delete_Click" Header="刪除"/>
-                                            <toolkit:MenuItem Click="BusItem_Details_Click" Header="詳情"/>
-                                        </toolkit:ContextMenu>
-                                    </toolkit:ContextMenuService.ContextMenu>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="140"   />
-                                        <ColumnDefinition Width="*"     />
-                                        <ColumnDefinition Width="98"    />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding BusName}" 
-                                               FontWeight="Bold" FontSize="28" Foreground="Orange" Padding="0,10"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Station}" 
-                                               FontSize="28" Foreground="#FFFFE4B3" Padding="0,10"/>
-                                    <TextBlock Grid.Column="2" Text="{Binding TimeToArrive}" 
-                                               FontSize="28" Foreground="Red" Padding="0,10"/>
-                                </Grid>
+                                    <Grid Width="480" >
+                                        <toolkit:ContextMenuService.ContextMenu>
+                                            <toolkit:ContextMenu>
+                                                <toolkit:MenuItem Click="BusItem_Delete_Click" Header="刪除"/>
+                                                <toolkit:MenuItem Click="BusItem_Details_Click" Header="詳情"/>
+                                            </toolkit:ContextMenu>
+                                        </toolkit:ContextMenuService.ContextMenu>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="140"/>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="98"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding BusName}" 
+                                                FontWeight="Bold" FontSize="28" Foreground="Orange" Padding="0,10"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Station}" 
+                                                FontSize="28" Foreground="#FFFFE4B3" Padding="0,10"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding TimeToArrive}" 
+                                                FontSize="28" Foreground="Red" Padding="0,10" />
+                                    </Grid>
                             </DataTemplate>
-                        </data:GroupBusTemplateSelector.BusInfo>
+                        </local:GroupBusTemplateSelector.BusInfo>
 
 
-                    </data:GroupBusTemplateSelector>
+                    </local:GroupBusTemplateSelector>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
     </Grid>
-    
+
     <phone:PhoneApplicationPage.ApplicationBar>
-        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True" x:Name="appbar">
+        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True" >
             <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Pin.png" Text="釘至桌面" Click="AppBar_Pin_Click"/>
             <shell:ApplicationBarIconButton IconUri="/Images/AppBar.Refresh.png" Text="刷新時間" Click="AppBar_Refresh_Click"/>
             <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddBus.png" Text="新增巴士" Click="AppBar_AddBus_Click"/>
             <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddStation.png" Text="新增站牌" Click="AppBar_AddStation_Click"/>
             <shell:ApplicationBar.MenuItems>
                 <shell:ApplicationBarMenuItem Text="設定" Click="AppBar_Settings_Click"/>
+                <shell:ApplicationBarMenuItem Text="移上移下站牌位置" Click="AppBar_MoveUpDown_Click" IsEnabled="True"/>
                 <shell:ApplicationBarMenuItem Text="關於…" Click="AppBar_About_Click"/>
             </shell:ApplicationBar.MenuItems>
         </shell:ApplicationBar>
