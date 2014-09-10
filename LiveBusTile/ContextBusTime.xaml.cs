@@ -122,21 +122,26 @@ namespace LiveBusTile
             }
 
             if (lbStationsBack.Items.IsNullOrEmpty())
-                pivotItemBack.Visibility = Visibility.Collapsed;
+            {
+                pivot.Items.Remove(pivotItemBack);
+            }
             else
             {
                 pivotItemBack.Header = "往：" + (lbStationsBack.Items.LastElement() as StationTimeVM).Station;
-                pivotItemBack.Visibility = Visibility.Visible;
+                if (!pivot.Items.Contains(pivotItemBack))
+                    pivot.Items.Add(pivotItemBack);
             }
 
 
             if (lbStationsGo.Items.IsNullOrEmpty())
-                pivotItemGo.Visibility = Visibility.Collapsed;
+            {
+                pivot.Items.Remove(pivotItemGo);
+            }
             else
             {
                 pivotItemGo.Header = "往：" + (lbStationsGo.Items.LastElement() as StationTimeVM).Station;
-                pivotItemGo.Visibility = Visibility.Visible;
-
+                if(!pivot.Items.Contains(pivotItemGo))
+                    pivot.Items.Add(pivotItemGo);
             }
 
             UpdateDatabase();

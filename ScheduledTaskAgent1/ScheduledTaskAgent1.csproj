@@ -115,9 +115,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Data\all_buses.txt" />
-    <Content Include="Data\stationsDb.txt" />
-    <Content Include="Data\stations_TWD97_sub250km.txt" />
+    <Content Include="Data\stations_latlng.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource1.resx">

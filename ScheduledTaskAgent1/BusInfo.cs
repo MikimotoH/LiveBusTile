@@ -115,6 +115,8 @@ namespace ScheduledTaskAgent1
     {
         public string bus;
         public BusDir dir;
+        public BusAndDir() { }
+        public BusAndDir(string bus, BusDir dir) { this.bus = bus; this.dir = dir; }
     }
 
     public class StationPair
@@ -122,6 +124,7 @@ namespace ScheduledTaskAgent1
         public string[] stations_go;
         public string[] stations_back;
 
+        public StationPair(int num_go, int num_back) { stations_go = new string[num_go]; stations_back = new string[num_back]; }
         public string[] GetStations(BusDir m_dir)
         {
             return m_dir == BusDir.go ? stations_go : stations_back;

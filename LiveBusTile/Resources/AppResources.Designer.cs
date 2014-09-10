@@ -70,7 +70,7 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.2.3.5.
+        ///   Looks up a localized string similar to 1.2.3.7.
         /// </summary>
         public static string AppVersion {
             get {
@@ -115,7 +115,7 @@ namespace LiveBusTile.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1.2.3.6 版- Move Up Down Bus Station.
+        ///   Looks up a localized string similar to 1.2.3.7 版- 更新公車站牌資料庫、經緯度;「選擇公車」可長按出「全部站牌時間」.
         /// </summary>
         public static string NewVersionFeatures {
             get {

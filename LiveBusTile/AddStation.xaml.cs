@@ -33,7 +33,7 @@ namespace LiveBusTile
         {
             m_GroupName = NavigationContext.QueryString.GetValue("GroupName", "");
             lbAllStations.ItemsSource = Database.AllStations.Where(x => x.Key.Contains(tbStation.Text))
-                .OrderByDescending(kv => kv.Value.Length).Select(kv => kv.Key).ToList();
+                .OrderByDescending(kv => kv.Value.Count).Select(kv => kv.Key).ToList();
         }
 
 
@@ -43,7 +43,7 @@ namespace LiveBusTile
             if (m_prevent_TextChangeEvent)
                 return;
             lbAllStations.ItemsSource = Database.AllStations.Where(x => x.Key.Contains(tbStation.Text))
-                .OrderByDescending(kv => kv.Value.Length).Select(kv => kv.Key).ToList();
+                .OrderByDescending(kv => kv.Value.Count).Select(kv => kv.Key).ToList();
         }
 
 
@@ -142,7 +142,7 @@ namespace LiveBusTile
                 List<StatDist> sttdsts = Database.AllStationCoords.Select(t => new StatDist(t.station, t.twd97coord.DistanceFrom2(myCoord)) ).ToList();
                 sttdsts.Sort();
 
-                lbAllStations.ItemsSource = sttdsts.Select(k => k.station).ToList();
+                lbAllStations.ItemsSource = sttdsts.Select(k => k.station).Distinct().ToList();
                 
             }
             catch (Exception ex)

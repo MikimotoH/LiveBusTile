@@ -11,11 +11,12 @@
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d"
-    xmlns:data="clr-namespace:LiveBusTile"    
+    xmlns:local="clr-namespace:LiveBusTile"
+    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"    
     shell:SystemTray.IsVisible="True">
     
     <phone:PhoneApplicationPage.Resources>
-        <data:ExampleAllBuses x:Key="ExampleAllBuses"/>
+        <local:ExampleAllBuses x:Key="ExampleAllBuses"/>
         <Style x:Key="CenteredListBoxItemStyle" TargetType="ListBoxItem" >
             <Setter Property="Template">
                 <Setter.Value>
@@ -75,6 +76,11 @@
 
         <DataTemplate x:Key="LLSItemTemplate">
             <Grid Height="Auto" Margin="5,5">
+                <toolkit:ContextMenuService.ContextMenu>
+                    <toolkit:ContextMenu>
+                        <toolkit:MenuItem Click="ConextBusTime_Click" Header="全部站牌時間"/>
+                    </toolkit:ContextMenu>
+                </toolkit:ContextMenuService.ContextMenu>
                 <TextBlock Text="{Binding }" TextAlignment="Center" HorizontalAlignment="Center"
                            TextWrapping="Wrap"
                            FontSize="36" Foreground="Orange" Margin="5,0"

@@ -57,7 +57,7 @@
             ItemsSource="{StaticResource ExampleGroupBusVM}"
             DoubleTap="lbBus_DoubleTap"
             SelectionChanged="lbBus_SelectionChanged"
-            SelectionMode="Multiple">
+            SelectionMode="Single">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
                     <Setter Property="Template">
@@ -81,6 +81,7 @@
                                 <Grid Background="#FF271515" Width="480">
                                     <toolkit:ContextMenuService.ContextMenu>
                                         <toolkit:ContextMenu>
+                                            <toolkit:MenuItem Click="GroupHeader_Rename_Click" Header="更名"/>
                                             <toolkit:MenuItem Click="GroupHeader_Delete_Click" Header="刪除"/>
                                         </toolkit:ContextMenu>
                                     </toolkit:ContextMenuService.ContextMenu>
@@ -97,7 +98,8 @@
                                             <toolkit:ContextMenu>
                                                 <toolkit:MenuItem Click="BusItem_Delete_Click" Header="刪除"/>
                                                 <toolkit:MenuItem Click="BusItem_Details_Click" Header="詳情"/>
-                                            </toolkit:ContextMenu>
+                                                <toolkit:MenuItem Click="BusItem_ContextBusTime_Click" Header="全部站牌時間"/>
+                                        </toolkit:ContextMenu>
                                         </toolkit:ContextMenuService.ContextMenu>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="140"/>
@@ -129,7 +131,7 @@
             <shell:ApplicationBarIconButton IconUri="/Images/AppBar.AddStation.png" Text="新增站牌" Click="AppBar_AddStation_Click"/>
             <shell:ApplicationBar.MenuItems>
                 <shell:ApplicationBarMenuItem Text="設定" Click="AppBar_Settings_Click"/>
-                <shell:ApplicationBarMenuItem Text="移上移下站牌位置" Click="AppBar_MoveUpDown_Click" IsEnabled="True"/>
+                <shell:ApplicationBarMenuItem Text="移上移下站牌位置" Click="AppBar_Selection_ModeEnter" IsEnabled="True"/>
                 <shell:ApplicationBarMenuItem Text="關於…" Click="AppBar_About_Click"/>
             </shell:ApplicationBar.MenuItems>
         </shell:ApplicationBar>

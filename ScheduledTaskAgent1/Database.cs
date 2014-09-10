@@ -155,72 +155,89 @@ namespace ScheduledTaskAgent1
         public class StationCoord
         {
             public string station;
+            public string bus;
+            public BusDir dir;
             public TWD97Coord twd97coord;
             public GeoCoordinate geocoord;
         }
         static List<StationCoord> m_all_stations_coords = null;
 
-        public static void LoadAllStationCoordinates()
-        {
-            m_all_stations_coords = new List<StationCoord>();
-
-            var sri = Application.GetResourceStream(new Uri("Data/stations_TWD97_sub250km.txt", UriKind.Relative));
-            using (StreamReader sr = new StreamReader(sri.Stream))
-            {
-                string line = sr.ReadLine(); // consume first line
-                
-                while ((line = sr.ReadLine()) != null)
-                {
-                    if (line.StartsWith("#"))
-                        continue;// this is comment
-                    string[] comps = line.Split("\t".ToArray(), StringSplitOptions.RemoveEmptyEntries);
-                    var stco = new StationCoord { station = comps[0] };
-                    if (comps.Length == 3)
-                    {
-                        string[] coords = comps[1].Split(",".ToArray());
-                        string[] latlng = comps[2].Split(",".ToArray());
-                        stco.twd97coord = new TWD97Coord(double.Parse(coords[0]), double.Parse(coords[1]));
-                        stco.geocoord = new GeoCoordinate(double.Parse(latlng[0]), double.Parse(latlng[1]));
-                    }
-                    else
-                    {
-                        string[] latlng = comps[1].Split(",".ToArray());
-                        stco.geocoord = new GeoCoordinate(double.Parse(latlng[0]), double.Parse(latlng[1]));
-                        stco.twd97coord = TWD97Coord.FromLatLng(stco.geocoord);
-                    }
-
-                    m_all_stations_coords.Add(stco);
-                }
-            }
-        }
         public static List<StationCoord> AllStationCoords
         {
             get
             {
                 if (m_all_stations_coords == null)
-                    LoadAllStationCoordinates();
+                    LoadAllStations();
                 return m_all_stations_coords;
             }
         }
 
 
-        static Dictionary<string, BusAndDir[]> m_all_stations = null;
+        static Dictionary<string, List<BusAndDir>> m_all_stations = null;
         public static void LoadAllStations()
         {
-            m_all_stations = new Dictionary<string, BusAndDir[]>();
-            var sri = Application.GetResourceStream(new Uri("Data/stationsDb.txt", UriKind.Relative));
+            m_all_buses = new Dictionary<string,StationPair>();
+            m_all_stations = new Dictionary<string, List<BusAndDir>>();
+            m_all_stations_coords = new List<StationCoord>();
+
+            var sri = Application.GetResourceStream(new Uri("Data/stations_latlng.txt", UriKind.Relative));
             using (StreamReader sr = new StreamReader(sri.Stream))
             {
-                string station;
-                while ((station = sr.ReadLine()) != null)
+                string line;
+                while ((line = sr.ReadLine()) != null)
                 {
-                    string[] busdirls = sr.ReadLine().Split("\t".ToArray());
-                    m_all_stations[station] = busdirls.Select(x => new BusAndDir { bus = x.Substring(0, x.Length - 2), dir = (BusDir)int.Parse(x.Substring(x.Length - 1, 1)) }).ToArray();
+                    Debug.Assert(!line.StartsWith("\t"));
+                    var comps = line.Split("\t".ToArray(), StringSplitOptions.RemoveEmptyEntries);
+                    string busName = comps[0];
+                    int num_st_go = int.Parse(comps[1]);
+                    int num_st_back = int.Parse(comps[2]);
+                    int num_stations = num_st_go + num_st_back;
+                    var st_pair = new StationPair(num_st_go, num_st_back);
+                    for (int i = 0; i < num_stations; ++i)
+                    {
+                        string line1 = sr.ReadLine();
+                        Debug.Assert(line1.StartsWith("\t"));
+                        comps = line1.Split("\t".ToArray(), StringSplitOptions.RemoveEmptyEntries);
+                        string station = comps[0];
+                        BusDir bus_dir = BusDir.go;
+                        if (i < num_st_go)
+                        {
+                            st_pair.stations_go[i] = station;
+                            bus_dir = BusDir.go;
+                        }
+                        else
+                        {
+                            st_pair.stations_back[i - num_st_go] = station;
+                            bus_dir = BusDir.back;
+                        }
+                        
+                        if (!m_all_stations.ContainsKey(station))
+                            m_all_stations[station] = new List<BusAndDir> { new BusAndDir(busName, bus_dir) };
+                        else
+                            m_all_stations[station].Add(new BusAndDir(busName, bus_dir));
+
+                        if (comps.Length >= 3)
+                        {
+                            double latitude = double.Parse(comps[1]);
+                            double longitude = double.Parse(comps[2]);
+                            Debug.Assert(latitude < 90.0 && latitude > -90.0);
+                            m_all_stations_coords.Add(
+                                new StationCoord
+                                {
+                                    station = station,
+                                    bus = busName,
+                                    dir = bus_dir,
+                                    geocoord = new GeoCoordinate(latitude, longitude),
+                                    twd97coord = TWD97Coord.FromLatLng(latitude, longitude)
+                                });
+                        }
+                    }
+                    m_all_buses[busName] = st_pair;
                 }
             }
         }
 
-        public static Dictionary<string, BusAndDir[]> AllStations
+        public static Dictionary<string, List<BusAndDir>> AllStations
         {
             get
             {
@@ -231,32 +248,13 @@ namespace ScheduledTaskAgent1
         }
 
         static Dictionary<string, StationPair> m_all_buses = null;
-        public static void LoadAllBuses()
-        {
-            m_all_buses = new Dictionary<string, StationPair>();
-            var sri = Application.GetResourceStream(new Uri("Data/all_buses.txt", UriKind.Relative));
-            using (StreamReader sr = new StreamReader(sri.Stream))
-            {
-                string busName;
-                while ((busName = sr.ReadLine()) != null)
-                {
-                    var stp = new StationPair();
-                    string stations_go_line = sr.ReadLine();
-                    stp.stations_go = stations_go_line.Split(new string[] { field_separator }, StringSplitOptions.RemoveEmptyEntries);
-                    string stations_back_line = sr.ReadLine();
-                    stp.stations_back = stations_back_line.Split(new string[] { field_separator }, StringSplitOptions.RemoveEmptyEntries);
-                    if(stp.stations_go.Length > 0 || stp.stations_back.Length > 0)
-                        m_all_buses[busName] = stp;
-                }
-            }
-        }
 
         public static Dictionary<string, StationPair> AllBuses
         {
             get
             {
                 if (m_all_buses == null)
-                    LoadAllBuses();
+                    LoadAllStations();
                 return m_all_buses;
             }
         }

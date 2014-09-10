@@ -71,7 +71,7 @@ namespace LiveBusTile
                 NavigationService.Navigate(new Uri("/GroupPage.xaml?GroupName=" + m_GroupName, UriKind.Relative));
         }
 
-        private string GenTempGroupName()
+        public static string GenTempGroupName()
         {
             int i = 1;
             for (; ; ++i)
@@ -87,7 +87,7 @@ namespace LiveBusTile
             var tcs = new TaskCompletionSource<string>();
 
             IEnumerable<string> lsGroups = Database.FavBusGroups.Select(g => g.m_GroupName)
-                .Concat(new string[] { "上班", "回家", GenTempGroupName() }).RemoveDuplicate();
+                .Concat(new string[] { "上班", "回家", GenTempGroupName() }).Distinct();
 
             ListPicker listPicker = new ListPicker()
             {
