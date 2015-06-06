@@ -74,11 +74,11 @@ namespace LiveBusTile
                 return;
             }
 
+            string xpathroot = "/html/body/center/table/tr[6]/td/table/";
             HtmlNodeCollection 
-                goNodes = doc.DocumentNode.SelectNodes("/html/body/center/table/tr[5]/td/table/tr[2]/td[1]/table");
-            //                                         "/html/body/center/table/tr[5]/td/table/tr/td/table/tr[1]/td[1]"
+                goNodes = doc.DocumentNode.SelectNodes(xpathroot+"tr[2]/td[1]/table");
             if (goNodes.IsNullOrEmpty())
-                goNodes = doc.DocumentNode.SelectNodes("/html/body/center/table/tr[5]/td/table/tr/td/table");
+                goNodes = doc.DocumentNode.SelectNodes(xpathroot+"tr/td/table");
             if (!goNodes.IsNullOrEmpty())
             {
                 ObservableCollection<StationTimeVM> goStatVM = new ObservableCollection<StationTimeVM>();
@@ -89,7 +89,7 @@ namespace LiveBusTile
                 lbStationsGo.UpdateLayout();
             }
 
-            HtmlNodeCollection backNodes = doc.DocumentNode.SelectNodes("/html/body/center/table/tr[5]/td/table/tr[2]/td[2]/table");
+            HtmlNodeCollection backNodes = doc.DocumentNode.SelectNodes(xpathroot+"tr[2]/td[2]/table");
             if (!backNodes.IsNullOrEmpty())
             {
                 ObservableCollection<StationTimeVM> backStatVM = new ObservableCollection<StationTimeVM>();

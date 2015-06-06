@@ -234,6 +234,7 @@
     <Content Include="Images\AppBar.MapPin.png" />
     <Content Include="Images\AppBar.Search.png" />
     <Content Include="Images\AppBar.StopRefresh.png" />
+    <None Include="LiveBusTile_2014_12_31_01_55_47.sap" />
     <None Include="packages.config" />
     <None Include="Properties\AppManifest.xml" />
     <None Include="Properties\WMAppManifest.xml">

@@ -403,7 +403,7 @@ namespace BusStationCrawler
         /// <summary>
         /// In-place crawl empty station bus routes
         /// </summary>
-        static void Main()
+        static void Main_inplace_crawl_empty_station_bus_routes()
         {
             var client = new WebClient();
 
@@ -451,7 +451,7 @@ namespace BusStationCrawler
         /// <summary>
         /// MainCrawler
         /// </summary>
-        static void Main_MainCrawler()
+        static void Main()
         {
             var client = new WebClient();
             string sHtml = Encoding.UTF8.GetString(client.DownloadData("http://pda.5284.com.tw/MQS/businfo1.jsp"));

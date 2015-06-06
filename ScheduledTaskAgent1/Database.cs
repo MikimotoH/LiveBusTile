@@ -183,11 +183,17 @@ namespace ScheduledTaskAgent1
             var sri = Application.GetResourceStream(new Uri("Data/stations_latlng.txt", UriKind.Relative));
             using (StreamReader sr = new StreamReader(sri.Stream))
             {
+                int line_num = 0;
                 string line;
                 while ((line = sr.ReadLine()) != null)
                 {
+                    line_num += 1;
+                    if (line.Trim().Length == 0)
+                        continue;
                     Debug.Assert(!line.StartsWith("\t"));
                     var comps = line.Split("\t".ToArray(), StringSplitOptions.RemoveEmptyEntries);
+                    if (comps.Count() == 0)
+                        continue;
                     string busName = comps[0];
                     int num_st_go = int.Parse(comps[1]);
                     int num_st_back = int.Parse(comps[2]);
