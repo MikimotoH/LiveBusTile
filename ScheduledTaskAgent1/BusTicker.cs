@@ -10,8 +10,9 @@ using System.IO;
 using System.IO.IsolatedStorage;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
-using HtmlAgilityPack;
+//using HtmlAgilityPack;
 using Log = ScheduledTaskAgent1.Logger;
+using System.Text.RegularExpressions;
 
 
 namespace ScheduledTaskAgent1
@@ -30,25 +31,16 @@ namespace ScheduledTaskAgent1
             return ParseHtmlBusTime(await client.GetStringAsync(new Uri(Pda5284Url(b))));
         }
 
+        public static string ParseSingleStationTime(string htmlText)
+        {
+            Regex ptn = new Regex(@"<.*?class=\""ttestop\"".*?>(.+?)<", RegexOptions.Multiline );
+            Match m = ptn.Match(htmlText);
+            return m.Groups[1].Value.Trim();
+        }
 
         public static string ParseHtmlBusTime(string html)
         {
-            HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(html);
-            try
-            {
-                HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes(
-                    "/html/body/center/table/tr[6]/td");
-                if (nodes.Count == 0)
-                    return "節點找不到";
-                return nodes[0].InnerText;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex.DumpStr());
-                Logger.Error("HTML=\n" + html);
-                return "解析異常";
-            }
+            return ParseSingleStationTime(html);
         }
     }
 }

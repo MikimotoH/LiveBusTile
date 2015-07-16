@@ -15,7 +15,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.IO.IsolatedStorage;
-using HtmlAgilityPack;
 using System.Threading;
 using System.IO;
 using System.Globalization;

@@ -101,14 +101,6 @@
     <Compile Include="TWD97Coord.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="HtmlAgilityPack">
-      <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\sl4-windowsphone71\HtmlAgilityPack.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.XPath">
-      <HintPath>..\packages\System.Xml.XPath.SL4.2.0.5.0\lib\System.Xml.XPath.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
     <None Include="packages.xsd">
       <SubType>Designer</SubType>

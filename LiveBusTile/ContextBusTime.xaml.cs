@@ -10,9 +10,9 @@ using Microsoft.Phone.Shell;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using ScheduledTaskAgent1;
-using HtmlAgilityPack;
 using LiveBusTile.Resources;
 using System.IO.IsolatedStorage;
+using System.Text.RegularExpressions;
 
 namespace LiveBusTile
 {
@@ -53,18 +53,35 @@ namespace LiveBusTile
                 return lbStationsBack.Items.Cast<StationTimeVM>().FirstOrDefault(x => x.Station == station);
         }
 
+        static string RemoveHtmlTags(string html)
+        {
+            string pureText = Regex.Replace(html, @"<.+?>", " ", RegexOptions.Multiline);
+            return Regex.Replace(pureText, "[ ]+", " ");
+        }
+
+        static IEnumerable<Tuple<string, string>> ParseBusStatTimeHtml(BusDir busDir, string htmlText)
+        {
+            Regex ptn= new Regex(@"<.*?class=\""tte{0}[12]\"".*?>(.+?)</tr".Fmt(busDir), RegexOptions.Multiline );
+            MatchCollection mc = ptn.Matches(htmlText);
+            foreach (Match mStatTime in mc)
+            {
+                string strStatTime = RemoveHtmlTags(mStatTime.Groups[1].Value);
+                string[] tokens = strStatTime.Split(" ".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
+                yield return new Tuple<string, string>(tokens[0], tokens[1]);
+            }
+        }
+
         async void InitList()
         {
             progbar.Visibility = Visibility.Visible;
             ApplicationBar.Buttons.DoForEach<ApplicationBarIconButton>(x => x.IsEnabled = false);
             ApplicationBar.IsMenuEnabled = false;
 
-            HtmlDocument doc = new HtmlDocument();
+            string strHtml;
             try
             {
                 HttpClient client = new HttpClient();
-                string strHtml = await client.GetStringAsync(new Uri(m_BusInfoUrl.Fmt(Uri.EscapeUriString(tbBusName.Text))));
-                doc.LoadHtml(strHtml);
+                strHtml = await client.GetStringAsync(new Uri(m_BusInfoUrl.Fmt(Uri.EscapeUriString(tbBusName.Text))));
             }
             catch (Exception ex)
             {
@@ -74,31 +91,21 @@ namespace LiveBusTile
                 return;
             }
 
-            string xpathroot = "/html/body/center/table/tr[6]/td/table/";
-            HtmlNodeCollection 
-                goNodes = doc.DocumentNode.SelectNodes(xpathroot+"tr[2]/td[1]/table");
-            if (goNodes.IsNullOrEmpty())
-                goNodes = doc.DocumentNode.SelectNodes(xpathroot+"tr/td/table");
-            if (!goNodes.IsNullOrEmpty())
+            ObservableCollection<StationTimeVM> goStatVM = new ObservableCollection<StationTimeVM>();
+            foreach( var t in ParseBusStatTimeHtml(BusDir.go, strHtml))
             {
-                ObservableCollection<StationTimeVM> goStatVM = new ObservableCollection<StationTimeVM>();
-                for (int i = 1; i < goNodes[0].ChildNodes.Count; i += 2)
-                    goStatVM.Add(new StationTimeVM(goNodes[0].ChildNodes[i].ChildNodes[0].InnerText,
-                        goNodes[0].ChildNodes[i].ChildNodes[1].InnerText));
-                lbStationsGo.ItemsSource = goStatVM;
-                lbStationsGo.UpdateLayout();
+                goStatVM.Add(new StationTimeVM(t.Item1, t.Item2));
             }
+            lbStationsGo.ItemsSource = goStatVM;
+            lbStationsGo.UpdateLayout();
 
-            HtmlNodeCollection backNodes = doc.DocumentNode.SelectNodes(xpathroot+"tr[2]/td[2]/table");
-            if (!backNodes.IsNullOrEmpty())
+            ObservableCollection<StationTimeVM> backStatVM = new ObservableCollection<StationTimeVM>();
+            foreach( var t in ParseBusStatTimeHtml(BusDir.back, strHtml))
             {
-                ObservableCollection<StationTimeVM> backStatVM = new ObservableCollection<StationTimeVM>();
-                for (int i = 1; i < backNodes[0].ChildNodes.Count; i += 2)
-                    backStatVM.Add(new StationTimeVM(backNodes[0].ChildNodes[i].ChildNodes[0].InnerText,
-                        backNodes[0].ChildNodes[i].ChildNodes[1].InnerText));
-                lbStationsBack.ItemsSource = backStatVM;
-                lbStationsBack.UpdateLayout();
+                backStatVM.Add(new StationTimeVM(t.Item1, t.Item2));
             }
+            lbStationsBack.ItemsSource = backStatVM;
+            lbStationsBack.UpdateLayout();
 
             if (m_Dir == BusDir.back)
             {

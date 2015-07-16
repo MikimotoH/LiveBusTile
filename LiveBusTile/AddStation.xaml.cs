@@ -12,7 +12,6 @@ using System.Windows.Input;
 using System.IO.IsolatedStorage;
 using ScheduledTaskAgent1;
 using System.Collections.ObjectModel;
-using HtmlAgilityPack;
 using Windows.Devices.Geolocation;
 using System.Device.Location;
 using System.Diagnostics;

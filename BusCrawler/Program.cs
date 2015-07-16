@@ -11,9 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace BusStationCrawler
 {
-
-
-    class Program
+    partial class Program
     {
         static StationPair CrawlStations(WebClient client, string bus)
         {
@@ -262,6 +260,74 @@ namespace BusStationCrawler
                 serializer.Serialize(writer, busStatDict);
             }
         }
+        static string LoadFile(string filePath)
+        {
+            using (var sx = File.OpenText(filePath))
+            { return sx.ReadToEnd(); }
+        }
+
+        static string ParseSingleStationTime(string htmlText)
+        {
+            Regex ptn = new Regex(@"<.*?class=\""ttestop\"".*?>(.+?)<", RegexOptions.Multiline );
+            Match m = ptn.Match(htmlText);
+            return m.Groups[1].Value.Trim();
+        }
+
+        static void test_Orange2XiuShangSchool()
+        {
+            string htmlText = LoadFile("../../橘2秀山國小.html");
+            string busTime = ParseSingleStationTime(htmlText);
+            Debug.WriteLine("busTime= " + busTime);
+        }
+
+        static string RemoveHtmlTags(string html)
+        {
+            string pureText = Regex.Replace(html, @"<.+?>", " ", RegexOptions.Multiline);
+            return Regex.Replace(pureText, "[ ]+", " ");
+        }
+
+        static IEnumerable<Tuple<string, string>> ParseBusStatTimeHtml(BusDir busDir, string htmlText)
+        {
+            Regex ptn= new Regex(@"<.*?class=\""tte{0}[12]\"".*?>(.+?)</tr".Fmt(busDir), RegexOptions.Multiline );
+            MatchCollection mc = ptn.Matches(htmlText);
+            foreach (Match mStatTime in mc)
+            {
+                string strStatTime = RemoveHtmlTags(mStatTime.Groups[1].Value);
+                string[] tokens = strStatTime.Split(" ".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
+                yield return new Tuple<string, string>(tokens[0], tokens[1]);
+            }
+        }
+        static string ParseBusStatTimeHtmlTitle(BusDir busDir, string htmlText)
+        {
+            Regex ptn= new Regex(@"<.*?class=\""tte{0}title\"".*?>(.+?)</t".Fmt(busDir), RegexOptions.Singleline );
+            Match m = ptn.Match(htmlText);
+            return m.Groups[1].Value.Trim();
+        }
+
+        static void test_262Bus()
+        {
+            string htmlText = LoadFile(@"../../262公車.html");
+            Debug.WriteLine("\n========\n Go \n=========");
+            Debug.WriteLine(ParseBusStatTimeHtmlTitle(BusDir.go, htmlText));
+            IEnumerable<Tuple<string,string>> tuples = ParseBusStatTimeHtml(BusDir.go, htmlText);
+            foreach(Tuple<string,string> t in tuples)
+            {
+                Debug.WriteLine(t.Item1 + "\t" + t.Item2);
+            }
+
+            Debug.WriteLine("\n========\n Back \n=========");
+            Debug.WriteLine(ParseBusStatTimeHtmlTitle(BusDir.back, htmlText));
+            foreach(var t in ParseBusStatTimeHtml(BusDir.back, htmlText))
+            {
+                Debug.WriteLine(t.Item1 + "\t" + t.Item2);
+            }
+        }
+
+        static void Main()
+        {
+            test_Orange2XiuShangSchool();
+            test_262Bus();
+        }
 
         /// <summary>
         /// 
@@ -451,7 +517,7 @@ namespace BusStationCrawler
         /// <summary>
         /// MainCrawler
         /// </summary>
-        static void Main()
+        static void Main_MainCrawler()
         {
             var client = new WebClient();
             string sHtml = Encoding.UTF8.GetString(client.DownloadData("http://pda.5284.com.tw/MQS/businfo1.jsp"));

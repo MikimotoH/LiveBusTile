@@ -12,7 +12,6 @@ using System.Windows.Input;
 using System.IO.IsolatedStorage;
 using ScheduledTaskAgent1;
 using System.Collections.ObjectModel;
-using HtmlAgilityPack;
 
 namespace LiveBusTile
 {

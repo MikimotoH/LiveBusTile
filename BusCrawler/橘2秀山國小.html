@@ -1,0 +1,44 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+		<title>[橘2][秀山國小]公車動態資訊</title>
+		<link rel="stylesheet" type="text/css" href="./css/style.css"/>
+		<script language="JavaScript">
+			function query() {
+        QueryForm.submit();
+			}
+		</script>
+	</head>
+	<body onload="setTimeout('query();',60000);">
+		<center>
+		<table class="formattable1">
+			<tr>
+				<th class="title1"><a href="index.jsp" class="title1">行動查詢系統</a></th>
+			</tr>
+			<tr>
+				<th class="title2"><a href="businfo1.jsp" class="title2">查詢公車動態資訊</a></th>
+			</tr>
+			<tr>
+				<th class="title3"><a href="businfo2.jsp?routename=%E6%A9%982" class="title3">橘2</a></th>
+			</tr>
+			<tr>
+				<th class="title4">[去程]<br>秀山國小<br><span class="updatetime">(更新時間：23:08:59&nbsp;<input type="button" value="立刻更新" onclick="query()">)</span></th>
+			</tr>
+    </table>
+    <!--
+		<tr>
+			<td class="marqueetd"><marquee scrollamount="4">※配合中國文化大學暑假期間(104年6月30日至104年9月13日)，紅5路公車全天暫停繞駛校區。  ※配合臺北城市科技大學及臺北藝術大學暑假期間(104年7月1日至104年9月6日)，紅55路公車頭末班調整為8時至17時，每隔30分1班，紅55路區間車停駛。　　　　</marquee></td>
+		</tr>
+		-->
+		<marquee scrollamount="4" class="marqueetd" width="100%">※配合中國文化大學暑假期間(104年6月30日至104年9月13日)，紅5路公車全天暫停繞駛校區。  ※配合臺北城市科技大學及臺北藝術大學暑假期間(104年7月1日至104年9月6日)，紅55路公車頭末班調整為8時至17時，每隔30分1班，紅55路區間車停駛。　　　　</marquee>
+		<table class="formattable1">
+			<tr>
+				<td align=center nowrap class="ttestop">進站中</td>
+			</tr>
+		</table>
+		<form action="businfo3.jsp?Dir=1&Route=%E6%A9%982&Stop=%E7%A7%80%E5%B1%B1%E5%9C%8B%E5%B0%8F" method="post" name="QueryForm" id="QueryForm">
+		</form>
+	</body>
+</html>
