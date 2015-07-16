@@ -109,7 +109,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <TextBox Grid.Column="0" x:Name="tbBusName" InputScope="Text" 
+            <TextBox Grid.Column="0" x:Name="tbBusName" InputScope="Number" 
                      TextWrapping="Wrap" FontSize="40"
                      TextChanged="tbBusName_TextChanged" KeyDown="tbBusName_KeyDown"/>
             <Button Grid.Column="2" x:Name="btnEnter" Margin="0,0,4,0" Tap="btnEnter_Tap">

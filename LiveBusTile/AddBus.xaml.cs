@@ -21,6 +21,12 @@ namespace LiveBusTile
         public AddBus()
         {
             InitializeComponent();
+            this.Loaded += AddBus_Loaded;
+        }
+
+        void AddBus_Loaded(object sender, RoutedEventArgs e)
+        {
+            tbBusName.Focus();
         }
 
         string m_GroupName;

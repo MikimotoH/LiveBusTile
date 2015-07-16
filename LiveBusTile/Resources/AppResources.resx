@@ -129,7 +129,7 @@
     <value>台北巴士快速磚</value>
   </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>1.2.3.8</value>
+    <value>1.3</value>
     <comment>Application Version on Market Place Sumbission</comment>
   </data>
   <data name="NetworkFault" xml:space="preserve">
@@ -145,7 +145,7 @@
     <value>群組「{0}」已存在，是否要合併之？</value>
   </data>
   <data name="NewVersionFeatures" xml:space="preserve">
-    <value>1.2.3.8 版- 更新公車站牌資料庫;無經緯度</value>
+    <value>1.3 版- 改用Regex放棄XPath來解析Html</value>
   </data>
   <data name="RefreshBusTime" xml:space="preserve">
     <value>刷新時間</value>
